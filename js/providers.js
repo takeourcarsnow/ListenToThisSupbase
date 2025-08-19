@@ -95,7 +95,7 @@ export function buildEmbed(post, container, opts = {}) {
     });
     if (autoplay) {
       params.set('autoplay', '1');
-      params.set('mute', '1'); // allow autoplay reliably
+      // params.set('mute', '1'); // removed to allow sound on start
     }
     const src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(p.id)}?${params.toString()}`;
 
