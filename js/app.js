@@ -285,7 +285,7 @@ async function renderMain(root){
       <form id="postForm" class="stack" autocomplete="off">
         <input class="field" id="f_title" placeholder="Title (song or album)" required maxlength="120" />
         <input class="field" id="f_artist" placeholder="Artist" maxlength="120"/>
-        <input class="field" id="f_url" placeholder="Link (YouTube / Spotify / Bandcamp / SoundCloud / direct .mp3)" required/>
+  <input class="field" id="f_url" placeholder="Link (YouTube / Spotify / Bandcamp / SoundCloud / direct .mp3)" required/>
         <input class="field" id="f_tags" placeholder="tags (space/comma or #tag #chill #2020)"/>
         <textarea class="field" id="f_body" rows="4" placeholder="Why should we listen?"></textarea>
         <div class="hstack">
@@ -356,6 +356,40 @@ async function renderMain(root){
     preview.classList.add('active');
     const fakePost = { provider: pv, url };
     buildEmbed(fakePost, preview);
+  });
+
+
+  // Autofill metadata from oEmbed on URL input
+  const f_url = right.querySelector('#f_url');
+  let lastMetaUrl = '';
+  let lastAutofill = { title: '', artist: '' };
+  const f_title = right.querySelector('#f_title');
+  const f_artist = right.querySelector('#f_artist');
+
+  // Track if user has manually edited fields after autofill
+  let userEdited = { title: false, artist: false };
+  f_title.addEventListener('input', () => { userEdited.title = true; });
+  f_artist.addEventListener('input', () => { userEdited.artist = true; });
+
+  f_url.addEventListener('input', async (e) => {
+    const url = f_url.value.trim();
+    if (!url || url === lastMetaUrl) return;
+    lastMetaUrl = url;
+    const { fetchOEmbed } = await import('./oembed.js');
+    const meta = await fetchOEmbed(url);
+    if (meta) {
+      // If user hasn't edited since last autofill, always update
+      if (meta.title && (!userEdited.title || f_title.value === lastAutofill.title)) {
+        f_title.value = meta.title;
+        lastAutofill.title = meta.title;
+        userEdited.title = false;
+      }
+      if (meta.author_name && (!userEdited.artist || f_artist.value === lastAutofill.artist)) {
+        f_artist.value = meta.author_name;
+        lastAutofill.artist = meta.author_name;
+        userEdited.artist = false;
+      }
+    }
   });
 
   right.querySelector('#postForm').addEventListener('submit', onCreatePost);
