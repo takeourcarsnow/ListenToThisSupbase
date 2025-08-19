@@ -550,10 +550,15 @@ async function onCreatePost(e){
   const me = state.user;
   const title = $('#f_title').value.trim();
   const artist = $('#f_artist').value.trim();
-  const url = $('#f_url').value.trim();
+  let url = $('#f_url').value.trim();
   const body = $('#f_body').value.trim();
   let tags = ($('#f_tags').value || '').trim();
   if(!title || !url){ return; }
+  // For YouTube, if URL contains '?', strip everything from '?' onward (remove all query params)
+  if (/youtube\.com|youtu\.be/.test(url)) {
+    const qm = url.indexOf('?');
+    if (qm !== -1) url = url.slice(0, qm);
+  }
   const provider = parseProvider(url);
   tags = tags
     .split(/[#,\s]+/g)

@@ -23,11 +23,6 @@ export function parseProvider(url) {
     const list = sp.get('list');
     const path = parsed.pathname.replace(/\/+$/, '');
 
-    // Playlist detection
-    if (list && (/\/playlist$/i.test(path) || (!sp.get('v') && !/\/watch$/i.test(path)))) {
-      return { provider: 'youtube_playlist', id: list };
-    }
-
     // Extract video ID
     let id = sp.get('v');
     if (!id && /\/shorts\//i.test(path)) {
@@ -40,10 +35,11 @@ export function parseProvider(url) {
       id = path.split('/').filter(Boolean).shift();
     }
 
+    // If video ID is present, always return video (even if playlist param exists)
     if (id && /^[a-zA-Z0-9_-]{11}$/.test(id)) {
       return { provider: 'youtube', id };
     }
-    // Fallback: if list only
+    // Playlist detection (only if no video ID)
     if (list) return { provider: 'youtube_playlist', id: list };
   }
 
