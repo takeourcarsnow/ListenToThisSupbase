@@ -35,14 +35,25 @@ class LocalAdapter {
   async refresh(){ return this.cache; }
   async _save(){ try{ localStorage.setItem(DB_KEY_V2, JSON.stringify(this.cache)); }catch{} }
 
-  async ensureUser(name){
+  async ensureUser(name, email, password) {
     await this.init();
-    let u = this.cache.users.find(x=>x.name.toLowerCase()===name.toLowerCase());
-    if(!u){
-      u = { id: crypto.randomUUID ? crypto.randomUUID() : 'u_'+Math.random().toString(36).slice(2), name: name.trim(), createdAt: Date.now() };
+    let u = this.cache.users.find(x => x.name.toLowerCase() === name.toLowerCase() || (email && x.email === email));
+    if (!u) {
+      u = {
+        id: crypto.randomUUID ? crypto.randomUUID() : 'u_' + Math.random().toString(36).slice(2),
+        name: name.trim(),
+        email: email || '',
+        password: password || '', // Not secure, demo only
+        createdAt: Date.now()
+      };
       this.cache.users.push(u); await this._save();
     }
     return u;
+  }
+
+  async loginUser(email, password) {
+    await this.init();
+    return this.cache.users.find(u => u.email === email && u.password === password) || null;
   }
   getUserById(id){ return (this.cache?.users || []).find(u=>u.id===id) || null; }
 

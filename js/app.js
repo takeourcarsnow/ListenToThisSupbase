@@ -81,38 +81,122 @@ async function render(){
 }
 
 // Login
-function renderLogin(root){
+function renderLogin(root) {
   const div = document.createElement('div');
   div.className = 'box login';
   div.innerHTML = `
-    <div class="small muted">┌─ login to</div>
+    <div class="small muted">┌─ register or login to</div>
     <div class="logo">ascii.fm</div>
     <div class="small muted">└──────────────────────</div>
     <div class="sep"></div>
-    <form id="loginForm" class="stack" autocomplete="off">
+    <form id="registerForm" class="stack" autocomplete="off">
       <label>username
-        <input required minlength="2" maxlength="24" id="loginName" class="field" placeholder="e.g. moonbeam" />
+        <input required minlength="2" maxlength="24" id="regName" class="field" placeholder="e.g. moonbeam" />
+      </label>
+      <label>email
+        <input required type="email" id="regEmail" class="field" placeholder="e.g. you@email.com" />
+      </label>
+      <label>password
+        <input required minlength="6" maxlength="64" id="regPass" class="field" type="password" placeholder="password" />
       </label>
       <div class="hstack">
-        <button class="btn" type="submit">[ enter ]</button>
+        <button class="btn" type="submit">[ register ]</button>
+        <button class="btn btn-ghost" id="showLoginBtn" type="button">[ login ]</button>
         <button class="btn btn-ghost" id="demoBtn" type="button">[ add demo content ]</button>
       </div>
-      <div class="muted small">${DB.isRemote ? 'Synced with Supabase. ' : ''}No passwords; username only.</div>
+      <div class="muted small" id="regMsg">${DB.isRemote ? 'Synced with Supabase. ' : ''}Register to access content.</div>
+    </form>
+    <form id="loginForm" class="stack" autocomplete="off" style="display:none">
+      <label>email
+        <input required type="email" id="loginEmail" class="field" placeholder="your@email.com" />
+      </label>
+      <label>password
+        <input required minlength="6" maxlength="64" id="loginPass" class="field" type="password" placeholder="password" />
+      </label>
+      <div class="hstack">
+        <button class="btn" type="submit">[ login ]</button>
+        <button class="btn btn-ghost" id="showRegBtn" type="button">[ register ]</button>
+        <button class="btn btn-ghost" id="demoBtn2" type="button">[ add demo content ]</button>
+      </div>
+      <div class="muted small" id="loginMsg">${DB.isRemote ? 'Synced with Supabase. ' : ''}Login to access content.</div>
     </form>
   `;
   root.appendChild(div);
 
-  $('#loginForm').addEventListener('submit', async (e)=>{
+  // Toggle forms
+  $('#showLoginBtn').onclick = () => {
+    $('#registerForm').style.display = 'none';
+    $('#loginForm').style.display = '';
+  };
+  $('#showRegBtn').onclick = () => {
+    $('#registerForm').style.display = '';
+    $('#loginForm').style.display = 'none';
+  };
+
+  // Register
+  $('#registerForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const name = $('#loginName').value.trim();
-    if(!name) return;
-    const u = await DB.ensureUser(name);
-    setSession({userId: u.id});
-    await DB.refresh();
-    render();
+    const name = $('#regName').value.trim();
+    const email = $('#regEmail').value.trim();
+    const pass = $('#regPass').value;
+    if (!name || !email || !pass) return;
+    $('#regMsg').textContent = 'Registering...';
+    try {
+      let u;
+      if (DB.isRemote && DB.supabase) {
+        // Supabase signup
+        const { data, error } = await DB.supabase.auth.signUp({ email, password: pass, options: { data: { name } } });
+        if (error) throw error;
+        u = { id: data.user.id, name, email };
+        await DB.ensureUser(name); // ensure in users table
+        setSession({ userId: u.id });
+        await DB.refresh();
+        render();
+      } else {
+        // Local: store user with email/pass (not secure, demo only)
+        u = await DB.ensureUser(name, email, pass);
+        setSession({ userId: u.id });
+        await DB.refresh();
+        render();
+      }
+    } catch (err) {
+      $('#regMsg').textContent = 'Registration failed: ' + (err.message || err);
+    }
   });
+
+  // Login
+  $('#loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = $('#loginEmail').value.trim();
+    const pass = $('#loginPass').value;
+    if (!email || !pass) return;
+    $('#loginMsg').textContent = 'Logging in...';
+    try {
+      let u;
+      if (DB.isRemote && DB.supabase) {
+        // Supabase login
+        const { data, error } = await DB.supabase.auth.signInWithPassword({ email, password: pass });
+        if (error) throw error;
+        u = { id: data.user.id, email };
+        setSession({ userId: u.id });
+        await DB.refresh();
+        render();
+      } else {
+        // Local: check user/pass (not secure, demo only)
+        u = await DB.loginUser(email, pass);
+        if (!u) throw new Error('Invalid credentials');
+        setSession({ userId: u.id });
+        await DB.refresh();
+        render();
+      }
+    } catch (err) {
+      $('#loginMsg').textContent = 'Login failed: ' + (err.message || err);
+    }
+  });
+
   $('#demoBtn').addEventListener('click', seedDemo);
-  $('#loginName').focus();
+  $('#demoBtn2').addEventListener('click', seedDemo);
+  $('#regName').focus();
 }
 
 // Main
