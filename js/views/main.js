@@ -15,25 +15,30 @@ export async function renderMain(root){
 
   const top = document.createElement('div');
   top.className = 'topbar';
-  top.innerHTML = `
-    <div class="hstack toolbar">
-      <span class="pill" title="current user">user: ${esc(me.name)}</span>
-      ${prefs.filterTag ? `<span class="pill">tag: #${esc(prefs.filterTag)} <a href="#" data-action="clear-tag" title="clear tag">✕</a></span>` : ''}
-      <span class="pill" title="total posts">posts: ${db.posts.length}</span>
-      <span class="pill" title="keyboard shortcuts">keys: <span class="kbd">/</span> <span class="kbd">n</span> <span class="kbd">j</span>/<span class="kbd">k</span> <span class="kbd">?</span></span>
-    </div>
-    <div class="hstack toolbar">
-      <input class="field" id="search" type="search" placeholder="search title/artist/tags..." style="width:240px" value="${esc(prefs.search)}" aria-label="search"/>
-      <select class="field" id="sort" style="width:150px" aria-label="sort order">
-        <option value="new" ${prefs.sort==='new'?'selected':''}>sort: newest</option>
-        <option value="likes" ${prefs.sort==='likes'?'selected':''}>sort: most liked</option>
-        <option value="comments" ${prefs.sort==='comments'?'selected':''}>sort: most commented</option>
-      </select>
-      <button class="btn icon" title="accent color" data-action="accent-pick">🎨</button>
-      <button class="btn icon" title="density" data-action="toggle-density">${prefs.density==='compact'?'▥':'▤'}</button>
-      <button class="btn btn-ghost" data-action="logout" title="logout">[ logout ]</button>
-    </div>
-  `;
+    // Show filtered post count if filter/search is active
+    let filteredCount = db.posts.length;
+    if (prefs.filterTag || prefs.search) {
+      const { getFilteredPosts } = await import('../feed.js');
+      filteredCount = getFilteredPosts().length;
+    }
+    top.innerHTML = `
+      <div class="hstack toolbar">
+        <span class="pill" title="current user">user: ${esc(me.name)}</span>
+        <span class="pill" title="total posts">posts: ${filteredCount}</span>
+        ${prefs.filterTag ? `<span class="pill">tag: #${esc(prefs.filterTag)} <a href="#" data-action="clear-tag" title="clear tag">✕</a></span>` : ''}
+      </div>
+      <div class="hstack toolbar">
+        <input class="field" id="search" type="search" placeholder="search title/artist/tags..." style="width:240px" value="${esc(prefs.search)}" aria-label="search"/>
+        <select class="field" id="sort" style="width:150px" aria-label="sort order">
+          <option value="new" ${prefs.sort==='new'?'selected':''}>sort: newest</option>
+          <option value="likes" ${prefs.sort==='likes'?'selected':''}>sort: most liked</option>
+          <option value="comments" ${prefs.sort==='comments'?'selected':''}>sort: most commented</option>
+        </select>
+        <button class="btn icon" title="accent color" data-action="accent-pick">🎨</button>
+        <button class="btn icon" title="density" data-action="toggle-density">${prefs.density==='compact'?'▥':'▤'}</button>
+        <button class="btn btn-ghost" data-action="logout" title="logout">[ logout ]</button>
+      </div>
+    `;
   root.appendChild(top);
 
   const grid = document.createElement('div');
@@ -45,7 +50,7 @@ export async function renderMain(root){
       <div class="hstack" style="justify-content:space-between">
         <div class="muted">feed</div>
         <div class="hstack">
-          <button class="btn btn-ghost" data-action="play-all">[ play all ${prefs.filterTag?('#'+esc(prefs.filterTag)):(prefs.search?('(search)'):'(all)')} ]</button>
+          <button class="btn btn-ghost" data-action="play-all">[ play all${prefs.filterTag ? ' #' + esc(prefs.filterTag) : (prefs.search ? ' (search)' : '')} ]</button>
           <button class="btn btn-ghost" data-action="show-help" title="keyboard shortcuts">[ help ]</button>
         </div>
       </div>

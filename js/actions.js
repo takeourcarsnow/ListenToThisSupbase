@@ -74,15 +74,13 @@ export async function onActionClick(e){
     const t = btn.dataset.tag;
     savePrefs({ filterTag: t, search: '' });
     state.page = 1;
-    renderFeed($('#feed'), $('#pager'));
-    renderTags($('#tags'));
+    await render();
   }
 
   if(action==='clear-tag'){
     savePrefs({filterTag: null});
     state.page = 1;
-    renderFeed($('#feed'), $('#pager'));
-    renderTags($('#tags'));
+    await render();
   }
 
   if(action==='q-prev'){ queuePrev(); }
