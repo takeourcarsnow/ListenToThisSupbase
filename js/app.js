@@ -920,37 +920,32 @@ async function seedDemo(){
 
   const samples = [
     {
-      title:'Khruangbin - Time (You and I)', artist:'Khruangbin',
-      url:'https://www.youtube.com/watch?v=AFCIxzyCiCo',
-      tags:['funk','groove','feelgood'], body:'Sunny grooves. Guitar tone is candy.',
+      title:'Selected Ambient Works 85 - 92', artist:'Aphex Twin',
+      url:'https://www.youtube.com/watch?v=Xw5AiRVqfqk',
+      tags:['idm','electronic','techno'], body:'Richard D James early work. A must hear.',
     },
     {
-      title:'Floating Points, Pharoah Sanders & The LSO — Promises', artist:'Album',
+      title:'Šlamantys', artist:'Mesijus',
       url:'https://open.spotify.com/track/64rMCuIiJVT49SjLhmrHdW',
-      tags:['ambient','jazz','orchestral'], body:'A patient, gorgeous slow-bloom.'
+      tags:['hiphop','rap','lithuanian'], body:'Lithuanian version of MF Doom.'
     },
     {
-      title:'Home – Resonance', artist:'Home',
+      title:'Pints of Guiness Make You Strong', artist:'Against Me!',
       url:'https://againstme.bandcamp.com/track/pints-of-guiness-make-you-strong',
-      tags:['synthwave','chill'], body:'The classic. If BC embed fails, open source link.'
-    },
-    {
-      title:'Direct mp3 demo', artist:'CC0',
-      url:'https://files.freemusicarchive.org/file/music/no_curator/Spinningmerkaba/Remix_Apprentice_Vol_1/Spinningmerkaba_-01-_You_And_I.mp3',
-      tags:['mp3','demo'], body:'Direct audio file demo.'
+      tags:['punk','folk'], body:'The punk classic!'
     },
     {
       title:'Kaleo - All the Pretty Girls (Live on KEXP)',
       artist:'Kaleo',
-      url:'https://www.youtube.com/watch?v=TwfuVZVVoTk',
-      tags:['blues','live'],
-      body:'Live acoustic session from KEXP.'
+      url:'https://www.youtube.com/watch?v=xy_fxxj1mMY',
+      tags:['jazz','bebop'],
+      body:'One of the greatest jazz albums of all time.'
     },
     {
-      title:'Nujabes - Feather (feat. Cise Starr & Akin)',
-      artist:'Nujabes',
+      title:'Mania',
+      artist:'ChildsMind',
       url:'https://soundcloud.com/childsmindmusic/mania',
-      tags:['hiphop','chillhop'], body:'SoundCloud oEmbed demo.'
+      tags:['electronic','techno'], body:'Some fun techno from Soundcloud.'
     }
   ];
 

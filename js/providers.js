@@ -170,48 +170,30 @@ export function buildEmbed(post, container, opts = {}) {
     return;
   }
 
-  // Bandcamp (oEmbed)
+  // Bandcamp (universal embed)
   if (p.provider === 'bandcamp') {
-    fetch(`https://bandcamp.com/oembed?format=json&url=${encodeURIComponent(post.url || p.id)}`)
-      .then(r => r.json())
-      .then(data => {
-        if (data && data.html) {
-          wrap.innerHTML = data.html;
-          const ifr = wrap.querySelector('iframe');
-          if (ifr) {
-            ifr.removeAttribute('width');
-            ifr.removeAttribute('height');
-            ifr.style.width = '100%';
-            ifr.style.aspectRatio = '1.9/1';
-            ifr.loading = 'lazy';
-            ifr.referrerPolicy = 'strict-origin-when-cross-origin';
-          }
-        } else {
-          fallbackLink(p.id, wrap, 'Open on Bandcamp');
-        }
-      })
-      .catch(() => fallbackLink(p.id, wrap, 'Open on Bandcamp'));
+    const url = post.url || p.id;
+    const embedUrl = `https://bandcamp.com/EmbeddedPlayer/?url=${encodeURIComponent(url)}&size=large&bgcol=ffffff&linkcol=0687f5&transparent=true`;
+    wrap.innerHTML = `
+      <iframe class="bc" style="width:100%; min-height:120px; max-height:450px;" frameborder="0" allowtransparency="true" allow="autoplay; encrypted-media"
+        src="${embedUrl}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+    `;
     return;
   }
 
-  // SoundCloud (oEmbed)
+  // SoundCloud (direct iframe embed)
   if (p.provider === 'soundcloud') {
-    fetch(`https://soundcloud.com/oembed?format=json&url=${encodeURIComponent(post.url || p.id)}`)
-      .then(r => r.json())
-      .then(data => {
-        if (data && data.html) {
-          wrap.innerHTML = data.html;
-          const ifr = wrap.querySelector('iframe');
-          if (ifr) {
-            ifr.style.width = '100%';
-            ifr.loading = 'lazy';
-            ifr.referrerPolicy = 'strict-origin-when-cross-origin';
-          }
-        } else {
-          fallbackLink(p.id, wrap, 'Open on SoundCloud');
-        }
-      })
-      .catch(() => fallbackLink(p.id, wrap, 'Open on SoundCloud'));
+    // Extract the track or playlist URL
+    const url = post.url || p.id;
+    // Build the SoundCloud player embed URL
+    // See https://developers.soundcloud.com/docs/api/html5-widget#examples
+    const playerUrl = `https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&color=%230066cc&auto_play=${opts.autoplay ? 'true' : 'false'}&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true&visual=true`;
+    wrap.innerHTML = `
+      <iframe class="sc" width="100%" height="166" scrolling="no" frameborder="no" allow="autoplay"
+        src="${playerUrl}"
+        style="width:100%; min-height:166px; max-height:450px;"
+        loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+    `;
     return;
   }
 
