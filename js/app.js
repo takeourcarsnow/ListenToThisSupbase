@@ -9,6 +9,7 @@ import { USE_SUPABASE } from './config.js';
 // Storage keys and prefs
 const SESSION_KEY = 'ascii.fm/session@v1';
 const PREF_KEY = 'ascii.fm/prefs@v2';
+const GUEST_KEY = 'ascii.fm/guest@v1';
 
 const defaultPrefs = {
   autoScroll: true,
@@ -55,32 +56,27 @@ function getSession(){ try{ return JSON.parse(localStorage.getItem(SESSION_KEY) 
 function setSession(s){ localStorage.setItem(SESSION_KEY, JSON.stringify(s)); }
 function clearSession(){ localStorage.removeItem(SESSION_KEY); }
 
+function isGuestMode(){ return localStorage.getItem(GUEST_KEY) === '1'; }
+function setGuestMode(on){ if(on) localStorage.setItem(GUEST_KEY, '1'); else localStorage.removeItem(GUEST_KEY); }
+
 async function currentUser() {
   const s = getSession();
   if (!s) return null;
-  // Guest session
-  if (s.guest) return { id: null, name: 'guest', isGuest: true };
-
   const db = DB.getAll();
-  let user = db.users.find(u => u.id === s.userId) || null;
-
-  // For Supabase, ensure we map the auth user to a users row (for userName lookup)
+  let user = db.users.find(u => u.id === s.userId);
   if (!user && DB.isRemote && DB.supabase && DB.supabase.auth && DB.supabase.auth.getUser) {
     try {
-      const { data } = await DB.supabase.auth.getUser();
-      const u = data?.user;
+      const authUser = await DB.supabase.auth.getUser();
+      const u = authUser?.data?.user;
       if (u) {
-        const name = u.user_metadata?.name || (u.email ? u.email.split('@')[0] : 'user');
+        const name = u.user_metadata?.name || u.email || 'user';
         user = { id: u.id, name, email: u.email };
-        // Ensure exists in users table/cache so comments don't show as anon
-        const exists = db.users.find(x => x.id === user.id);
-        if (!exists && DB.ensureUser) {
-          await DB.ensureUser(name);
-        }
+        // Ensure there is a row in the Supabase users table
+        try { await DB.ensureUser(name); } catch {}
       }
     } catch {}
   }
-  // fallback
+  // fallback: if still not found, return a minimal user from session
   if (!user && s.userId) {
     user = { id: s.userId, name: 'user' };
   }
@@ -90,7 +86,9 @@ async function currentUser() {
 function userName(id){
   const db = DB.getAll();
   const u = db.users.find(x=>x.id===id);
-  return u ? u.name : 'anon';
+  if(u) return u.name;
+  if(state.user && state.user.id === id) return state.user.name || 'user';
+  return 'anon';
 }
 
 // Root render
@@ -101,7 +99,7 @@ async function render() {
   applyDensity(prefs.density);
   const root = $('#app');
   root.innerHTML = '';
-  if (!state.user) return renderLogin(root);
+  if (!state.user && !isGuestMode()) return renderLogin(root);
   return renderMain(root);
 }
 
@@ -145,7 +143,7 @@ function renderLogin(root) {
     </form>
     <div class="sep"></div>
     <div class="hstack" style="justify-content:center">
-      <button class="btn btn-ghost" id="guestBtn" type="button">[ continue as guest (read only) ]</button>
+      <button class="btn btn-ghost" id="guestBtn" type="button">[ continue as guest (read-only) ]</button>
     </div>
   `;
   root.appendChild(div);
@@ -160,11 +158,11 @@ function renderLogin(root) {
     $('#loginForm').style.display = 'none';
   };
 
-  // Continue as guest
-  $('#guestBtn').addEventListener('click', () => {
-    setSession({ guest: true });
+  // Guest button
+  $('#guestBtn').onclick = () => {
+    setGuestMode(true);
     render();
-  });
+  };
 
   // Register
   $('#registerForm').addEventListener('submit', async (e) => {
@@ -184,12 +182,14 @@ function renderLogin(root) {
         u = { id: userId, name, email };
         await DB.ensureUser(name);
         setSession({ userId: u.id });
+        setGuestMode(false);
         await DB.refresh();
         render();
       } else {
         // Local: store user with email/pass (not secure, demo only)
         u = await DB.ensureUser(name, email, pass);
         setSession({ userId: u.id });
+        setGuestMode(false);
         await DB.refresh();
         render();
       }
@@ -214,6 +214,7 @@ function renderLogin(root) {
         const userId = data.session?.user?.id || data.user?.id;
         u = { id: userId, email };
         setSession({ userId: u.id });
+        setGuestMode(false);
         await DB.refresh();
         render();
       } else {
@@ -221,6 +222,7 @@ function renderLogin(root) {
         u = await DB.loginUser(email, pass);
         if (!u) throw new Error('Invalid credentials');
         setSession({ userId: u.id });
+        setGuestMode(false);
         await DB.refresh();
         render();
       }
@@ -235,14 +237,14 @@ function renderLogin(root) {
 // Main
 async function renderMain(root){
   const db = DB.getAll();
-  const me = state.user; // important: do not override with a Promise
+  const me = state.user; // DO NOT overwrite with a Promise
   const prefs = loadPrefs();
 
   const top = document.createElement('div');
   top.className = 'topbar';
   top.innerHTML = `
     <div class="hstack toolbar">
-      <span class="pill" title="current user">user: ${esc(me.name)}</span>
+      <span class="pill" title="current user">user: ${esc(me ? me.name : 'guest')}${me ? '' : ' (read-only)'}</span>
       ${prefs.filterTag ? `<span class="pill">tag: #${esc(prefs.filterTag)} <a href="#" data-action="clear-tag" title="clear tag">✕</a></span>` : ''}
       <span class="pill" title="total posts">posts: ${db.posts.length}</span>
       <span class="pill" title="keyboard shortcuts">keys: <span class="kbd">/</span> <span class="kbd">n</span> <span class="kbd">j</span>/<span class="kbd">k</span> <span class="kbd">?</span></span>
@@ -256,7 +258,10 @@ async function renderMain(root){
       </select>
       <button class="btn icon" title="accent color" data-action="accent-pick">🎨</button>
       <button class="btn icon" title="density" data-action="toggle-density">${prefs.density==='compact'?'▥':'▤'}</button>
-      <button class="btn btn-ghost" id="${me.isGuest ? 'loginBtn' : 'logoutBtn'}" title="${me.isGuest ? 'login' : 'logout'}">[ ${me.isGuest ? 'login' : 'logout'} ]</button>
+      ${me
+        ? `<button class="btn btn-ghost" id="logoutBtn" title="logout">[ logout ]</button>`
+        : `<button class="btn btn-ghost" id="goLoginBtn" title="login / register">[ login / register ]</button>`
+      }
     </div>
   `;
   root.appendChild(top);
@@ -300,60 +305,85 @@ async function renderMain(root){
   const right = document.createElement('div');
   const storageText = await storageInfo();
 
-  const composeHTML = me.isGuest ? `
-    <div class="box">
-      <div class="muted small">compose</div>
-      <div class="notice small">Guest mode: log in to post or comment.</div>
-      <button class="btn" data-action="go-login">[ login / register ]</button>
-    </div>
-  ` : `
-    <div class="box">
-      <div class="muted small">compose</div>
-      <form id="postForm" class="stack" autocomplete="off">
-        <input class="field" id="f_title" placeholder="Title (song or album)" required maxlength="120" />
-        <input class="field" id="f_artist" placeholder="Artist" maxlength="120"/>
-        <input class="field" id="f_url" placeholder="Link (YouTube / Spotify / Bandcamp / SoundCloud / direct .mp3)" required/>
-        <input class="field" id="f_tags" placeholder="tags (space/comma or #tag #chill #2020)"/>
-        <textarea class="field" id="f_body" rows="4" placeholder="Why should we listen?"></textarea>
-        <div class="hstack">
-          <button class="btn" type="submit">[ post ]</button>
-          <button class="btn btn-ghost" type="button" id="previewBtn">[ preview player ]</button>
+  if (me) {
+    right.innerHTML = `
+      <div class="box">
+        <div class="muted small">compose</div>
+        <form id="postForm" class="stack" autocomplete="off">
+          <input class="field" id="f_title" placeholder="Title (song or album)" required maxlength="120" />
+          <input class="field" id="f_artist" placeholder="Artist" maxlength="120"/>
+          <input class="field" id="f_url" placeholder="Link (YouTube / Spotify / Bandcamp / SoundCloud / direct .mp3)" required/>
+          <input class="field" id="f_tags" placeholder="tags (space/comma or #tag #chill #2020)"/>
+          <textarea class="field" id="f_body" rows="4" placeholder="Why should we listen?"></textarea>
+          <div class="hstack">
+            <button class="btn" type="submit">[ post ]</button>
+            <button class="btn btn-ghost" type="button" id="previewBtn">[ preview player ]</button>
+          </div>
+          <div id="preview" class="player" aria-live="polite"></div>
+        </form>
+      </div>
+      <div class="box" id="tagsBox">
+        <div class="hstack" style="justify-content:space-between; align-items:center">
+          <div class="muted small">tags</div>
+          ${prefs.filterTag ? `<button class="btn btn-ghost small" data-action="clear-tag">[ clear tag ]</button>`: ''}
         </div>
-        <div id="preview" class="player" aria-live="polite"></div>
-      </form>
-    </div>
-  `;
+        <div id="tags" class="hstack" style="margin-top:6px; flex-wrap:wrap"></div>
+      </div>
+      <div class="box">
+        <div class="muted small">data & settings</div>
+        <div class="hstack" style="margin-top:6px; flex-wrap:wrap">
+          <button class="btn" data-action="export">[ export json ]</button>
+          <label class="btn btn-ghost">
+            <input type="file" id="importFile" accept="application/json" class="sr-only" />
+            <span>[ import (replace) ]</span>
+          </label>
+          <button class="btn btn-ghost" data-action="reset">[ reset all ]</button>
+        </div>
+        <div class="small muted" style="margin-top:8px">${storageText.text}</div>
+        ${storageText.percent !== null ?
+          `<div class="meter" style="margin-top:6px"><span style="width:${storageText.percent}%"></span></div>` : ''
+        }
+      </div>
+      <div class="notice small">
+        Tip: Works with YouTube (watch / youtu.be / shorts), Spotify (tracks/albums/playlists), Bandcamp (page or EmbeddedPlayer URL), SoundCloud, or direct audio files. ${DB.isRemote ? 'Data is synced with Supabase.' : 'Everything stays in LocalStorage.'}
+      </div>
+    `;
+  } else {
+    right.innerHTML = `
+      <div class="box">
+        <div class="muted small">compose</div>
+        <div class="notice small">You are in guest read-only mode. Login to post, like, or comment.</div>
+        <button class="btn btn-ghost" data-action="go-login">[ login / register ]</button>
+      </div>
+      <div class="box" id="tagsBox">
+        <div class="hstack" style="justify-content:space-between; align-items:center">
+          <div class="muted small">tags</div>
+          ${prefs.filterTag ? `<button class="btn btn-ghost small" data-action="clear-tag">[ clear tag ]</button>`: ''}
+        </div>
+        <div id="tags" class="hstack" style="margin-top:6px; flex-wrap:wrap"></div>
+      </div>
+      <div class="box">
+        <div class="muted small">data & settings</div>
+        <div class="hstack" style="margin-top:6px; flex-wrap:wrap">
+          <button class="btn" data-action="export">[ export json ]</button>
+          <label class="btn btn-ghost">
+            <input type="file" id="importFile" accept="application/json" class="sr-only" />
+            <span>[ import (replace) ]</span>
+          </label>
+          <button class="btn btn-ghost" data-action="reset">[ reset all ]</button>
+        </div>
+        <div class="small muted" style="margin-top:8px">${storageText.text}</div>
+        ${storageText.percent !== null ?
+          `<div class="meter" style="margin-top:6px"><span style="width:${storageText.percent}%"></span></div>` : ''
+        }
+      </div>
+      <div class="notice small">
+        Tip: You can browse, search, and play posts. Login to like or comment. ${DB.isRemote ? 'Data is synced with Supabase.' : 'Local mode available.'}
+      </div>
+    `;
+  }
 
-  right.innerHTML = `
-    ${composeHTML}
-    <div class="box" id="tagsBox">
-      <div class="hstack" style="justify-content:space-between; align-items:center">
-        <div class="muted small">tags</div>
-        ${prefs.filterTag ? `<button class="btn btn-ghost small" data-action="clear-tag">[ clear tag ]</button>`: ''}
-      </div>
-      <div id="tags" class="hstack" style="margin-top:6px; flex-wrap:wrap"></div>
-    </div>
-    <div class="box">
-      <div class="muted small">data & settings</div>
-      <div class="hstack" style="margin-top:6px; flex-wrap:wrap">
-        <button class="btn" data-action="export">[ export json ]</button>
-        <label class="btn btn-ghost">
-          <input type="file" id="importFile" accept="application/json" class="sr-only" />
-          <span>[ import (replace) ]</span>
-        </label>
-        <button class="btn btn-ghost" data-action="reset">[ reset all ]</button>
-      </div>
-      <div class="small muted" style="margin-top:8px">${storageText.text}</div>
-      ${storageText.percent !== null ?
-        `<div class="meter" style="margin-top:6px"><span style="width:${storageText.percent}%"></span></div>` : ''
-      }
-    </div>
-    <div class="notice small">
-      Tip: Works with YouTube (watch / youtu.be / shorts), Spotify (tracks/albums/playlists), Bandcamp (page or EmbeddedPlayer URL), SoundCloud, or direct audio files. ${DB.isRemote ? 'Data is synced with Supabase.' : 'Everything stays in LocalStorage.'}
-    </div>
-  `;
   grid.appendChild(right);
-
   root.appendChild(grid);
 
   // FEED
@@ -364,11 +394,22 @@ async function renderMain(root){
   // Dock initial
   updateDock();
 
-  // Auth button
+  // Events
   const logoutBtn = $('#logoutBtn');
-  const loginBtn = $('#loginBtn');
-  if (logoutBtn) logoutBtn.addEventListener('click', ()=>{ clearSession(); render(); });
-  if (loginBtn) loginBtn.addEventListener('click', ()=>{ clearSession(); render(); });
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', ()=>{
+      clearSession();
+      setGuestMode(false);
+      render();
+    });
+  }
+  const goLoginBtn = $('#goLoginBtn');
+  if (goLoginBtn) {
+    goLoginBtn.addEventListener('click', ()=>{
+      setGuestMode(false);
+      render();
+    });
+  }
 
   $('#search').addEventListener('input', debounce((e)=>{
     savePrefs({search: e.target.value});
@@ -382,8 +423,9 @@ async function renderMain(root){
     renderFeed($('#feed'), $('#pager'));
   });
 
-  if (!me.isGuest) {
-    right.querySelector('#previewBtn').addEventListener('click', ()=>{
+  const previewBtn = right.querySelector('#previewBtn');
+  if (previewBtn) {
+    previewBtn.addEventListener('click', ()=>{
       const url = $('#f_url').value.trim();
       const pv = parseProvider(url);
       const preview = $('#preview');
@@ -392,9 +434,11 @@ async function renderMain(root){
       const fakePost = { provider: pv, url };
       buildEmbed(fakePost, preview);
     });
+  }
 
-    // Autofill metadata from oEmbed on URL input
-    const f_url = right.querySelector('#f_url');
+  // Autofill metadata from oEmbed on URL input (only if composer is visible)
+  const f_url = right.querySelector('#f_url');
+  if (f_url) {
     let lastMetaUrl = '';
     let lastAutofill = { title: '', artist: '' };
     const f_title = right.querySelector('#f_title');
@@ -432,9 +476,10 @@ async function renderMain(root){
         }
       }
     });
-
-    right.querySelector('#postForm').addEventListener('submit', onCreatePost);
   }
+
+  const postForm = right.querySelector('#postForm');
+  if (postForm) postForm.addEventListener('submit', onCreatePost);
 
   root.addEventListener('click', onActionClick);
   root.addEventListener('submit', onDelegatedSubmit);
@@ -526,15 +571,25 @@ function renderFeed(el, pager){
 function renderPostHTML(p){
   const db = DB.getAll();
   const user = db.users.find(u=>u.id===p.userId);
-  const me = state.user || {};
-  const liked = (p.likes||[]).includes(me.id);
+  const me = state.user;
+  const liked = me ? (p.likes||[]).includes(me.id) : false;
   const tgs = (p.tags||[]).map(t=>
     `<a href="#" class="tag small" data-action="filter-tag" data-tag="${esc(t)}">#${esc(t)}</a>`
   ).join(' ');
   const perma = `${location.origin ? (location.origin + location.pathname) : location.pathname}#post-${p.id}`;
-  const canEdit = !!me.id && p.userId === me.id && !me.isGuest;
+  const canEdit = !!(me && p.userId === me.id);
   const likeCount = p.likes ? p.likes.length : 0;
   const commentsCount = p.comments ? p.comments.length : 0;
+
+  const commentsHTML = (p.comments||[]).map(c=> renderCommentHTML(c, p.id)).join('');
+
+  const commentFormHTML = me ? `
+    <form class="hstack" data-action="comment-form" data-post="${p.id}">
+      <label class="sr-only" for="c-${p.id}">Write a comment</label>
+      <input class="field" id="c-${p.id}" placeholder="write a comment…" maxlength="500" />
+      <button class="btn">[ send ]</button>
+    </form>
+  ` : `<div class="muted small">login to comment</div>`;
 
   return `
 <article class="post" id="post-${p.id}" data-post="${p.id}" aria-label="${esc(p.title)}">
@@ -562,28 +617,19 @@ function renderPostHTML(p){
   <div class="comment-box" id="cbox-${p.id}">
     <div class="sep"></div>
     <div id="comments-${p.id}">
-      ${(p.comments||[]).map(c=> renderCommentHTML(c)).join('')}
+      ${commentsHTML}
     </div>
-    ${me.isGuest ? `
-      <div class="small muted">login to comment</div>
-    ` : `
-      <form class="hstack" data-action="comment-form" data-post="${p.id}">
-        <label class="sr-only" for="c-${p.id}">Write a comment</label>
-        <input class="field" id="c-${p.id}" placeholder="write a comment…" maxlength="500" />
-        <button class="btn">[ send ]</button>
-      </form>
-    `}
+    ${commentFormHTML}
   </div>
 </article>
 `;
 }
 
-function renderCommentHTML(c){
-  const meId = state.user && state.user.id;
-  const canDel = !!meId && c.userId === meId && !state.user.isGuest;
-  return `<div class="comment small" data-cid="${esc(c.id)}">
+function renderCommentHTML(c, postId){
+  const canDel = state.user && c.userId === state.user.id;
+  return `<div class="comment small" data-comment="${c.id}" data-post="${postId}">
     <span class="muted">${fmtTime(c.createdAt)}</span> <b>${esc(userName(c.userId))}</b>: ${esc(c.text)}
-    ${canDel ? ` <button class="btn btn-ghost small" data-action="delete-comment" data-cid="${esc(c.id)}">[ delete ]</button>` : ''}
+    ${canDel ? ` <button class="btn btn-ghost small" data-action="delete-comment" data-post="${postId}" data-comment="${c.id}">[ delete ]</button>` : ''}
   </div>`;
 }
 
@@ -592,6 +638,7 @@ async function onCreatePost(e){
   e.preventDefault();
   const db = DB.getAll();
   const me = state.user;
+  if (!me) { toast($('#app'), 'login to post', true); return; }
   const title = $('#f_title').value.trim();
   const artist = $('#f_artist').value.trim();
   let url = $('#f_url').value.trim();
@@ -691,7 +738,7 @@ async function onActionClick(e){
   }
 
   if(action==='like' && postId){
-    if (state.user?.isGuest) { toast(card, 'login to like', true); return; }
+    if (!state.user) { toast(card||root, 'login to like', true); return; }
     const updated = await DB.toggleLike(postId, state.user.id);
     if(updated && card) card.outerHTML = renderPostHTML(updated);
   }
@@ -699,25 +746,34 @@ async function onActionClick(e){
   if(action==='comment' && postId){
     const cbox = document.getElementById('cbox-'+postId);
     cbox.classList.toggle('active');
-    if(cbox.classList.contains('active') && !state.user?.isGuest){
+    if(cbox.classList.contains('active') && state.user){
       const inp = cbox.querySelector('input.field'); inp?.focus();
     }
   }
 
-  if(action==='delete-comment' && postId){
-    const cid = btn.dataset.cid;
+  if(action==='delete-comment'){
+    const pid = btn.dataset.post || postId;
+    const cid = btn.dataset.comment;
+    if(!pid || !cid) return;
+    if(!state.user){ toast(card||root, 'login to delete comments', true); return; }
     const db = DB.getAll();
-    const p = db.posts.find(x=>x.id===postId);
-    const com = (p?.comments||[]).find(c=>c.id===cid);
-    if(!com) return;
-    if(!state.user || com.userId !== state.user.id){ toast(card, 'you can only delete your comments', true); return; }
+    const p = db.posts.find(x=>x.id===pid);
+    if(!p) return;
+    const com = (p.comments||[]).find(c=>c.id===cid);
+    if(!com){ return; }
+    if(com.userId !== state.user.id){ toast(card||root, 'you can only delete your comments', true); return; }
     if(confirm('Delete this comment?')){
-      await DB.deleteComment(postId, cid);
-      const p2 = DB.getAll().posts.find(x=>x.id===postId);
-      const cwrap = document.getElementById('comments-'+postId);
-      cwrap.innerHTML = (p2.comments||[]).map(x=>renderCommentHTML(x)).join('');
+      await DB.deleteComment(pid, cid);
+      const updated = DB.getAll().posts.find(x=>x.id===pid);
+      const cwrap = document.getElementById('comments-'+pid);
+      cwrap.innerHTML = (updated?.comments||[]).map(x=>renderCommentHTML(x, pid)).join('');
       liveSay('comment deleted');
     }
+  }
+
+  if(action==='go-login'){
+    setGuestMode(false);
+    render();
   }
 
   if(action==='share'){
@@ -813,6 +869,7 @@ async function onActionClick(e){
       localStorage.removeItem('ascii.fm/v1');
       localStorage.removeItem(PREF_KEY);
       localStorage.removeItem(SESSION_KEY);
+      localStorage.removeItem(GUEST_KEY);
       PREFS = null;
       state.queue = [];
       state.qIndex = 0;
@@ -835,10 +892,6 @@ async function onActionClick(e){
   if(action==='show-help'){
     $('#help').classList.add('active');
   }
-  if(action==='go-login'){
-    clearSession();
-    render();
-  }
 }
 
 async function onDelegatedSubmit(e){
@@ -848,7 +901,7 @@ async function onDelegatedSubmit(e){
   const pid = form.dataset.post;
 
   if(form.dataset.action === 'comment-form'){
-    if (state.user?.isGuest) { toast(form, 'login to comment', true); return; }
+    if(!state.user){ toast($('#app'), 'login to comment', true); return; }
     const input = form.querySelector('input');
     const text = input.value.trim();
     if(!text) return;
@@ -857,7 +910,7 @@ async function onDelegatedSubmit(e){
     input.value = '';
     const p = DB.getAll().posts.find(x=>x.id===pid);
     const cwrap = document.getElementById('comments-'+pid);
-    cwrap.innerHTML = (p.comments||[]).map(x=>renderCommentHTML(x)).join('');
+    cwrap.innerHTML = (p.comments||[]).map(x=>renderCommentHTML(x, pid)).join('');
     liveSay('comment added');
     return;
   }
@@ -1149,13 +1202,12 @@ function onKey(e){
   let focusCard = currentEl || posts[0];
 
   if(e.key === '/'){ e.preventDefault(); $('#search')?.focus(); return; }
-  if(e.key.toLowerCase() === 'n'){ if (!state.user?.isGuest) { $('#f_title')?.focus(); } return; }
+  if(e.key.toLowerCase() === 'n'){ $('#f_title')?.focus(); return; }
   if(e.key.toLowerCase() === 'j'){ e.preventDefault(); queueNext(false); return; }
   if(e.key.toLowerCase() === 'k'){ e.preventDefault(); queuePrev(); return; }
   if(e.key === '?'){ $('#help').classList.toggle('active'); return; }
   if(e.key.toLowerCase() === 'l' && focusCard){
     const likeBtn = focusCard.querySelector('[data-action="like"]');
-    if (state.user?.isGuest) { toast(focusCard, 'login to like', true); return; }
     likeBtn?.click(); return;
   }
   if(e.key.toLowerCase() === 'o' && focusCard){
@@ -1168,14 +1220,13 @@ function onKey(e){
 document.addEventListener('dblclick', (e)=>{
   const card = e.target.closest('.post');
   if(!card) return;
-  if (state.user?.isGuest) { toast(card, 'login to like', true); return; }
   const likeBtn = card.querySelector('[data-action="like"]');
   likeBtn?.click();
 });
 
 // Cross-tab sync
 window.addEventListener('storage', async (ev)=>{
-  if(ev.key === PREF_KEY || ev.key === SESSION_KEY){
+  if(ev.key === PREF_KEY || ev.key === SESSION_KEY || ev.key === GUEST_KEY){
     await DB.refresh();
     render();
   }

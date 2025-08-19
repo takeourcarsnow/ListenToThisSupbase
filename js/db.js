@@ -95,8 +95,8 @@ class LocalAdapter {
   async deleteComment(postId, commentId){
     await this.init();
     const p = this.cache.posts.find(x=>x.id===postId);
-    if(!p || !Array.isArray(p.comments)) return null;
-    p.comments = p.comments.filter(c => c.id !== commentId);
+    if(!p) return null;
+    p.comments = (p.comments || []).filter(c => c.id !== commentId);
     await this._save();
     return p.comments;
   }
@@ -239,7 +239,7 @@ class SupabaseAdapter {
   async deleteComment(id, commentId){
     const cur = this.cache.posts.find(p=>p.id===id);
     if(!cur) return null;
-    const comments = Array.isArray(cur.comments) ? cur.comments.filter(c => c.id !== commentId) : [];
+    const comments = (cur.comments || []).filter(c => c.id !== commentId);
     const { error } = await this.supabase.from('posts').update({ comments }).eq('id', id);
     if(error) console.error('deleteComment error', error);
     await this.refresh();
