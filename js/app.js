@@ -126,7 +126,7 @@ async function renderMain(root){
   top.innerHTML = `
     <div class="hstack toolbar">
       <span class="pill" title="current user">user: ${esc(me.name)}</span>
-      ${prefs.filterTag ? `<span class="pill">tag: #${esc(prefs.filterTag)} <a href="#" data-action="clear-tag" title="clear tag">✕</a></span>`:''}
+      ${prefs.filterTag ? `<span class="pill">tag: #${esc(prefs.filterTag)} <a href="#" data-action="clear-tag" title="clear tag">✕</a></span>` : ''}
       <span class="pill" title="total posts">posts: ${db.posts.length}</span>
       <span class="pill" title="keyboard shortcuts">keys: <span class="kbd">/</span> <span class="kbd">n</span> <span class="kbd">j</span>/<span class="kbd">k</span> <span class="kbd">?</span></span>
     </div>
@@ -174,9 +174,7 @@ async function renderMain(root){
           </label>
         </div>
         <div class="small">
-          <span id="nowPlaying" class="muted"></span>
-          · queue <span id="qPos">0</span>/<span id="qLen">0</span>
-          ${prefs.filterTag?` · tag: #${esc(prefs.filterTag)}`:''}
+          <span id="nowPlaying" class="muted"></span> · queue <span id="qPos">0</span>/<span id="qLen">0</span>${prefs.filterTag? ` · tag: #${esc(prefs.filterTag)}`:''}
         </div>
       </div>
     </div>
@@ -204,7 +202,7 @@ async function renderMain(root){
     <div class="box" id="tagsBox">
       <div class="hstack" style="justify-content:space-between; align-items:center">
         <div class="muted small">tags</div>
-        ${prefs.filterTag ? `<button class="btn btn-ghost small" data-action="clear-tag">[ clear tag ]</button>` : ''}
+        ${prefs.filterTag ? `<button class="btn btn-ghost small" data-action="clear-tag">[ clear tag ]</button>`: ''}
       </div>
       <div id="tags" class="hstack" style="margin-top:6px; flex-wrap:wrap"></div>
     </div>
@@ -219,9 +217,9 @@ async function renderMain(root){
         <button class="btn btn-ghost" data-action="reset">[ reset all ]</button>
       </div>
       <div class="small muted" style="margin-top:8px">${storageText.text}</div>
-      ${storageText.percent !== null ? `
-        <div class="meter" style="margin-top:6px"><span style="width:${storageText.percent}%"></span></div>
-      `:''}
+      ${storageText.percent !== null ?
+        `<div class="meter" style="margin-top:6px"><span style="width:${storageText.percent}%"></span></div>` : ''
+      }
     </div>
     <div class="notice small">
       Tip: Works with YouTube (watch / youtu.be / shorts), Spotify (tracks/albums/playlists), Bandcamp (page or EmbeddedPlayer URL), SoundCloud, or direct audio files. ${DB.isRemote ? 'Data is synced with Supabase.' : 'Everything stays in LocalStorage.'}
@@ -260,7 +258,7 @@ async function renderMain(root){
     const preview = $('#preview');
     if(!url){ preview.classList.remove('active'); preview.innerHTML=''; return; }
     preview.classList.add('active');
-    const fakePost = { provider: pv };
+    const fakePost = { provider: pv, url };
     buildEmbed(fakePost, preview);
   });
 
@@ -288,7 +286,9 @@ function renderTags(el){
     .sort((a,b)=> b[1]-a[1] || a[0].localeCompare(b[0]))
     .slice(0,80);
   if(top.length===0) { el.innerHTML = '<span class="muted small">no tags yet</span>'; return; }
-  el.innerHTML = top.map(([t,c])=> `<span class="tag small" data-action="filter-tag" data-tag="${esc(t)}">#${esc(t)} <span class="muted">(${c})</span></span>`).join(' ');
+  el.innerHTML = top.map(([t,c])=>
+    `<span class="tag small" data-action="filter-tag" data-tag="${esc(t)}">#${esc(t)} <span class="muted">(${c})</span></span>`
+  ).join(' ');
 }
 
 function getFilteredPosts(){
@@ -303,9 +303,9 @@ function getFilteredPosts(){
     const q = prefs.search.toLowerCase();
     posts = posts.filter(p=>{
       return (p.title||'').toLowerCase().includes(q)
-          || (p.artist||'').toLowerCase().includes(q)
-          || (p.tags||[]).some(t=>t.includes(q))
-          || (p.body||'').toLowerCase().includes(q);
+        || (p.artist||'').toLowerCase().includes(q)
+        || (p.tags||[]).some(t=>t.includes(q))
+        || (p.body||'').toLowerCase().includes(q);
     });
   }
   if(prefs.sort === 'likes'){
@@ -356,54 +356,54 @@ function renderPostHTML(p){
   const user = db.users.find(u=>u.id===p.userId);
   const me = state.user;
   const liked = (p.likes||[]).includes(me.id);
-  const tgs = (p.tags||[]).map(t=> `<a href="#" class="tag small" data-action="filter-tag" data-tag="${esc(t)}">#${esc(t)}</a>`).join(' ');
+  const tgs = (p.tags||[]).map(t=>
+    `<a href="#" class="tag small" data-action="filter-tag" data-tag="${esc(t)}">#${esc(t)}</a>`
+  ).join(' ');
   const perma = `${location.origin ? (location.origin + location.pathname) : location.pathname}#post-${p.id}`;
   const canEdit = p.userId === me.id;
-  return `
-    <article class="post" id="post-${p.id}" data-post="${p.id}" aria-label="${esc(p.title)}">
-      <div class="title">${esc(p.title)} ${p.artist?`<span class="muted thin">by ${esc(p.artist)}</span>`:''}</div>
-      <div class="small meta">
-        <span class="muted">posted by ${esc(user ? user.name : 'anon')}</span>
-        <span class="muted dot">·</span>
-        <span class="muted">${fmtTime(p.createdAt)}</span>
-        ${tgs?`<span class="muted dot">·</span> ${tgs}`:''}
-      </div>
-      ${p.body?`<div class="sep"></div><div>${esc(p.body)}</div>`:''}
-      <div class="actions hstack" style="margin-top:8px">
-        <button class="btn" data-action="toggle-player">[ play ]</button>
-        <button class="btn ${liked?'like-on':''}" data-action="like" aria-pressed="${liked}" title="like">[ ♥ ${p.likes.length} ]</button>
-        <button class="btn" data-action="comment" title="comments">[ comments ${p.comments.length} ]</button>
-        <button class="btn btn-ghost" data-action="queue" title="add to queue">[ add to queue ]</button>
-        <button class="btn btn-ghost" data-action="share" data-perma="${esc(perma)}" title="share/copy link">[ share ]</button>
-        <a class="btn btn-ghost" href="${esc(p.url)}" target="_blank" rel="noopener noreferrer">[ open src ]</a>
-        ${canEdit ? `<button class="btn btn-ghost" data-action="edit">[ edit ]</button>
-                     <button class="btn btn-ghost" data-action="delete">[ delete ]</button>`:''}
-      </div>
-      <div class="player" id="player-${p.id}" aria-label="player"></div>
+  const likeCount = p.likes ? p.likes.length : 0;
+  const commentsCount = p.comments ? p.comments.length : 0;
 
-      <div class="comment-box" id="cbox-${p.id}">
-        <div class="sep"></div>
-        <div id="comments-${p.id}">
-          ${(p.comments||[]).map(c=> renderCommentHTML(c)).join('')}
-        </div>
-        <form class="hstack" data-action="comment-form" data-post="${p.id}">
-          <label class="sr-only" for="c-${p.id}">Write a comment</label>
-          <input class="field" id="c-${p.id}" placeholder="write a comment…" maxlength="500" />
-          <button class="btn">[ send ]</button>
-        </form>
-      </div>
-    </article>
-  `;
+  return `
+<article class="post" id="post-${p.id}" data-post="${p.id}" aria-label="${esc(p.title)}">
+  <div class="title">${esc(p.title)} ${p.artist?`<span class="muted thin">by ${esc(p.artist)}</span>`:''}</div>
+  <div class="small meta">
+    <span class="muted">posted by ${esc(user ? user.name : 'anon')}</span>
+    <span class="muted dot">·</span>
+    <span class="muted">${fmtTime(p.createdAt)}</span>
+    ${tgs?`<span class="muted dot">·</span> ${tgs}`:''}
+  </div>
+  ${p.body?`<div class="sep"></div><div>${esc(p.body)}</div>`:''}
+  <div class="actions hstack" style="margin-top:8px">
+    <button class="btn" data-action="toggle-player">[ play ]</button>
+    <button class="btn ${liked?'like-on':''}" data-action="like" aria-pressed="${liked}" title="like">[ ♥ ${likeCount} ]</button>
+    <button class="btn" data-action="comment" title="comments">[ comments ${commentsCount} ]</button>
+    <button class="btn btn-ghost" data-action="queue" title="add to queue">[ add to queue ]</button>
+    <button class="btn btn-ghost" data-action="share" data-perma="${esc(perma)}" title="share/copy link">[ share ]</button>
+    <a class="btn btn-ghost" href="${esc(p.url)}" target="_blank" rel="noopener noreferrer">[ open src ]</a>
+    ${canEdit ? `
+      <button class="btn btn-ghost" data-action="edit">[ edit ]</button>
+      <button class="btn btn-ghost" data-action="delete">[ delete ]</button>
+    `:''}
+  </div>
+  <div class="player" id="player-${p.id}" aria-label="player"></div>
+  <div class="comment-box" id="cbox-${p.id}">
+    <div class="sep"></div>
+    <div id="comments-${p.id}">
+      ${(p.comments||[]).map(c=> renderCommentHTML(c)).join('')}
+    </div>
+    <form class="hstack" data-action="comment-form" data-post="${p.id}">
+      <label class="sr-only" for="c-${p.id}">Write a comment</label>
+      <input class="field" id="c-${p.id}" placeholder="write a comment…" maxlength="500" />
+      <button class="btn">[ send ]</button>
+    </form>
+  </div>
+</article>
+`;
 }
 
 function renderCommentHTML(c){
-  return `
-    <div class="comment small">
-      <span class="muted">${fmtTime(c.createdAt)}</span>
-      <b>${esc(userName(c.userId))}</b>:
-      ${esc(c.text)}
-    </div>
-  `;
+  return `<div class="comment small"> <span class="muted">${fmtTime(c.createdAt)}</span> <b>${esc(userName(c.userId))}</b>: ${esc(c.text)} </div>`;
 }
 
 // Post creation
@@ -488,6 +488,8 @@ async function onActionClick(e){
     const active = pl.classList.contains('active');
     if(active){
       pl.classList.remove('active');
+      // cleanup existing embeds
+      try { pl._cleanup && pl._cleanup(); } catch {}
       pl.innerHTML='';
       card.classList.remove('is-playing');
     }else{
@@ -705,8 +707,8 @@ function openEditInline(postId){
 function updateDock(showIfHidden=false){
   const dock = $('#dock');
   const len = state.queue.length;
-  $('#qLen') && ($('#qLen').textContent = len);
-  $('#qPos') && ($('#qPos').textContent = len ? (state.qIndex+1) : 0);
+  $('#qLen') && ($('#qLen').textContent = String(len));
+  $('#qPos') && ($('#qPos').textContent = String(len ? (state.qIndex+1) : 0));
   const prefs = loadPrefs();
   const shuffleBtn = $('[data-action="q-shuffle"]');
   if(shuffleBtn){ shuffleBtn.setAttribute('aria-pressed', String(!!prefs.shuffle)); }
@@ -834,7 +836,7 @@ async function seedDemo(){
     },
     {
       title:'Direct mp3 demo', artist:'CC0',
-      url:'https://files.freemusicarchive.org/file/music/no_curator/Spinningmerkaba/Remix_Apprentice_Vol_1/Spinningmerkaba_-_01_-_You_And_I.mp3',
+      url:'https://files.freemusicarchive.org/file/music/no_curator/Spinningmerkaba/Remix_Apprentice_Vol_1/Spinningmerkaba_-01-_You_And_I.mp3',
       tags:['mp3','demo'], body:'Direct audio file demo.'
     },
     {
