@@ -1,10 +1,15 @@
+
 import DB from './db.js';
 import { parseProvider, buildEmbed } from './providers.js';
 import {
   $, $$, debounce, safeClone, fmtTime, uid, esc, liveSay,
   copyText, toast, approxSize, fmtBytes, applyAccent, applyDensity
 } from './utils.js';
-import { USE_SUPABASE } from './config.js';
+import { USE_SUPABASE, SUPABASE_URL, SUPABASE_ANON_KEY } from './config.js';
+
+// Supabase Auth client
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+const supabase = USE_SUPABASE ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 // Storage keys and prefs
 const SESSION_KEY = 'ascii.fm/session@v1';
@@ -30,7 +35,8 @@ const state = {
   page: 1
 };
 
-// Prefs & session
+
+// Prefs & session (unchanged)
 function loadPrefs(){
   if(PREFS) return PREFS;
   const raw = localStorage.getItem(PREF_KEY);
@@ -51,69 +57,156 @@ function savePrefs(p){
   if(p.density) applyDensity(PREFS.density);
 }
 
-function getSession(){ try{ return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); }catch{ return null; } }
-function setSession(s){ localStorage.setItem(SESSION_KEY, JSON.stringify(s)); }
-function clearSession(){ localStorage.removeItem(SESSION_KEY); }
-
-function currentUser(){
-  const s = getSession();
-  if(!s) return null;
-  const db = DB.getAll();
-  return db.users.find(u=>u.id===s.userId) || null;
+// Supabase Auth session helpers
+async function getCurrentUser() {
+  if (!USE_SUPABASE) return null;
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return null;
+  // Fetch profile for display_name
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('id', user.id)
+    .single();
+  return profile ? { id: user.id, name: profile.display_name } : { id: user.id, name: user.email };
 }
 
-function userName(id){
-  const db = DB.getAll();
-  const u = db.users.find(x=>x.id===id);
-  return u ? u.name : 'anon';
+function clearSession() {
+  if (USE_SUPABASE) {
+    supabase.auth.signOut();
+  } else {
+    localStorage.removeItem(SESSION_KEY);
+  }
 }
+
+function userName(id) {
+  // For Supabase, fetch from profiles
+  if (USE_SUPABASE) {
+    // This is only used for rendering comments, so we fetch synchronously from cache (not ideal for large apps)
+    const db = DB.getAll();
+    const u = db.users?.find(x => x.id === id);
+    return u ? u.name || u.display_name || 'anon' : 'anon';
+  } else {
+    const db = DB.getAll();
+    const u = db.users.find(x => x.id === id);
+    return u ? u.name : 'anon';
+  }
+}
+
 
 // Root render
 async function render(){
-  state.user = currentUser();
+  state.user = USE_SUPABASE ? await getCurrentUser() : currentUser();
   const prefs = loadPrefs();
   applyAccent(prefs.accent);
   applyDensity(prefs.density);
   const root = $('#app');
   root.innerHTML = '';
-  if(!state.user) return renderLogin(root);
+  if(!state.user) return renderAuth(root);
   return renderMain(root);
 }
 
-// Login
-function renderLogin(root){
+// New Auth UI (Supabase)
+function renderAuth(root) {
   const div = document.createElement('div');
   div.className = 'box login';
   div.innerHTML = `
-    <div class="small muted">┌─ login to</div>
+    <div class="small muted">Sign up or log in to</div>
     <div class="logo">ascii.fm</div>
-    <div class="small muted">└──────────────────────</div>
+    <div class="small muted">music threads with Supabase Auth</div>
     <div class="sep"></div>
-    <form id="loginForm" class="stack" autocomplete="off">
-      <label>username
-        <input required minlength="2" maxlength="24" id="loginName" class="field" placeholder="e.g. moonbeam" />
+    <form id="registerForm" class="stack" autocomplete="off">
+      <label>Display Name
+        <input required minlength="2" maxlength="24" id="regDisplayName" class="field" placeholder="e.g. moonbeam" />
+      </label>
+      <label>Email
+        <input required type="email" id="regEmail" class="field" placeholder="you@email.com" />
+      </label>
+      <label>Password
+        <input required type="password" id="regPassword" class="field" minlength="6" />
+      </label>
+      <label>Confirm Password
+        <input required type="password" id="regPassword2" class="field" minlength="6" />
       </label>
       <div class="hstack">
-        <button class="btn" type="submit">[ enter ]</button>
-        <button class="btn btn-ghost" id="demoBtn" type="button">[ add demo content ]</button>
+        <button class="btn" type="submit">[ sign up ]</button>
       </div>
-      <div class="muted small">${DB.isRemote ? 'Synced with Supabase. ' : ''}No passwords; username only.</div>
+      <div class="muted small" id="regMsg"></div>
+    </form>
+    <div class="sep"></div>
+    <form id="loginForm" class="stack" autocomplete="off">
+      <label>Email
+        <input required type="email" id="loginEmail" class="field" placeholder="you@email.com" />
+      </label>
+      <label>Password
+        <input required type="password" id="loginPassword" class="field" minlength="6" />
+      </label>
+      <div class="hstack">
+        <button class="btn" type="submit">[ log in ]</button>
+      </div>
+      <div class="muted small" id="loginMsg"></div>
     </form>
   `;
   root.appendChild(div);
 
-  $('#loginForm').addEventListener('submit', async (e)=>{
+  // Registration
+  $('#registerForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    const name = $('#loginName').value.trim();
-    if(!name) return;
-    const u = await DB.ensureUser(name);
-    setSession({userId: u.id});
-    await DB.refresh();
-    render();
+    const displayName = $('#regDisplayName').value.trim();
+    const email = $('#regEmail').value.trim();
+    const pw = $('#regPassword').value;
+    const pw2 = $('#regPassword2').value;
+    const msg = $('#regMsg');
+    msg.textContent = '';
+    if (pw !== pw2) {
+      msg.textContent = 'Passwords do not match.';
+      return;
+    }
+    try {
+      const { data, error } = await supabase.auth.signUp({ email, password: pw });
+      if (error) throw error;
+      // Insert profile
+      const userId = data.user?.id;
+      if (userId) {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .insert({ id: userId, display_name: displayName });
+        if (profileError) throw profileError;
+      }
+      msg.textContent = 'Registration successful! Please check your email to confirm.';
+      $('#registerForm').reset();
+    } catch (err) {
+      msg.textContent = err.message || 'Registration failed.';
+    }
   });
-  $('#demoBtn').addEventListener('click', seedDemo);
-  $('#loginName').focus();
+
+  // Login
+  $('#loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = $('#loginEmail').value.trim();
+    const pw = $('#loginPassword').value;
+    const msg = $('#loginMsg');
+    msg.textContent = '';
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password: pw });
+      if (error) throw error;
+      // Fetch profile
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', data.user.id)
+        .single();
+      state.user = profile ? { id: data.user.id, name: profile.display_name } : { id: data.user.id, name: data.user.email };
+      render();
+    } catch (err) {
+      msg.textContent = err.message || 'Login failed.';
+    }
+  });
+
+  $('#regDisplayName').focus();
 }
+
+// ...removed old renderLogin...
 
 // Main
 async function renderMain(root){
@@ -240,7 +333,7 @@ async function renderMain(root){
   updateDock();
 
   // Events
-  $('#logoutBtn').addEventListener('click', ()=>{ clearSession(); render(); });
+  $('#logoutBtn').addEventListener('click', async ()=>{ await clearSession(); render(); });
 
   $('#search').addEventListener('input', debounce((e)=>{
     savePrefs({search: e.target.value});
