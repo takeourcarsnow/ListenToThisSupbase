@@ -55,11 +55,25 @@ function getSession(){ try{ return JSON.parse(localStorage.getItem(SESSION_KEY) 
 function setSession(s){ localStorage.setItem(SESSION_KEY, JSON.stringify(s)); }
 function clearSession(){ localStorage.removeItem(SESSION_KEY); }
 
-function currentUser(){
+async function currentUser() {
   const s = getSession();
-  if(!s) return null;
+  if (!s) return null;
   const db = DB.getAll();
-  return db.users.find(u=>u.id===s.userId) || null;
+  let user = db.users.find(u => u.id === s.userId);
+  if (!user && DB.isRemote && DB.supabase && DB.supabase.auth && DB.supabase.auth.getUser) {
+    try {
+      const authUser = await DB.supabase.auth.getUser();
+      const u = authUser?.data?.user;
+      if (u) {
+        user = { id: u.id, name: u.user_metadata?.name || u.email || 'user', email: u.email };
+      }
+    } catch {}
+  }
+  // fallback: if still not found, return a minimal user from session
+  if (!user && s.userId) {
+    user = { id: s.userId, name: 'user' };
+  }
+  return user;
 }
 
 function userName(id){
@@ -69,14 +83,14 @@ function userName(id){
 }
 
 // Root render
-async function render(){
-  state.user = currentUser();
+async function render() {
+  state.user = await currentUser();
   const prefs = loadPrefs();
   applyAccent(prefs.accent);
   applyDensity(prefs.density);
   const root = $('#app');
   root.innerHTML = '';
-  if(!state.user) return renderLogin(root);
+  if (!state.user) return renderLogin(root);
   return renderMain(root);
 }
 
@@ -1061,9 +1075,9 @@ window.addEventListener('storage', async (ev)=>{
   }
 });
 
-async function boot(){
+async function boot() {
   await DB.init();
-  render();
+  await render();
 }
 
 boot();
