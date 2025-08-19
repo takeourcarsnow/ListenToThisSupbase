@@ -378,15 +378,22 @@ async function renderMain(root){
     const { fetchOEmbed } = await import('./oembed.js');
     const meta = await fetchOEmbed(url);
     if (meta) {
+      let ytArtist = '', ytTitle = '';
+      if (/youtube\.com|youtu\.be/.test(url)) {
+        const { parseYouTubeTitle } = await import('./yt_title_parse.js');
+        const parsed = parseYouTubeTitle(meta);
+        ytArtist = parsed.artist;
+        ytTitle = parsed.title;
+      }
       // If user hasn't edited since last autofill, always update
-      if (meta.title && (!userEdited.title || f_title.value === lastAutofill.title)) {
-        f_title.value = meta.title;
-        lastAutofill.title = meta.title;
+      if ((ytTitle || meta.title) && (!userEdited.title || f_title.value === lastAutofill.title)) {
+        f_title.value = ytTitle || meta.title;
+        lastAutofill.title = f_title.value;
         userEdited.title = false;
       }
-      if (meta.author_name && (!userEdited.artist || f_artist.value === lastAutofill.artist)) {
-        f_artist.value = meta.author_name;
-        lastAutofill.artist = meta.author_name;
+      if ((ytArtist || meta.author_name) && (!userEdited.artist || f_artist.value === lastAutofill.artist)) {
+        f_artist.value = ytArtist || meta.author_name;
+        lastAutofill.artist = f_artist.value;
         userEdited.artist = false;
       }
     }
