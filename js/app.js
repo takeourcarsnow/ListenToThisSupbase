@@ -147,8 +147,9 @@ function renderLogin(root) {
         // Supabase signup
         const { data, error } = await DB.supabase.auth.signUp({ email, password: pass, options: { data: { name } } });
         if (error) throw error;
-        u = { id: data.user.id, name, email };
-        await DB.ensureUser(name); // ensure in users table
+        const userId = data.session?.user?.id || data.user?.id;
+        u = { id: userId, name, email };
+        await DB.ensureUser(name);
         setSession({ userId: u.id });
         await DB.refresh();
         render();
@@ -177,7 +178,8 @@ function renderLogin(root) {
         // Supabase login
         const { data, error } = await DB.supabase.auth.signInWithPassword({ email, password: pass });
         if (error) throw error;
-        u = { id: data.user.id, email };
+        const userId = data.session?.user?.id || data.user?.id;
+        u = { id: userId, email };
         setSession({ userId: u.id });
         await DB.refresh();
         render();
