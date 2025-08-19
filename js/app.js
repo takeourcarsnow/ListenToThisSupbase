@@ -935,8 +935,8 @@ async function seedDemo(){
       tags:['punk','folk'], body:'The punk classic!'
     },
     {
-      title:'Kaleo - All the Pretty Girls (Live on KEXP)',
-      artist:'Kaleo',
+      title:'Giant Steps',
+      artist:'John Coltrane',
       url:'https://www.youtube.com/watch?v=xy_fxxj1mMY',
       tags:['jazz','bebop'],
       body:'One of the greatest jazz albums of all time.'
