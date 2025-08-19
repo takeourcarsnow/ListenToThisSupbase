@@ -165,14 +165,20 @@ class SupabaseAdapter {
   }
   getAll(){ return this.cache; }
 
-  async ensureUser(name){
-    const existing = this.cache.users.find(u=>u.name.toLowerCase() === name.toLowerCase());
-    if(existing) return existing;
-    const user = { id: crypto.randomUUID ? crypto.randomUUID() : 'u_'+Math.random().toString(36).slice(2), name: name.trim(), createdAt: Date.now() };
+  async ensureUser(name) {
+    // Try to get current auth user id
+    let userId = null;
+    if (this.supabase && this.supabase.auth && this.supabase.auth.getUser) {
+      const authUser = await this.supabase.auth.getUser();
+      userId = authUser?.data?.user?.id || authUser?.user?.id;
+    }
+    const existing = this.cache.users.find(u => (userId && u.id === userId) || u.name.toLowerCase() === name.toLowerCase());
+    if (existing) return existing;
+    const user = { id: userId || (crypto.randomUUID ? crypto.randomUUID() : 'u_' + Math.random().toString(36).slice(2)), name: name.trim(), createdAt: Date.now() };
     const { error } = await this.supabase.from('users').insert({
       id: user.id, name: user.name, created_at: new Date(user.createdAt).toISOString()
     });
-    if(error) console.warn('ensureUser insert failed', error);
+    if (error) console.warn('ensureUser insert failed', error);
     this.cache.users.push(user);
     return user;
   }
