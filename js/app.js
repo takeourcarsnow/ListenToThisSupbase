@@ -819,7 +819,7 @@ async function seedDemo(){
   const samples = [
     {
       title:'Khruangbin - Time (You and I)', artist:'Khruangbin',
-      url:'https://www.youtube.com/watch?v=TwfuVZVVoTk',
+      url:'https://www.youtube.com/watch?v=AFCIxzyCiCo',
       tags:['funk','groove','feelgood'], body:'Sunny grooves. Guitar tone is candy.',
     },
     {
