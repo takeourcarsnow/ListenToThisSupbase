@@ -7,8 +7,24 @@ import { render } from './render.js';
 
 export async function onCreatePost(e){
   e.preventDefault();
-  const db = DB.getAll();
-  const me = state.user;
+    let me = state.user;
+    const db = DB.getAll();
+    // Ensure user exists in Supabase (fixes foreign key error)
+    if (DB.isRemote && me) {
+      try {
+        // This will insert user if not present
+        me = await DB.ensureUser(me.name, me.email, me.password);
+        state.user = me;
+        console.log('User after ensureUser:', me);
+        if (!me.id) {
+          alert('User ID missing after ensureUser. Cannot create post.');
+          return;
+        }
+      } catch (err) {
+        alert('User sync failed: ' + (err?.message || err));
+        return;
+      }
+    }
   const title = document.getElementById('f_title').value.trim();
   const artist = document.getElementById('f_artist').value.trim();
   let url = document.getElementById('f_url').value.trim();
@@ -49,8 +65,10 @@ export async function onCreatePost(e){
 
   const post = {
     id: uid('p'),
-    userId: me.id,
-    title, artist, url,
+    userId: me.id, // use the id returned from ensureUser
+    title,
+    artist,
+    url,
     provider,
     tags,
     body,
@@ -58,7 +76,19 @@ export async function onCreatePost(e){
     comments: [],
     createdAt: Date.now()
   };
-  await DB.createPost(post);
+
+  // Try to create post, catch and show errors
+  try {
+    const result = await DB.createPost(post);
+    if (!result) {
+      alert('Failed to create post. Please check your connection or contact support.');
+      return;
+    }
+  } catch (err) {
+    console.error('Post creation failed:', err);
+    alert('Error creating post: ' + (err?.message || err));
+    return;
+  }
 
   // reset form and preview
   document.getElementById('f_title').value='';
