@@ -819,40 +819,52 @@ async function seedDemo(){
   const samples = [
     {
       title:'Khruangbin - Time (You and I)', artist:'Khruangbin',
-      url:'https://www.youtube.com/watch?v=ocjZMLQ1J2E',
+      url:'https://www.youtube.com/watch?v=TwfuVZVVoTk',
       tags:['funk','groove','feelgood'], body:'Sunny grooves. Guitar tone is candy.',
     },
     {
       title:'Floating Points, Pharoah Sanders & The LSO — Promises', artist:'Album',
-      url:'https://open.spotify.com/album/6R6zcy0F4lHlRf5VgHTfUc',
+      url:'https://open.spotify.com/track/64rMCuIiJVT49SjLhmrHdW',
       tags:['ambient','jazz','orchestral'], body:'A patient, gorgeous slow-bloom.'
     },
     {
       title:'Home – Resonance', artist:'Home',
-      url:'https://bandcamp.com/EmbeddedPlayer/album=1991875193/size=large/bgcol=ffffff/linkcol=0687f5/track=3788980777/transparent=true/',
+      url:'https://againstme.bandcamp.com/track/pints-of-guiness-make-you-strong',
       tags:['synthwave','chill'], body:'The classic. If BC embed fails, open source link.'
     },
     {
       title:'Direct mp3 demo', artist:'CC0',
-      url:'https://files.freemusicarchive.org/storage-freemusicarchive-org/music/no_curator/Spinningmerkaba/Remix_Apprentice_Vol_1/Spinningmerkaba_-_01_-_You_And_I.mp3',
+      url:'https://files.freemusicarchive.org/file/music/no_curator/Spinningmerkaba/Remix_Apprentice_Vol_1/Spinningmerkaba_-_01_-_You_And_I.mp3',
       tags:['mp3','demo'], body:'Direct audio file demo.'
     },
     {
-      title:'Kaleo - Way Down We Go (live Acoustic)',
+      title:'Kaleo - All the Pretty Girls (Live on KEXP)',
       artist:'Kaleo',
-      url:'https://youtu.be/0-7IHOXkiV8',
+      url:'https://www.youtube.com/watch?v=TwfuVZVVoTk',
       tags:['blues','live'],
-      body:'Haunting vocal.'
+      body:'Live acoustic session from KEXP.'
     },
     {
       title:'Nujabes - Feather (feat. Cise Starr & Akin)',
       artist:'Nujabes',
-      url:'https://soundcloud.com/jinchinujabes/feather',
+      url:'https://soundcloud.com/childsmindmusic/mania',
       tags:['hiphop','chillhop'], body:'SoundCloud oEmbed demo.'
     }
   ];
 
-  for(const s of samples){
+  // Clear all posts, keep users
+  if(DB.isRemote && DB.replaceAll){
+    // For Supabase, replaceAll clears all posts and users, so preserve users
+    const users = DB.getAll().users;
+    await DB.replaceAll({ users, posts: [] });
+  } else if(DB.getAll && DB.getAll().posts) {
+    // For local, clear posts array
+    DB.getAll().posts.length = 0;
+    await DB.refresh();
+  }
+
+  let firstId = null;
+  for(const [i, s] of samples.entries()){
     const provider = parseProvider(s.url);
     const post = {
       id: uid('p'),
@@ -861,10 +873,16 @@ async function seedDemo(){
       provider, tags: s.tags, body: s.body,
       likes:[], comments:[], createdAt: Date.now()
     };
+    if(i === 0) firstId = post.id;
     await DB.createPost(post);
   }
   await DB.refresh();
   render();
+  // Auto-play the first demo post for feedback
+  setTimeout(() => {
+    const btn = document.querySelector(`#post-${firstId} [data-action="toggle-player"]`);
+    if(btn) btn.click();
+  }, 600);
 }
 
 // Helpers
