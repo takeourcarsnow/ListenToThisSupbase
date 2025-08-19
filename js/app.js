@@ -116,7 +116,6 @@ function renderLogin(root) {
       <div class="hstack">
         <button class="btn" type="submit">[ register ]</button>
         <button class="btn btn-ghost" id="showLoginBtn" type="button">[ login ]</button>
-        <button class="btn btn-ghost" id="demoBtn" type="button">[ add demo content ]</button>
       </div>
       <div class="muted small" id="regMsg">${DB.isRemote ? 'Synced with Supabase. ' : ''}Register to access content.</div>
     </form>
@@ -130,7 +129,6 @@ function renderLogin(root) {
       <div class="hstack">
         <button class="btn" type="submit">[ login ]</button>
         <button class="btn btn-ghost" id="showRegBtn" type="button">[ register ]</button>
-        <button class="btn btn-ghost" id="demoBtn2" type="button">[ add demo content ]</button>
       </div>
       <div class="muted small" id="loginMsg">${DB.isRemote ? 'Synced with Supabase. ' : ''}Login to access content.</div>
     </form>
@@ -210,8 +208,7 @@ function renderLogin(root) {
     }
   });
 
-  $('#demoBtn').addEventListener('click', seedDemo);
-  $('#demoBtn2').addEventListener('click', seedDemo);
+  // Demo buttons removed from UI
   $('#regName').focus();
 }
 
@@ -254,7 +251,6 @@ async function renderMain(root){
         <div class="muted">feed</div>
         <div class="hstack">
           <button class="btn btn-ghost" data-action="play-all">[ play all ${prefs.filterTag?('#'+esc(prefs.filterTag)):(prefs.search?('(search)'):'(all)')} ]</button>
-          <button class="btn btn-ghost" data-action="add-demo">[ quick demo ]</button>
           <button class="btn btn-ghost" data-action="show-help" title="keyboard shortcuts">[ help ]</button>
         </div>
       </div>
@@ -426,7 +422,7 @@ function renderFeed(el, pager){
   const chunk = posts.slice(start, end);
 
   if(total===0){
-    el.innerHTML = `<div class="notice small">No posts yet. Add one on the right, or hit "quick demo" to seed examples.</div>`;
+    el.innerHTML = `<div class="notice small">No posts yet. Add one on the right.</div>`;
     pager.innerHTML = '';
     return;
   }
@@ -672,7 +668,7 @@ async function onActionClick(e){
     jumpToQueueItem(0);
   }
 
-  if(action==='add-demo'){ seedDemo(); }
+  // 'add-demo' action removed from UI
 
   if(action==='edit' && postId){ openEditInline(postId); }
 
@@ -983,6 +979,9 @@ async function seedDemo(){
 }
 
 // Helpers
+// Expose seedDemo to window for console access
+window.seedDemo = seedDemo;
+
 function pickAccent(){
   const colors = ['#8ab4ff','#ff79c6','#7ab6ff','#7bd389','#ffd166','#ff6b6b','#c792ea','#64d2ff','#f4a261','#00e5ff'];
   const palette = document.createElement('div');
