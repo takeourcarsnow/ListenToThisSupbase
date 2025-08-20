@@ -1,3 +1,7 @@
+/* Prevent tag and count from breaking into separate lines */
+.tag-label {
+  white-space: nowrap;
+}
 /* Small avatar for comments and post author */
 .avatar.avatar-sm {
   width: 22px;
@@ -310,11 +314,73 @@ button, .button, [class*="button"], [class*="btn"] {
 .field:focus{border-color:var(--line2)}
 input[type="search"]::-webkit-search-cancel-button{filter:invert(70%)}
 
-.tag{
-  border:1px dashed var(--line); padding:2px 6px; border-radius:3px; cursor:pointer;
-  transition: border-color .15s ease, font-size 0.2s cubic-bezier(0.4,0.2,0.2,1);
+
+/* Tag Cloud - One Line, Frequency-based Styling */
+.tag-cloud {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  align-items: center;
+  max-width: 700px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+  white-space: nowrap;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
 }
-.tag:hover{border-color:var(--line2)}
+.tag-cloud::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for webkit browsers */
+.tag-cloud::-webkit-scrollbar {
+  display: none;
+}
+
+.tag-cloud .tag {
+  display: inline-block;
+  padding: 0.18em 0.6em;
+  border-radius: 1em;
+  background: #23272f;
+  color: #fff;
+  font-family: 'Fira Mono', monospace;
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  cursor: pointer;
+}
+
+/* Frequency-based sizes (add class like .tag--freq-1, .tag--freq-2, etc.) */
+.tag-cloud .tag--freq-1 { font-size: 0.8rem; opacity: 0.7; }
+.tag-cloud .tag--freq-2 { font-size: 0.9rem; opacity: 0.8; }
+.tag-cloud .tag--freq-3 { font-size: 1rem; opacity: 0.9; }
+.tag-cloud .tag--freq-4 { font-size: 1.08rem; opacity: 1; }
+.tag-cloud .tag--freq-5, .tag-cloud .tag--freq-max { font-size: 1.05rem; font-weight: 700; opacity: 1; }
+
+.tag-cloud .tag:hover {
+  background: #3a3f4b;
+  color: #ffe082;
+}
+
+/* Hide scroll bar for webkit browsers */
+.tag-cloud::-webkit-scrollbar {
+  height: 6px;
+}
+.tag-cloud::-webkit-scrollbar-thumb {
+  background: #23272f;
+  border-radius: 3px;
+}
+
+/* Responsive: shrink font on small screens */
+@media (max-width: 600px) {
+  .tag-cloud .tag { font-size: 0.75rem; padding: 0.14em 0.4em; }
+}
 
 .post {
   border: 1px solid var(--line, #333);

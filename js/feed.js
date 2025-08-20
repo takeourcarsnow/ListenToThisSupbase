@@ -147,12 +147,14 @@ export function renderTags(el, DB) {
   const counts = top.map(([_, c]) => c);
   const min = Math.min(...counts);
   const max = Math.max(...counts);
-  // Scale font size between 14px and 18px (less drastic)
-  function scaleFont(count) {
-    if (max === min) return 16;
-    return 14 + Math.round(((count - min) / (max - min)) * 4);
+  // Assign frequency classes (1-5, or max)
+  function freqClass(count) {
+    if (max === min) return 'tag--freq-3';
+    const level = Math.ceil(((count - min) / (max - min)) * 4) + 1; // 1-5
+    return level >= 5 ? 'tag--freq-max' : `tag--freq-${level}`;
   }
-  el.innerHTML = top.map(([t, c]) =>
-    `<span class="tag small" data-action="filter-tag" data-tag="${esc(t)}" style="font-size:${scaleFont(c)}px">#${esc(t)} <span class="muted">(${c})</span></span>`
-  ).join(' ');
+  el.innerHTML = `<div class="tag-cloud">` +
+    top.map(([t, c]) =>
+      `<span class="tag ${freqClass(c)}" data-action="filter-tag" data-tag="${esc(t)}"><span class="tag-label">#${esc(t)} <span class="muted">(${c})</span></span></span>`
+    ).join(' ') + `</div>`;
 }

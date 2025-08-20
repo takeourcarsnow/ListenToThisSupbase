@@ -61,6 +61,13 @@ export async function renderMain(root, state, DB, render) {
   let playAllLabel = 'play all';
   if (prefs.filterTag) playAllLabel = `play #${esc(prefs.filterTag)}`;
   left.innerHTML = `
+    <div class="box" id="tagsBoxMain" style="margin-bottom:16px;">
+      <div class="hstack" style="justify-content:space-between; align-items:center">
+        <div class="muted small">> tags</div>
+        ${prefs.filterTag ? `<button class="btn btn-ghost small" data-action="clear-tag">[ clear tag ]</button>`: ''}
+      </div>
+  <div id="tags"></div>
+    </div>
     <div class="box">
       <div class="hstack" style="justify-content:space-between">
         <div class="muted">> feed</div>
@@ -140,13 +147,6 @@ export async function renderMain(root, state, DB, render) {
           <div id="preview" class="player" aria-live="polite"></div>
         </form>
       </div>
-      <div class="box" id="tagsBox">
-        <div class="hstack" style="justify-content:space-between; align-items:center">
-          <div class="muted small">> tags</div>
-          ${prefs.filterTag ? `<button class="btn btn-ghost small" data-action="clear-tag">[ clear tag ]</button>`: ''}
-        </div>
-        <div id="tags" class="hstack" style="margin-top:6px; flex-wrap:wrap"></div>
-      </div>
     `;
   } else {
     right.innerHTML = `
@@ -154,14 +154,6 @@ export async function renderMain(root, state, DB, render) {
   <div class="muted small">${getComposePrompt()}</div>
         <div class="notice small">You are in guest read-only mode. Login to post, like, or comment.</div>
         <button class="btn btn-ghost" data-action="go-login">[ login / register ]</button>
-      </div>
-      <div class="box" id="tagsBox">
-        <div class="hstack" style="justify-content:space-between; align-items:center">
-          <div class="muted small">> tags</div>
-
-          ${prefs.filterTag ? `<button class="btn btn-ghost small" data-action="clear-tag">[ clear tag ]</button>`: ''}
-        </div>
-        <div id="tags" class="hstack" style="margin-top:6px; flex-wrap:wrap"></div>
       </div>
     `;
   }
