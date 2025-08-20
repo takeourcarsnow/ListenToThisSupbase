@@ -9,10 +9,10 @@
 .login form.stack .field,
 .login form.stack .btn {
   width: 100%;
-  max-width: 100%;
+  max-width: 260px;
   box-sizing: border-box;
-  margin-left: 0 !important;
-  margin-right: 0 !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
 }
 .login form .field,
 .login form input.field,
@@ -48,12 +48,7 @@
   max-width: 340px;
   box-sizing: border-box;
 }
-.login form .field,
-.login form .btn {
-  width: 100% !important;
-  max-width: 100% !important;
-  box-sizing: border-box;
-}
+
 /* --- Sort Icon Buttons --- */
 .sort-icons {
   display: flex;
@@ -156,7 +151,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   font-family: inherit;
-  font-size: 1.08em;
+  font-size: 1.6em;
   font-weight: 500;
   letter-spacing: 0.01em;
   transition: color 0.2s;
@@ -780,4 +775,68 @@ iframe[loading=lazy]{contain: content}
   .overlay {
     padding: 0;
   }
+}
+
+/* --- Auth (login/register) polish overrides --- */
+
+/* Consistent container for the auth UI */
+.auth-shell {
+  width: 100%;
+  max-width: 340px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-2);
+  box-sizing: border-box;
+}
+
+/* Remove fixed height so prompt can wrap and be fully visible */
+.login .title {
+  min-height: calc(1.25em * 2); /* reserve ~2 lines to reduce layout shift */
+  height: auto;                  /* allow growth if it wraps to 3 lines on tiny screens */
+  margin-bottom: var(--space-2);
+}
+
+/* Make prompt text wrap instead of clipping */
+#loginAnimatedPrompt,
+#registerAnimatedPrompt {
+  display: block;
+  width: 100%;
+  max-width: 340px;
+  margin-left: auto;
+  margin-right: auto;
+  white-space: normal;        /* allow wrapping */
+  overflow: visible;          /* no clipping */
+  text-overflow: clip;        /* no ellipsis */
+  word-break: break-word;     /* avoid overflowing long tokens */
+  line-height: 1.25;
+  text-wrap: balance;         /* nice wrapping if supported */
+  pointer-events: none;
+}
+
+/* Normalize stack spacing and remove inline margins */
+.login form.stack {
+  gap: var(--space-2);
+}
+  /* margin handled above for centering */
+}
+
+/* Consistent blocks inside forms */
+.auth-form { width: 100%; max-width: 340px; box-sizing: border-box; }
+.auth-links { margin-top: var(--space-2); }
+.auth-msg { min-height: 18px; }
+
+/* Auth prompt: single line, no clipping (JS will pre-scale to fit) */
+#loginAnimatedPrompt,
+#registerAnimatedPrompt {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: clip; /* not used once it fits, just a safeguard */
+}
+
+.login .title {
+  height: 32px;     /* stable line height area */
+  min-height: 32px;
+  overflow: visible; /* allow prompt to render freely inside */
 }
