@@ -51,7 +51,7 @@ export async function renderMain(root, state, DB, render) {
   left.innerHTML = `
     <div class="box">
       <div class="hstack" style="justify-content:space-between">
-        <div class="muted">feed</div>
+        <div class="muted">> feed</div>
         <div class="hstack">
           <button class="btn btn-ghost" data-action="play-all">[ ${playAllLabel} ]</button>
         </div>
@@ -128,13 +128,13 @@ export async function renderMain(root, state, DB, render) {
   } else {
     right.innerHTML = `
       <div class="box">
-        <div class="muted small">compose</div>
+        <div class="muted small">> compose</div>
         <div class="notice small">You are in guest read-only mode. Login to post, like, or comment.</div>
         <button class="btn btn-ghost" data-action="go-login">[ login / register ]</button>
       </div>
       <div class="box" id="tagsBox">
         <div class="hstack" style="justify-content:space-between; align-items:center">
-          <div class="muted small">tags</div>
+          <div class="muted small">> tags</div>
           ${prefs.filterTag ? `<button class="btn btn-ghost small" data-action="clear-tag">[ clear tag ]</button>`: ''}
         </div>
         <div id="tags" class="hstack" style="margin-top:6px; flex-wrap:wrap"></div>
