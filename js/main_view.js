@@ -222,6 +222,33 @@ export async function renderMain(root, state, DB, render) {
   // Dock
   updateDock(false, state, DB);
 
+  // --- Auto-refresh feed, comments, and likes ---
+  if (!window._autoFeedRefresh) {
+    window._autoFeedRefresh = setInterval(async () => {
+      if (typeof DB.refresh === 'function') {
+        await DB.refresh();
+        renderFeed($('#feed'), $('#pager'), state, DB, loadPrefs());
+        renderTags($('#tags'), DB);
+      }
+    }, 30000); // 30 seconds
+  }
+
+  // --- Instant refresh on window/tab focus or visibility ---
+  if (!window._feedVisibilityHandler) {
+    const instantRefresh = async () => {
+      if (typeof DB.refresh === 'function') {
+        await DB.refresh();
+        renderFeed($('#feed'), $('#pager'), state, DB, loadPrefs());
+        renderTags($('#tags'), DB);
+      }
+    };
+    window.addEventListener('focus', instantRefresh);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') instantRefresh();
+    });
+    window._feedVisibilityHandler = true;
+  }
+
   // Toolbar events
   // No direct handler for logoutBtn; handled by delegated click event
 
