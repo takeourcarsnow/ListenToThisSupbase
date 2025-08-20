@@ -1,3 +1,59 @@
+.login form.stack {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  max-width: 340px;
+  box-sizing: border-box;
+}
+.login form.stack .field,
+.login form.stack .btn {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+.login form .field,
+.login form input.field,
+.login form input.field:-webkit-autofill,
+.login form input.field:-webkit-autofill:focus,
+.login form input.field:-webkit-autofill:hover,
+.login form input.field:-internal-autofill-selected {
+  background: #232837 !important;
+  -webkit-box-shadow: 0 0 0 1000px #232837 inset !important;
+  box-shadow: 0 0 0 1000px #232837 inset !important;
+  color: var(--fg) !important;
+  -webkit-text-fill-color: var(--fg) !important;
+  border-color: var(--line) !important;
+  transition: background-color 0.2s, color 0.2s;
+}
+.login form .field,
+.login form .field:-webkit-autofill,
+.login form .field:-webkit-autofill:focus,
+.login form .field:-webkit-autofill:hover,
+.login form input:-webkit-autofill,
+.login form input:-webkit-autofill:focus,
+.login form input:-webkit-autofill:hover {
+  background: #232837 !important;
+  -webkit-box-shadow: 0 0 0 1000px #232837 inset !important;
+  box-shadow: 0 0 0 1000px #232837 inset !important;
+  color: var(--fg) !important;
+  -webkit-text-fill-color: var(--fg) !important;
+  border-color: var(--line) !important;
+  transition: background-color 0.2s, color 0.2s;
+}
+.login form {
+  width: 100%;
+  max-width: 340px;
+  box-sizing: border-box;
+}
+.login form .field,
+.login form .btn {
+  width: 100% !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+}
 /* --- Sort Icon Buttons --- */
 .sort-icons {
   display: flex;
@@ -77,7 +133,36 @@
   box-shadow: 0 2px 16px #0004;
 }
 
-/* Small profile avatar for sidebar/profile box */
+.login .title {
+  display: block;
+  min-height: 32px;
+  height: 32px;
+  position: relative;
+  width: 100%;
+  max-width: 340px;
+  box-sizing: border-box;
+  margin-bottom: 8px;
+}
+
+#loginAnimatedPrompt, #registerAnimatedPrompt {
+  display: block;
+  width: 100%;
+  max-width: 340px;
+  margin-left: auto;
+  margin-right: auto;
+  min-width: 0;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: inherit;
+  font-size: 1.08em;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  transition: color 0.2s;
+  box-sizing: border-box;
+  pointer-events: none;
+}
 .profile-avatar-small {
   width: 64px;
   height: 64px;

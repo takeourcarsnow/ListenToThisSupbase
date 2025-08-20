@@ -1,4 +1,5 @@
 import { $ } from './utils.js';
+import { startLoginPromptAnimation, stopLoginPromptAnimation } from './login_prompts.js';
 import { setGuestMode, setSession, clearSession } from './session.js';
 
 export function renderLogin(root, DB, render) {
@@ -15,35 +16,29 @@ export function renderLogin(root, DB, render) {
   div.style.minHeight = '70vh';
   div.innerHTML = `
     <div style="display:inline-block; text-align:center;">
-  <img src="/logo_white_no_bg.png" alt="Logo" class="login-logo-anim" style="display:block; margin:0 auto 10px auto; width:64px; height:64px; object-fit:contain;" />
+      <img src="/logo_white_no_bg.png" alt="Logo" class="login-logo-anim" style="display:block; margin:0 auto 10px auto; width:64px; height:64px; object-fit:contain;" />
       <div class="small muted" style="margin-bottom:2px;">┌─ login or register to</div>
       <div class="logo" style="margin:0 auto;">tunedIn.space</div>
-      <div class="small muted" style="margin-bottom:12px;">└──────────────────────</div>
+  <div class="small muted" style="margin-bottom:0;">└──────────────────────</div>
+  <div class="title" style="margin-bottom:8px; min-height:24px;">
+        <span id="loginAnimatedPrompt"></span>
+      </div>
       <form id="loginForm" class="stack" autocomplete="off" style="max-width:340px; margin:0 auto; text-align:center;">
-        <div class="title" style="margin-bottom:8px;">Music & community that you care about.</div>
-        <div style="margin:0 auto 8px auto; max-width:320px;">
-          <input required type="email" id="loginEmail" class="field" placeholder="Email" style="width:100%; margin-top:2px; text-align:center;" />
-        </div>
-        <div style="margin:0 auto 8px auto; max-width:320px;">
-          <input required minlength="6" maxlength="64" id="loginPass" class="field" type="password" placeholder="Password" style="width:100%; margin-top:2px; text-align:center;" />
-        </div>
+  <input required type="email" id="loginEmail" class="field" placeholder="Email" style="width:100%; margin:0 0 8px 0; text-align:center;" />
+  <input required minlength="6" maxlength="64" id="loginPass" class="field" type="password" placeholder="Password" style="width:100%; margin:0 0 8px 0; text-align:center;" />
         <button class="btn" type="submit" style="margin-top:8px; width:100%;">[ sign in ]</button>
         <div style="margin-top:8px; text-align:center;">
           <a href="#" id="showRegister" class="muted small" style="text-decoration:underline;">Don't have an account? Create one</a>
         </div>
-  <div class="muted small" id="loginMsg" style="min-height:18px;">${DB.isRemote ? 'Sign in to be able to post content,<br>' : ''}or use guest mode below.</div>
+        <div class="muted small" id="loginMsg" style="min-height:18px;">${DB.isRemote ? 'Sign in to be able to post content,<br>' : ''}or use guest mode below.</div>
       </form>
+      <div class="title" style="margin-bottom:8px; min-height:24px; display:none;" id="registerPromptTitle">
+        <span id="registerAnimatedPrompt"></span>
+      </div>
       <form id="registerForm" class="stack" autocomplete="off" style="display:none; max-width:340px; margin:0 auto; text-align:center;">
-        <div class="title" style="margin-bottom:8px;">Create an account</div>
-        <label style="display:block; text-align:left; margin:0 auto 8px auto; max-width:320px;">Username
-          <input required minlength="2" maxlength="24" id="regName" class="field" placeholder="e.g. moonbeam" style="width:100%; margin-top:2px;" />
-        </label>
-        <label style="display:block; text-align:left; margin:0 auto 8px auto; max-width:320px;">Email
-          <input required type="email" id="regEmail" class="field" placeholder="e.g. you@email.com" style="width:100%; margin-top:2px;" />
-        </label>
-        <label style="display:block; text-align:left; margin:0 auto 8px auto; max-width:320px;">Password
-          <input required minlength="6" maxlength="64" id="regPass" class="field" type="password" placeholder="password" style="width:100%; margin-top:2px;" />
-        </label>
+  <input required minlength="2" maxlength="24" id="regName" class="field" placeholder="Username" style="width:100%; margin-bottom:8px; text-align:center;" />
+  <input required type="email" id="regEmail" class="field" placeholder="Email" style="width:100%; margin-bottom:8px; text-align:center;" />
+  <input required minlength="6" maxlength="64" id="regPass" class="field" type="password" placeholder="Password" style="width:100%; margin-bottom:8px; text-align:center;" />
         <button class="btn" type="submit" style="margin-top:8px; width:100%;">[ create account ]</button>
         <div style="margin-top:8px; text-align:center;">
           <a href="#" id="showLogin" class="muted small" style="text-decoration:underline;">Already have an account? Sign in</a>
@@ -56,17 +51,70 @@ export function renderLogin(root, DB, render) {
       </div>
     </div>
   `;
+  // Start animated prompt
+  setTimeout(startLoginPromptAnimation, 0);
+
   root.appendChild(div);
 
+  let registerPromptInterval = null;
   function showLoginForm() {
     $('#loginForm').style.display = '';
     $('#registerForm').style.display = 'none';
+    $('#registerPromptTitle').style.display = 'none';
     $('#loginEmail').focus();
+    setTimeout(startLoginPromptAnimation, 0);
+    if (registerPromptInterval) {
+      clearInterval(registerPromptInterval);
+      registerPromptInterval = null;
+    }
+    const regEl = document.getElementById('registerAnimatedPrompt');
+    if (regEl) regEl.textContent = '';
   }
   function showRegisterForm() {
     $('#loginForm').style.display = 'none';
     $('#registerForm').style.display = '';
+    $('#registerPromptTitle').style.display = '';
     $('#regName').focus();
+    stopLoginPromptAnimation();
+    const loginEl = document.getElementById('loginAnimatedPrompt');
+    if (loginEl) loginEl.textContent = '';
+    // Animate the same prompts in register form
+    const prompts = [
+      '> so what song has been stuck in your head lately?',
+      '> share a track that made your day better!',
+      '> what have you been looping non-stop?',
+      '> found a hidden gem? drop it here!',
+      '> what tune do you want everyone to hear right now?'
+    ];
+    let idx = Math.floor(Math.random() * prompts.length);
+    let char = 0;
+    let erase = false;
+    const regEl = document.getElementById('registerAnimatedPrompt');
+    function animate() {
+      if (!regEl) return;
+      const prompt = prompts[idx];
+      if (!erase) {
+        char++;
+        regEl.textContent = prompt.slice(0, char);
+        if (char < prompt.length) {
+          registerPromptInterval = setTimeout(animate, 28 + Math.random() * 32);
+        } else {
+          erase = true;
+          registerPromptInterval = setTimeout(animate, 1200);
+        }
+      } else {
+        char--;
+        regEl.textContent = prompt.slice(0, char);
+        if (char > 0) {
+          registerPromptInterval = setTimeout(animate, 16 + Math.random() * 24);
+        } else {
+          erase = false;
+          idx = (idx + 1) % prompts.length;
+          registerPromptInterval = setTimeout(animate, 300);
+        }
+      }
+    }
+    animate();
   }
   $('#showLogin').onclick = (e) => { e.preventDefault(); showLoginForm(); };
   $('#showRegister').onclick = (e) => { e.preventDefault(); showRegisterForm(); };
