@@ -245,9 +245,9 @@ async function renderMain(root){
   top.innerHTML = `
     <div class="hstack toolbar">
       <span class="pill" title="current user">user: ${esc(me ? me.name : 'guest')}${me ? '' : ' (read-only)'}</span>
-      ${prefs.filterTag ? `<span class="pill">tag: #${esc(prefs.filterTag)} <a href="#" data-action="clear-tag" title="clear tag">✕</a></span>` : ''}
       <span class="pill" title="total posts">posts: ${db.posts.length}</span>
-      <span class="pill" title="keyboard shortcuts">keys: <span class="kbd">/</span> <span class="kbd">n</span> <span class="kbd">j</span>/<span class="kbd">k</span> <span class="kbd">?</span></span>
+      ${prefs.filterTag ? `<span class="pill">tag: #${esc(prefs.filterTag)} <a href="#" data-action="clear-tag" title="clear tag">✕</a></span>` : ''}
+      
     </div>
     <div class="hstack toolbar">
       <input class="field" id="search" type="search" placeholder="search title/artist/tags..." style="width:240px" value="${esc(prefs.search)}" aria-label="search"/>
@@ -259,8 +259,8 @@ async function renderMain(root){
       <button class="btn icon" title="accent color" data-action="accent-pick">🎨</button>
       <button class="btn icon" title="density" data-action="toggle-density">${prefs.density==='compact'?'▥':'▤'}</button>
       ${me
-        ? `<button class="btn btn-ghost" id="logoutBtn" title="logout">[ logout ]</button>`
-        : `<button class="btn btn-ghost" id="goLoginBtn" title="login / register">[ login / register ]</button>`
+        ? `<button class="btn btn-ghost" id="logoutBtn" title="logout">[ logout ]</button><button class="btn btn-ghost" data-action="show-help" title="keyboard shortcuts">[ help ]</button>`
+        : `<button class="btn btn-ghost" id="goLoginBtn" title="login / register">[ login / register ]</button><button class="btn btn-ghost" data-action="show-help" title="keyboard shortcuts">[ help ]</button>`
       }
     </div>
   `;
@@ -270,13 +270,17 @@ async function renderMain(root){
   grid.className = 'grid';
 
   const left = document.createElement('div');
+  // Determine play all button label
+  let playAllLabel = 'play all';
+  if (prefs.filterTag) {
+    playAllLabel = `play #${esc(prefs.filterTag)}`;
+  }
   left.innerHTML = `
     <div class="box">
       <div class="hstack" style="justify-content:space-between">
         <div class="muted">feed</div>
         <div class="hstack">
-          <button class="btn btn-ghost" data-action="play-all">[ play all ${prefs.filterTag?('#'+esc(prefs.filterTag)):(prefs.search?('(search)'):'(all)')} ]</button>
-          <button class="btn btn-ghost" data-action="show-help" title="keyboard shortcuts">[ help ]</button>
+          <button class="btn btn-ghost" data-action="play-all">[ ${playAllLabel} ]</button>
         </div>
       </div>
       <div id="feed"></div>
@@ -800,15 +804,13 @@ async function onActionClick(e){
     const t = btn.dataset.tag;
     savePrefs({ filterTag: t, search: '' });
     state.page = 1;
-    renderFeed($('#feed'), $('#pager'));
-    renderTags($('#tags'));
+    render();
   }
 
   if(action==='clear-tag'){
     savePrefs({filterTag: null});
     state.page = 1;
-    renderFeed($('#feed'), $('#pager'));
-    renderTags($('#tags'));
+    render();
   }
 
   if(action==='q-prev'){ queuePrev(); }
@@ -818,41 +820,40 @@ async function onActionClick(e){
   if(action==='q-repeat'){
     const order = ['off','all','one'];
     const cur = loadPrefs().repeat;
-    const next = order[(order.indexOf(cur)+1)%order.length];
-    savePrefs({repeat: next});
-    updateDock();
-  }
-
-  if(action==='play-all'){
-    const ids = getFilteredPosts().map(p=>p.id);
-    state.queue = ids;
-    state.qIndex = 0;
-    updateDock(true);
-    jumpToQueueItem(0);
-  }
-
-  if(action==='edit' && postId){ openEditInline(postId); }
-
-  if(action==='delete' && postId){
-    const db = DB.getAll();
-    const p = db.posts.find(x=>x.id===postId);
-    if(!p) return;
-    if(!state.user || p.userId !== state.user.id){
-      toast(card, 'you can only delete your posts', true); return;
+    // Determine play button label
+    let playBtnLabel = 'play all';
+    if (prefs.filterTag) {
+      playBtnLabel = `play #${esc(prefs.filterTag)}`;
     }
-    if(confirm('Delete this post? This cannot be undone.')){
-      await DB.deletePost(postId);
-      state.queue = state.queue.filter(id=> id!==postId);
-      renderFeed($('#feed'), $('#pager'));
-      updateDock();
-    }
-  }
-
-  if(action==='export'){
-    const blob = new Blob([DB.exportJSON()], {type:'application/json'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `ascii.fm-export-${new Date().toISOString().slice(0,19).replace(/[:T]/g,'-')}.json`;
+    left.innerHTML = `
+      <div class="box">
+        <div class="hstack" style="justify-content:space-between">
+          <div class="muted">feed</div>
+          <div class="hstack">
+            <button class="btn btn-ghost" data-action="play-all">[ ${playBtnLabel} ]</button>
+          </div>
+        </div>
+        <div id="feed"></div>
+        <div id="pager" class="hstack" style="justify-content:center; margin-top:8px"></div>
+      </div>
+      <div class="dock" id="dock" style="display:none">
+        <div class="hstack" style="justify-content:space-between; align-items:center">
+          <div class="hstack">
+            <button class="btn" data-action="q-prev" title="previous in queue (k)">[ prev ]</button>
+            <button class="btn" data-action="q-next" title="next in queue (j)">[ next ]</button>
+            <button class="btn" data-action="q-shuffle" aria-pressed="${prefs.shuffle}" title="shuffle">[ shuffle ]</button>
+            <button class="btn" data-action="q-repeat" title="repeat">[ repeat: ${prefs.repeat} ]</button>
+            <button class="btn btn-ghost" data-action="q-clear" title="clear queue">[ clear ]</button>
+            <label class="small muted" title="auto-scroll to playing">
+              <input type="checkbox" id="autoScroll" ${prefs.autoScroll?'checked':''}/> auto-scroll
+            </label>
+          </div>
+          <div class="small">
+            <span id="nowPlaying" class="muted"></span> · queue <span id="qPos">0</span>/<span id="qLen">0</span>${prefs.filterTag? ` · tag: #${esc(prefs.filterTag)}`:''}
+          </div>
+        </div>
+      </div>
+    `;
     document.body.appendChild(a);
     a.click();
     a.remove();

@@ -1,3 +1,4 @@
+
 # ascii.fm — Minimal Music Threads Webapp
 
 ## Overview
@@ -5,6 +6,33 @@
 **ascii.fm** is a minimal, modern web application for sharing and discussing music links. It supports user registration/login, posting music threads with tags, likes, comments, and playlist/queue features. The app is styled for a "monospace vibes" aesthetic and can operate in two modes:
 - **Local mode:** All data is stored in the browser's LocalStorage.
 - **Supabase mode:** Data is synced with a Supabase backend (cloud database).
+
+---
+
+## Recent Updates
+
+- **Help Menu Revamp:**  
+	The help overlay is now a full-featured new user guide, including step-by-step instructions, posting tips, queue/player info, keyboard shortcuts, and accessibility tips.
+- **UI Improvement:**  
+	The help button is now located next to the logout/login button in the topbar for easier access and a cleaner feed area.
+- **Accessibility:**  
+	Improved keyboard navigation, focus management, and live region for announcements.
+- **Autofill Composer:**  
+	When pasting a YouTube or SoundCloud link, the composer auto-fills title/artist using oEmbed and smart parsing.
+- **Settings & Customization:**  
+	Users can pick an accent color and toggle between cozy/compact layouts.
+- **Data Management:**  
+	Export/import all data as JSON, with clear warnings and feedback.
+- **Supabase Integration:**  
+	Seamless switching between local and Supabase modes, with all CRUD mirrored to the backend if enabled.
+- **Provider Detection:**  
+	Robust detection and embedding for YouTube, Spotify, Bandcamp, SoundCloud, and direct audio files.
+- **Queue & Player:**  
+	Play, shuffle, repeat, and auto-scroll queue, with keyboard shortcuts for all major actions.
+- **Security:**  
+	Local mode is for demo/testing only; Supabase mode uses RLS for security.
+
+---
 
 ## Main Features
 
@@ -16,36 +44,38 @@
 - **Import/Export:** Export all data as JSON or import/replace data.
 - **Settings:** Accent color, density (cozy/compact), and storage info.
 - **Keyboard Shortcuts:** For navigation, liking, playing, and more.
+- **Accessibility:** Skip links, ARIA roles, live region, and full keyboard support.
+
+---
 
 ## File Structure
 
-- `index.html` — Main HTML entry point, loads styles and JS.
+- `index.html` — Main HTML entry point, loads styles and JS. Contains the help overlay and main app shell.
 - `styles.css` — Modern, dark, responsive CSS with monospace font and custom accent.
-- `js/app.js` — Main application logic, UI rendering, event handling.
+- `js/app.js` — Main application logic, UI rendering, event handling, state management.
 - `js/config.js` — Configuration for Supabase (URL, anon key, toggle).
 - `js/db.js` — Data layer: handles local and Supabase storage, CRUD for users/posts.
 - `js/providers.js` — Detects music provider from URL and builds embed players.
 - `js/utils.js` — Utility functions (DOM helpers, debounce, formatting, etc.).
+- `js/oembed.js` — Fetches oEmbed metadata for supported providers.
+- `js/yt_title_parse.js` — Smart parsing of YouTube titles for artist/title extraction.
 
 ---
 
 ## Detailed Component Analysis
 
 ### 1. `index.html`
-
 - Loads the app shell, header, and main content area.
-- Includes a help overlay for keyboard shortcuts.
+- Includes a help overlay with a comprehensive new user guide and keyboard shortcuts.
 - Loads `styles.css` and `js/app.js` as a module.
 
 ### 2. `styles.css`
-
 - Uses CSS variables for palette, spacing, and radius.
 - Responsive grid layout, styled forms, buttons, tags, posts, and overlays.
 - Accessibility: visually hidden elements for screen readers, focus outlines.
 - Custom accent color and density (cozy/compact) toggles.
 
 ### 3. `js/app.js` (Main Logic)
-
 - **State Management:** Handles user, queue, preferences, and page state.
 - **Preferences:** Saved in LocalStorage, includes sort, search, accent, density, etc.
 - **Session:** User session is stored locally.
@@ -57,14 +87,13 @@
 - **Import/Export:** JSON import/export for all data.
 - **Keyboard Shortcuts:** For navigation, liking, playing, and help overlay.
 - **Accessibility:** Live region for announcements, focus management.
+- **Autofill:** Composer auto-fills title/artist from oEmbed for YouTube/SoundCloud.
 
 ### 4. `js/config.js`
-
 - Toggle between Supabase and local mode.
 - Stores Supabase project URL and anon key.
 
 ### 5. `js/db.js` (Data Layer)
-
 - **LocalAdapter:** Stores users and posts in LocalStorage.
 - **SupabaseAdapter:** Syncs users and posts with Supabase tables.
 - **CRUD:** Create, update, delete posts/users, toggle likes, add comments.
@@ -72,16 +101,18 @@
 - **Auto-detects** which adapter to use based on config.
 
 ### 6. `js/providers.js`
-
 - **parseProvider:** Detects provider (YouTube, Spotify, Bandcamp, SoundCloud, direct audio) from a URL.
 - **buildEmbed:** Builds the correct embed player for each provider.
 - **Fallback:** If provider is unknown, shows a link.
 
 ### 7. `js/utils.js`
-
 - DOM helpers (`$`, `$$`), debounce, safeClone, unique ID, HTML escaping.
 - Formatting for time, bytes, and storage size.
 - Clipboard copy, toast notifications, accent/density application.
+
+### 8. `js/oembed.js` and `js/yt_title_parse.js`
+- Fetch oEmbed metadata for YouTube/SoundCloud.
+- Parse YouTube titles for best-guess artist/title autofill.
 
 ---
 
@@ -133,6 +164,7 @@
 4. **Like, comment, and queue** posts for playback.
 5. **Export or import** your data as JSON.
 6. **Customize** accent color and layout density.
+7. **Use the help menu** for a full new user guide and keyboard shortcuts.
 
 ---
 
