@@ -1,3 +1,22 @@
+/* Prevent scrolling past tags panel on mobile */
+@media (max-width: 600px) {
+  html, body {
+    height: 100vh;
+    min-height: 100vh;
+    max-height: 100vh;
+    overflow-x: hidden;
+    overscroll-behavior-y: contain;
+  }
+  /* If tags panel has a unique class or id, use it here. Assuming .tags is the tags panel */
+  .tags {
+    margin-bottom: 0 !important;
+    padding-bottom: 0 !important;
+  }
+  /* Hide any extra content after tags panel if present */
+  .tags ~ * {
+    display: none !important;
+  }
+}
 .about-preview {
   max-height: 3.5em;
   overflow: hidden;
