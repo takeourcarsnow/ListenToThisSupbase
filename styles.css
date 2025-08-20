@@ -508,6 +508,14 @@ input[type="search"]::-webkit-search-cancel-button{filter:invert(70%)}
   }
 }
 .like-on{color:var(--like)}
+.like-animate {
+  animation: likePop 0.18s cubic-bezier(0.4,0.2,0.2,1);
+}
+@keyframes likePop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
 .player{
   margin-top:6px; display:none; background:#0b0e12; padding:6px; border:1px dashed var(--line); border-radius:4px;
 }

@@ -63,7 +63,21 @@ export async function onActionClick(e, state, DB, render) {
   if (action === 'like' && postId) {
     if (!state.user) { toast(card || root, 'login to like', true); return; }
     const updated = await DB.toggleLike(postId, state.user.id);
-    if (updated && card) card.outerHTML = renderPostHTML(updated, state, DB);
+    if (updated && card) {
+      // Find the like button before replacing the card
+      const likeBtn = card.querySelector('[data-action="like"]');
+      if (likeBtn) {
+        likeBtn.classList.remove('like-animate');
+        // Force reflow to restart animation
+        void likeBtn.offsetWidth;
+        likeBtn.classList.add('like-animate');
+      }
+      // Replace the card after a short delay to allow animation
+      setTimeout(() => {
+        const newCard = document.getElementById('post-' + postId);
+        if (newCard) newCard.outerHTML = renderPostHTML(updated, state, DB);
+      }, 320);
+    }
   }
 
   if (action === 'comment' && postId) {

@@ -61,10 +61,15 @@ function bindGlobalHandlers() {
   }
   document.addEventListener('keydown', (e) => onKey(e, state));
 
-  // Double click to like
+  // Double click to like, prevent text selection
   document.addEventListener('dblclick', (e) => {
     const card = e.target.closest('.post');
     if (!card) return;
+    // Prevent text selection on double click
+    if (window.getSelection) {
+      const sel = window.getSelection();
+      if (sel && sel.type === 'Range') sel.removeAllRanges();
+    }
     const likeBtn = card.querySelector('[data-action="like"]');
     likeBtn?.click();
   });
