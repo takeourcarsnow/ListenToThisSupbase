@@ -108,7 +108,7 @@ export async function renderMain(root, state, DB, render) {
       <div class="box" id="aboutBox">
         <div class="muted small">> my profile</div>
         <div style="display:flex; flex-direction:column; align-items:center; margin-bottom:8px;">
-          <img class="profile-avatar" src="${esc(myAvatar)}" alt="avatar" />
+          <img class="profile-avatar-small" src="${esc(myAvatar)}" alt="avatar" />
         </div>
         <div id="aboutCollapsed" style="display:flex; align-items:center; justify-content:space-between; min-height:38px;">
           <div id="aboutText" class="about-preview">${myAbout ? esc(myAbout).replace(/\n/g,'<br>') : '<span class=\'muted small\'>no about yet.</span>'}</div>
