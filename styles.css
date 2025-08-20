@@ -573,10 +573,10 @@ iframe[loading=lazy]{contain: content}
 .comment{padding:4px 0; border-top:1px dashed var(--line)}
 
 .dock{
-  position:sticky; bottom:0; left:0; right:0;
-  background:linear-gradient(180deg, rgba(11,13,16,0), rgba(11,13,16,0.95) 15%, rgba(11,13,16,1) 100%), var(--bg);
-  border-top:1px dashed var(--line);
-  padding:8px 12px; margin-top:16px;
+  position:sticky; top:0; left:0; right:0;
+  background:linear-gradient(0deg, rgba(11,13,16,0), rgba(11,13,16,0.95) 15%, rgba(11,13,16,1) 100%), var(--bg);
+  border-bottom:1px dashed var(--line);
+  padding:8px 12px; margin-bottom:16px;
 }
 .pill{border:1px dashed var(--line); padding:3px 8px; border-radius:999px}
 .highlight{outline:2px dotted var(--acc); outline-offset:2px}

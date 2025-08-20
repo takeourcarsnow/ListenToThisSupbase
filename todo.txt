@@ -9,3 +9,5 @@ when i click on user show me his other posts
 
 
 move accent chooser maybe in user about me section 
+
+generate spotify playlists from posts / tags / usernames

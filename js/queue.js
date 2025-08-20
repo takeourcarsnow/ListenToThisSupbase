@@ -78,6 +78,8 @@ export function jumpToQueueItem(idx, state) {
   if (!id) return;
   const card = document.getElementById('post-' + id);
   if (!card) return;
+  // Save scroll position
+  const scrollY = window.scrollY;
   const pl = document.getElementById('player-' + id);
   if (pl && !pl.classList.contains('active')) {
     const btn = card.querySelector('[data-action="toggle-player"]');
@@ -85,8 +87,8 @@ export function jumpToQueueItem(idx, state) {
   }
   document.querySelectorAll('.post').forEach(p => p.classList.remove('is-playing'));
   card.classList.add('is-playing');
-  const prefs = loadPrefs();
-  if (prefs.autoScroll) card.scrollIntoView({ block: 'center' });
+  // Restore scroll position
+  window.scrollTo({ top: scrollY });
 }
 
 export function markNowPlaying(postId, state, DB) {

@@ -65,6 +65,49 @@ export async function renderMain(root, state, DB, render) {
       </div>
     `;
   root.appendChild(top);
+  // --- Player controls dock at top ---
+  const dock = document.createElement('div');
+  dock.className = 'dock';
+  dock.id = 'dock';
+  dock.style.display = 'none';
+  dock.innerHTML = `
+    <div class="hstack" style="justify-content:center; align-items:center; flex-wrap:wrap; gap:18px;">
+      <div class="hstack" style="gap:18px;">
+        <button class="btn" data-action="q-prev" title="previous in queue (k)">[ prev ]</button>
+        <button class="btn" data-action="q-stop" title="stop">[ stop ]</button>
+        <button class="btn" data-action="q-next" title="next in queue (j)">[ next ]</button>
+        <button class="btn" data-action="q-shuffle" aria-pressed="${prefs.shuffle}" title="shuffle">[ shuffle ]</button>
+        <button class="btn btn-ghost" data-action="q-clear" title="clear queue">[ clear ]</button>
+      </div>
+    </div>
+    <div class="small" style="text-align:center; margin-top:6px;">
+      <span id="nowPlaying" class="muted"></span> · queue <span id="qPos">0</span>/<span id="qLen">0</span>${prefs.filterTag? ` · tag: #${esc(prefs.filterTag)}`:''}
+    </div>
+  `;
+  // Add stop button logic to close the active player/post
+  dock.addEventListener('click', (e) => {
+    const stopBtn = e.target.closest('[data-action="q-stop"]');
+    if (stopBtn) {
+      // Find and close the active player
+      const activePlayer = document.querySelector('.player.active');
+      if (activePlayer) {
+        // Pause any audio or video elements inside the player
+        activePlayer.querySelectorAll('audio,video').forEach(el => {
+          el.pause && el.pause();
+          el.currentTime = 0;
+        });
+        // Remove src from iframes to fully stop embeds (YouTube, SoundCloud, Bandcamp, Spotify)
+        activePlayer.querySelectorAll('iframe').forEach(ifr => {
+          ifr.src = '';
+        });
+        activePlayer.classList.remove('active');
+        // Optionally, also remove is-playing from post
+        const playingPost = document.querySelector('.post.is-playing');
+        if (playingPost) playingPost.classList.remove('is-playing');
+      }
+    }
+  });
+  root.appendChild(dock);
   // Listen for user filter events
   if (!window._userFilterHandlerAttached) {
     window.addEventListener('filter-user-posts', (e) => {
@@ -89,42 +132,35 @@ export async function renderMain(root, state, DB, render) {
   const left = document.createElement('div');
   let playAllLabel = 'play all';
   if (prefs.filterTag) playAllLabel = `play #${esc(prefs.filterTag)}`;
-  left.innerHTML = `
-    <div class="box" id="tagsBoxMain" style="margin-bottom:16px;">
-      <div class="hstack" style="justify-content:space-between; align-items:center">
-        <div class="muted small">> tags</div>
-        ${prefs.filterTag ? `<button class="btn btn-ghost small" data-action="clear-tag">[ clear tag ]</button>`: ''}
-      </div>
-  <div id="tags"></div>
+  // Tag cloud
+  const tagsBox = document.createElement('div');
+  tagsBox.className = 'box';
+  tagsBox.id = 'tagsBoxMain';
+  tagsBox.style.marginBottom = '16px';
+  tagsBox.innerHTML = `
+    <div class="hstack" style="justify-content:space-between; align-items:center">
+      <div class="muted small">> tags</div>
+      ${prefs.filterTag ? `<button class="btn btn-ghost small" data-action="clear-tag">[ clear tag ]</button>`: ''}
     </div>
-    <div class="box">
-      <div class="hstack" style="justify-content:space-between">
-        <div class="muted">> feed</div>
-        <div class="hstack">
-          <button class="btn btn-ghost" data-action="play-all">[ ${playAllLabel} ]</button>
-        </div>
-      </div>
-      <div id="feed"></div>
-      <div id="pager" class="hstack" style="justify-content:center; margin-top:8px"></div>
-    </div>
-    <div class="dock" id="dock" style="display:none">
-      <div class="hstack" style="justify-content:space-between; align-items:center">
-        <div class="hstack">
-          <button class="btn" data-action="q-prev" title="previous in queue (k)">[ prev ]</button>
-          <button class="btn" data-action="q-next" title="next in queue (j)">[ next ]</button>
-          <button class="btn" data-action="q-shuffle" aria-pressed="${prefs.shuffle}" title="shuffle">[ shuffle ]</button>
-          <button class="btn" data-action="q-repeat" title="repeat">[ repeat: ${prefs.repeat} ]</button>
-          <button class="btn btn-ghost" data-action="q-clear" title="clear queue">[ clear ]</button>
-          <label class="small muted" title="auto-scroll to playing">
-            <input type="checkbox" id="autoScroll" ${prefs.autoScroll?'checked':''}/> auto-scroll
-          </label>
-        </div>
-        <div class="small">
-          <span id="nowPlaying" class="muted"></span> · queue <span id="qPos">0</span>/<span id="qLen">0</span>${prefs.filterTag? ` · tag: #${esc(prefs.filterTag)}`:''}
-        </div>
-      </div>
-    </div>
+    <div id="tags"></div>
   `;
+  left.appendChild(tagsBox);
+  // Dock (player controls)
+  left.appendChild(dock);
+  // Feed
+  const feedBox = document.createElement('div');
+  feedBox.className = 'box';
+  feedBox.innerHTML = `
+    <div class="hstack" style="justify-content:space-between">
+      <div class="muted">> feed</div>
+      <div class="hstack">
+        <button class="btn btn-ghost" data-action="play-all">[ ${playAllLabel} ]</button>
+      </div>
+    </div>
+    <div id="feed"></div>
+    <div id="pager" class="hstack" style="justify-content:center; margin-top:8px"></div>
+  `;
+  left.appendChild(feedBox);
   grid.appendChild(left);
 
   const right = document.createElement('div');

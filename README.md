@@ -9,8 +9,11 @@
 
 ---
 
+
 ## Recent Updates
 
+- **Auto-Refresh (Autorefetch) Feed:**  
+	The app now automatically refreshes the feed, likes, and comments every 30 seconds, even while you are viewing or listening. If a music player is active, only likes/comments and new posts are updated in-place, so playback is never interrupted. The feed also refreshes instantly when you return to the tab or window.
 - **Help Menu Revamp:**  
 	The help overlay is now a full-featured new user guide, including step-by-step instructions, posting tips, queue/player info, keyboard shortcuts, and accessibility tips.
 - **UI Improvement:**  
@@ -25,7 +28,6 @@
 	Export/import all data as JSON, with clear warnings and feedback.
 - **Supabase Integration:**  
 	Seamless switching between local and Supabase modes, with all CRUD mirrored to the backend if enabled.
-
 - **Modularization:**  
 	The main application logic (`app.js`) has been split into multiple focused modules for better maintainability and clarity. See the updated File Structure and Component Analysis below.
 - **Provider Detection:**  
@@ -35,7 +37,7 @@
 - **Security:**  
 	Local mode is for demo/testing only; Supabase mode uses RLS for security.
 
----
+----
 
 ## Main Features
 
