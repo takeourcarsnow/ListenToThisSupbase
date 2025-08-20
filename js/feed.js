@@ -143,7 +143,16 @@ export function renderTags(el, DB) {
     .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
     .slice(0, 80);
   if (top.length === 0) { el.innerHTML = '<span class="muted small">no tags yet</span>'; return; }
+  // Find min and max counts for scaling
+  const counts = top.map(([_, c]) => c);
+  const min = Math.min(...counts);
+  const max = Math.max(...counts);
+  // Scale font size between 14px and 18px (less drastic)
+  function scaleFont(count) {
+    if (max === min) return 16;
+    return 14 + Math.round(((count - min) / (max - min)) * 4);
+  }
   el.innerHTML = top.map(([t, c]) =>
-    `<span class="tag small" data-action="filter-tag" data-tag="${esc(t)}">#${esc(t)} <span class="muted">(${c})</span></span>`
+    `<span class="tag small" data-action="filter-tag" data-tag="${esc(t)}" style="font-size:${scaleFont(c)}px">#${esc(t)} <span class="muted">(${c})</span></span>`
   ).join(' ');
 }

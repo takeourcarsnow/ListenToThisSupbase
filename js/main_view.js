@@ -1,3 +1,15 @@
+// --- Compose prompt rotation ---
+function getComposePrompt() {
+  const prompts = [
+    '> so what song has been stuck in your head lately?',
+    '> share a track that made your day better!',
+    '> what have you been looping non-stop?',
+    '> found a hidden gem? drop it here!',
+    '> what tune do you want everyone to hear right now?'
+  ];
+  // Use a random prompt each refresh
+  return prompts[Math.floor(Math.random() * prompts.length)];
+}
 import { $, debounce, esc } from './utils.js';
 import { loadPrefs, savePrefs } from './prefs.js';
 import { renderFeed, renderTags, getFilteredPosts } from './feed.js';
@@ -87,7 +99,7 @@ export async function renderMain(root, state, DB, render) {
     const myAvatar = meUser?.avatarUrl || '/favicon-32x32.png';
     right.innerHTML = `
       <div class="box" id="aboutBox">
-        <div class="muted small">my profile</div>
+        <div class="muted small">> my profile</div>
         <div style="display:flex; flex-direction:column; align-items:center; margin-bottom:8px;">
           <img class="profile-avatar" src="${esc(myAvatar)}" alt="avatar" />
         </div>
@@ -107,19 +119,21 @@ export async function renderMain(root, state, DB, render) {
         </form>
       </div>
       <div class="box">
-        <div class="muted small">compose</div>
+  <div class="muted small" style="margin-bottom:18px;">${getComposePrompt()}</div>
         <form id="postForm" class="stack" autocomplete="off">
-          <input class="field" id="f_title" placeholder="Title (song or album)" required maxlength="120" />
+          <input class="field" id="f_title" placeholder="Title (song or album)" required maxlength="120" style="margin-top:8px;" />
           <input class="field" id="f_artist" placeholder="Artist" maxlength="120"/>
           <input class="field" id="f_url" placeholder="Link (YouTube / Spotify / Bandcamp / SoundCloud / direct .mp3)" required/>
           <input class="field" id="f_tags" placeholder="tags (space/comma or #tag #chill #2020)"/>
           <div id="tagSuggestions" class="hstack" style="flex-wrap:wrap; gap:4px; margin:4px 0 0 0;"></div>
           <textarea class="field" id="f_body" rows="4" placeholder="Why should we listen? (up to 200 characters)" maxlength="200" oninput="document.getElementById('bodyCounter').textContent = this.value.length + '/200';"></textarea>
-          <div class="muted small" style="text-align:right"><span id="bodyCounter">0/200</span></div>
-          <div class="muted small" id="captchaBox" style="margin:8px 0;"></div>
-          <input class="field" id="f_captcha" placeholder="Enter captcha answer" autocomplete="off" />
+          <div class="hstack" style="justify-content:space-between; align-items:center; margin-bottom:4px;">
+            <div class="muted small" id="captchaBox" style="margin:0;"></div>
+            <span class="muted small" id="bodyCounter">0/200</span>
+          </div>
+          <input class="field" id="f_captcha" placeholder="Enter captcha answer" autocomplete="off" style="margin-bottom:2px;" />
           <div id="postFormError" class="muted small" style="color:#c00;min-height:18px;"></div>
-          <div class="hstack">
+          <div class="hstack" style="justify-content:center; margin-top:1px; gap:10px;">
             <button class="btn" type="submit">[ post ]</button>
             <button class="btn btn-ghost" type="button" id="previewBtn">[ preview ]</button>
           </div>
@@ -128,7 +142,7 @@ export async function renderMain(root, state, DB, render) {
       </div>
       <div class="box" id="tagsBox">
         <div class="hstack" style="justify-content:space-between; align-items:center">
-          <div class="muted small">tags</div>
+          <div class="muted small">> tags</div>
           ${prefs.filterTag ? `<button class="btn btn-ghost small" data-action="clear-tag">[ clear tag ]</button>`: ''}
         </div>
         <div id="tags" class="hstack" style="margin-top:6px; flex-wrap:wrap"></div>
@@ -137,13 +151,14 @@ export async function renderMain(root, state, DB, render) {
   } else {
     right.innerHTML = `
       <div class="box">
-        <div class="muted small">> compose</div>
+  <div class="muted small">${getComposePrompt()}</div>
         <div class="notice small">You are in guest read-only mode. Login to post, like, or comment.</div>
         <button class="btn btn-ghost" data-action="go-login">[ login / register ]</button>
       </div>
       <div class="box" id="tagsBox">
         <div class="hstack" style="justify-content:space-between; align-items:center">
           <div class="muted small">> tags</div>
+
           ${prefs.filterTag ? `<button class="btn btn-ghost small" data-action="clear-tag">[ clear tag ]</button>`: ''}
         </div>
         <div id="tags" class="hstack" style="margin-top:6px; flex-wrap:wrap"></div>
