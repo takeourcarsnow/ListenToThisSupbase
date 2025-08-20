@@ -44,6 +44,7 @@ class LocalAdapter {
         name: name.trim(),
         email: email || '',
         password: password || '', // Not secure, demo only
+        about: '', // NEW
         createdAt: Date.now()
       };
       this.cache.users.push(u); await this._save();
@@ -100,6 +101,16 @@ class LocalAdapter {
     await this._save();
     return p.comments;
   }
+
+  async updateUser(id, patch){
+    await this.init();
+    const i = (this.cache.users || []).findIndex(u => u.id === id);
+    if(i < 0) return null;
+    this.cache.users[i] = { ...this.cache.users[i], ...patch };
+    await this._save();
+    return this.cache.users[i];
+  }
+
   async replaceAll(data){
     this.cache = { version:2, createdAt: Date.now(), users: data.users||[], posts: data.posts||[] };
     await this._save();
@@ -156,7 +167,12 @@ class SupabaseAdapter {
     };
   }
   mapRowToUser(row){
-    return { id: row.id, name: row.name, createdAt: row.created_at ? new Date(row.created_at).getTime() : Date.now() };
+    return {
+      id: row.id,
+      name: row.name,
+      about: row.about || '', // NEW
+      createdAt: row.created_at ? new Date(row.created_at).getTime() : Date.now()
+    };
   }
 
   async refresh(){
@@ -182,9 +198,14 @@ class SupabaseAdapter {
     }
     const existing = this.cache.users.find(u => (userId && u.id === userId) || u.name.toLowerCase() === name.toLowerCase());
     if (existing) return existing;
-    const user = { id: userId || (crypto.randomUUID ? crypto.randomUUID() : 'u_' + Math.random().toString(36).slice(2)), name: name.trim(), createdAt: Date.now() };
+    const user = {
+      id: userId || (crypto.randomUUID ? crypto.randomUUID() : 'u_' + Math.random().toString(36).slice(2)),
+      name: name.trim(),
+      about: '', // NEW
+      createdAt: Date.now()
+    };
     const { error } = await this.supabase.from('users').insert({
-      id: user.id, name: user.name, created_at: new Date(user.createdAt).toISOString()
+      id: user.id, name: user.name, about: user.about, created_at: new Date(user.createdAt).toISOString()
     });
     if (error) console.warn('ensureUser insert failed', error);
     this.cache.users.push(user);
@@ -247,12 +268,28 @@ class SupabaseAdapter {
     return p ? p.comments : comments;
   }
 
+  async updateUser(id, patch){
+    const update = {};
+    if (patch.name !== undefined) update.name = patch.name;
+    if (patch.about !== undefined) update.about = patch.about;
+    if (Object.keys(update).length === 0) return this.getUserById(id);
+    const { error } = await this.supabase.from('users').update(update).eq('id', id);
+    if(error) console.error('updateUser error', error);
+    await this.refresh();
+    return this.getUserById(id);
+  }
+
   async replaceAll(data){
     // Dangerous: clears all data. Intended for import/replace.
     await this.supabase.from('posts').delete().neq('id','');
     await this.supabase.from('users').delete().neq('id','');
 
-    const users = (data.users||[]).map(u => ({ id:u.id, name:u.name, created_at: new Date(u.createdAt||Date.now()).toISOString() }));
+    const users = (data.users||[]).map(u => ({
+      id: u.id,
+      name: u.name,
+      about: u.about || null, // NEW
+      created_at: new Date(u.createdAt||Date.now()).toISOString()
+    }));
     if(users.length){
       const { error } = await this.supabase.from('users').upsert(users);
       if(error) console.error('replaceAll users error', error);

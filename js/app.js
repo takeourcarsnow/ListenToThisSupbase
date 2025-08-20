@@ -244,7 +244,7 @@ async function renderMain(root){
   top.className = 'topbar';
   top.innerHTML = `
     <div class="hstack toolbar">
-      <span class="pill" title="current user">user: ${esc(me ? me.name : 'guest')}${me ? '' : ' (read-only)'}</span>
+      <span class="pill" title="current user">user: ${me ? `<a href="#" data-action="view-user" data-uid="${esc(me.id)}">${esc(me.name)}</a>` : 'guest (read-only)'}</span>
       <span class="pill" title="total posts">posts: ${db.posts.length}</span>
       ${prefs.filterTag ? `<span class="pill">tag: #${esc(prefs.filterTag)} <a href="#" data-action="clear-tag" title="clear tag">✕</a></span>` : ''}
       
@@ -310,7 +310,19 @@ async function renderMain(root){
   const storageText = await storageInfo();
 
   if (me) {
+    const meUser = db.users.find(u => u.id === me.id) || null;
+    const myAbout = meUser?.about || '';
     right.innerHTML = `
+      <div class="box">
+        <div class="muted small">my profile</div>
+        <form class="stack" data-action="profile-form" autocomplete="off">
+          <textarea class="field" id="aboutMe" name="about" rows="3" maxlength="500" placeholder="Write a short bio...">${esc(myAbout)}</textarea>
+          <div class="hstack">
+            <button class="btn" type="submit">[ save about ]</button>
+            <span class="muted small" id="profileMsg"></span>
+          </div>
+        </form>
+      </div>
       <div class="box">
         <div class="muted small">compose</div>
         <form id="postForm" class="stack" autocomplete="off">
@@ -599,7 +611,11 @@ function renderPostHTML(p){
 <article class="post" id="post-${p.id}" data-post="${p.id}" aria-label="${esc(p.title)}">
   <div class="title">${esc(p.title)} ${p.artist?`<span class="muted thin">by ${esc(p.artist)}</span>`:''}</div>
   <div class="small meta">
-    <span class="muted">posted by ${esc(user ? user.name : 'anon')}</span>
+    <span class="muted">posted by ${
+      user
+        ? `<a href="#" data-action="view-user" data-uid="${esc(user.id)}">${esc(user.name)}</a>`
+        : 'anon'
+    }</span>
     <span class="muted dot">·</span>
     <span class="muted">${fmtTime(p.createdAt)}</span>
     ${tgs?`<span class="muted dot">·</span> ${tgs}`:''}
@@ -631,8 +647,13 @@ function renderPostHTML(p){
 
 function renderCommentHTML(c, postId){
   const canDel = state.user && c.userId === state.user.id;
+  const db = DB.getAll();
+  const u = db.users.find(x => x.id === c.userId) || null;
+  const uname = userName(c.userId);
   return `<div class="comment small" data-comment="${c.id}" data-post="${postId}">
-    <span class="muted">${fmtTime(c.createdAt)}</span> <b>${esc(userName(c.userId))}</b>: ${esc(c.text)}
+    <span class="muted">${fmtTime(c.createdAt)}</span> <b>${
+      u ? `<a href="#" data-action="view-user" data-uid="${esc(u.id)}">${esc(uname)}</a>` : esc(uname)
+    }</b>: ${esc(c.text)}
     ${canDel ? ` <button class="btn btn-ghost small" data-action="delete-comment" data-post="${postId}" data-comment="${c.id}">[ delete ]</button>` : ''}
   </div>`;
 }
@@ -819,45 +840,10 @@ async function onActionClick(e){
   if(action==='q-shuffle'){ savePrefs({shuffle: !loadPrefs().shuffle}); updateDock(); }
   if(action==='q-repeat'){
     const order = ['off','all','one'];
-    const cur = loadPrefs().repeat;
-    // Determine play button label
-    let playBtnLabel = 'play all';
-    if (prefs.filterTag) {
-      playBtnLabel = `play #${esc(prefs.filterTag)}`;
-    }
-    left.innerHTML = `
-      <div class="box">
-        <div class="hstack" style="justify-content:space-between">
-          <div class="muted">feed</div>
-          <div class="hstack">
-            <button class="btn btn-ghost" data-action="play-all">[ ${playBtnLabel} ]</button>
-          </div>
-        </div>
-        <div id="feed"></div>
-        <div id="pager" class="hstack" style="justify-content:center; margin-top:8px"></div>
-      </div>
-      <div class="dock" id="dock" style="display:none">
-        <div class="hstack" style="justify-content:space-between; align-items:center">
-          <div class="hstack">
-            <button class="btn" data-action="q-prev" title="previous in queue (k)">[ prev ]</button>
-            <button class="btn" data-action="q-next" title="next in queue (j)">[ next ]</button>
-            <button class="btn" data-action="q-shuffle" aria-pressed="${prefs.shuffle}" title="shuffle">[ shuffle ]</button>
-            <button class="btn" data-action="q-repeat" title="repeat">[ repeat: ${prefs.repeat} ]</button>
-            <button class="btn btn-ghost" data-action="q-clear" title="clear queue">[ clear ]</button>
-            <label class="small muted" title="auto-scroll to playing">
-              <input type="checkbox" id="autoScroll" ${prefs.autoScroll?'checked':''}/> auto-scroll
-            </label>
-          </div>
-          <div class="small">
-            <span id="nowPlaying" class="muted"></span> · queue <span id="qPos">0</span>/<span id="qLen">0</span>${prefs.filterTag? ` · tag: #${esc(prefs.filterTag)}`:''}
-          </div>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+    const cur = loadPrefs().repeat || 'off';
+    const next = order[(order.indexOf(cur)+1)%order.length];
+    savePrefs({ repeat: next });
+    updateDock();
   }
 
   if(action==='reset'){
@@ -893,10 +879,22 @@ async function onActionClick(e){
   if(action==='show-help'){
     $('#help').classList.add('active');
   }
+
+  if(action==='view-user'){
+    e.preventDefault();
+    const uid = btn.dataset.uid;
+    if(uid) showUserProfile(uid);
+  }
+
+  if(action==='go-edit-profile'){
+    document.getElementById('profile')?.remove();
+    const t = document.getElementById('aboutMe');
+    t?.focus();
+  }
 }
 
 async function onDelegatedSubmit(e){
-  const form = e.target.closest('form[data-action="comment-form"], form[data-action="edit-form"]');
+  const form = e.target.closest('form[data-action="comment-form"], form[data-action="edit-form"], form[data-action="profile-form"]');
   if(!form) return;
   e.preventDefault();
   const pid = form.dataset.post;
@@ -928,6 +926,21 @@ async function onDelegatedSubmit(e){
     const card = document.getElementById('post-'+pid);
     if(card && updated) card.outerHTML = renderPostHTML(updated);
     liveSay('post updated');
+    return;
+  }
+
+  if(form.dataset.action === 'profile-form'){
+    if(!state.user){ toast($('#app'), 'login first', true); return; }
+    const about = form.querySelector('[name=about]').value.trim();
+    try{
+      await DB.updateUser(state.user.id, { about });
+      await DB.refresh();
+      toast($('#app'), 'profile updated');
+      render();
+    }catch(err){
+      const msg = document.getElementById('profileMsg');
+      if(msg) msg.textContent = 'Save failed';
+    }
     return;
   }
 }
@@ -1140,6 +1153,43 @@ async function seedDemo(){
     const btn = document.querySelector(`#post-${firstId} [data-action="toggle-player"]`);
     if(btn) btn.click();
   }, 600);
+}
+
+// Profile overlay
+function showUserProfile(userId){
+  const db = DB.getAll();
+  const u = db.users.find(x => x.id === userId);
+  const me = state.user;
+
+  const overlay = document.createElement('div');
+  overlay.id = 'profile';
+  overlay.style.position = 'fixed';
+  overlay.style.inset = '0';
+  overlay.style.background = 'rgba(0,0,0,0.4)';
+  overlay.style.zIndex = '10000';
+  overlay.innerHTML = `
+    <div class="box" style="max-width:520px; margin:10vh auto; background:var(--bg,#111);">
+      <div class="hstack" style="justify-content:space-between; align-items:center">
+        <div class="muted small">user profile</div>
+        <button class="btn btn-ghost" data-close-profile="1">[ close ]</button>
+      </div>
+      <div class="sep"></div>
+      ${
+        u
+          ? `
+            <div class="title">${esc(u.name)}</div>
+            <div class="small muted" style="margin-bottom:8px">member since ${new Date(u.createdAt||Date.now()).toLocaleDateString()}</div>
+            <div>${u.about ? esc(u.about).replace(/\n/g,'<br>') : '<span class="muted small">no about yet.</span>'}</div>
+            ${me && me.id===u.id ? `<div style="margin-top:10px"><button class="btn btn-ghost" data-action="go-edit-profile">[ edit my about ]</button></div>` : ''}
+          `
+          : `<div class="muted small">user not found</div>`
+      }
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  overlay.addEventListener('click', (e)=>{
+    if (e.target.dataset.closeProfile || e.target.id === 'profile') overlay.remove();
+  });
 }
 
 // Helpers
