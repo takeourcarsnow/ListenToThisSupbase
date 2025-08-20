@@ -98,14 +98,17 @@ async function render() {
   applyAccent(prefs.accent);
   applyDensity(prefs.density);
   const root = $('#app');
-  // Hide ascii.fm banner if present BEFORE rendering anything
+  // Hide ascii.fm header if present BEFORE rendering anything
   const banner = document.getElementById('ascii-banner');
+  const header = document.querySelector('header[role="banner"]');
   if (!state.user && !isGuestMode()) {
     if (banner) banner.style.display = 'none';
+    if (header) header.style.display = 'none';
     root.innerHTML = '';
     return renderLogin(root);
   } else {
     if (banner) banner.style.display = '';
+    if (header) header.style.display = '';
     root.innerHTML = '';
     return renderMain(root);
   }
@@ -113,9 +116,11 @@ async function render() {
 
 // Login
 function renderLogin(root) {
-  // Hide ascii.fm banner if present
+  // Hide ascii.fm header if present
   const banner = document.getElementById('ascii-banner');
+  const header = document.querySelector('header[role="banner"]');
   if (banner) banner.style.display = 'none';
+  if (header) header.style.display = 'none';
   const div = document.createElement('div');
   div.className = 'login';
   div.style.display = 'flex';
