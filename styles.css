@@ -74,59 +74,106 @@ body.show-header header[role="banner"] {
   }
 }
 /* Prevent scrolling past tags panel on mobile */
-@media (max-width: 600px) {
-  html, body {
-    height: 100vh;
-    min-height: 100vh;
-    max-height: 100vh;
-    overflow-x: hidden;
-    overscroll-behavior-y: contain;
-  }
-  /* If tags panel has a unique class or id, use it here. Assuming .tags is the tags panel */
-  .tags {
-    margin-bottom: 0 !important;
-    padding-bottom: 0 !important;
-  }
-  /* Hide any extra content after tags panel if present */
-  .tags ~ * {
-    display: none !important;
-  }
-}
-.about-preview {
-  max-height: 3.5em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: pre-line;
-  flex: 1;
-}
-/* Responsive styles for mobile */
-@media (max-width: 600px) {
-  input, textarea, button {
+
+/* --- RESPONSIVE LAYOUT REWORK --- */
+html, body {
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  width: 100%;
   box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: var(--space-3);
+  box-sizing: border-box;
+}
+
+.container, .main, .feed, .profile, .compose, .data, .tags, .settings, .header, .search, .posts, .about, .player, .queue, .footer {
+  width: 100%;
+  margin: 0;
+  padding-left: 5px;
+  padding-right: 5px;
+  box-sizing: border-box;
+}
+
+.box {
+  border: 1px dashed var(--line);
+  padding: var(--space-3);
+  background: var(--bg2);
+  border-radius: var(--radius-1);
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+.post {
+  border: 1px solid var(--line, #333);
+  box-shadow: 0 1px 6px 0 rgba(0,0,0,0.06);
+  padding: var(--space-3);
+  margin-bottom: 28px;
+  background: var(--bg3);
+  border-radius: var(--radius-1, 8px);
+  transition: border-color .15s, box-shadow .2s, background-color .2s;
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+  width: 100%;
+}
+.actions > * {
+  flex: 1 1 45%;
+  min-width: 60px;
+  margin: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+@media (max-width: 900px) {
+  .wrap {
+    max-width: 100%;
+    padding: var(--space-2);
   }
 }
 
-/* Responsive styles for mobile */
 @media (max-width: 600px) {
-  body, html {
-    padding: 0;
-    margin: 0;
-    width: 100vw;
-    overflow-x: hidden;
+  .wrap {
+    max-width: 100%;
+    padding: var(--space-2);
   }
   .container, .main, .feed, .profile, .compose, .data, .tags, .settings, .header, .search, .posts, .about, .player, .queue, .footer {
-    width: 100% !important;
-    max-width: 100vw !important;
-    margin: 0 !important;
-    padding-left: 5px !important;
-    padding-right: 5px !important;
+    padding-left: 2px;
+    padding-right: 2px;
+  }
+  .actions {
+    flex-direction: row;
+    gap: 4px;
+    flex-wrap: wrap;
+    width: 100%;
+  }
+  .actions > * {
+    min-width: 60px;
+    font-size: 14px;
+    padding: 6px 0;
+    flex: 1 1 100%;
+    max-width: 100%;
     box-sizing: border-box;
   }
-  input, textarea, button {
-  box-sizing: border-box;
-  }
-  .feed {
-    min-width: 0 !important;
+  input, textarea, button, select {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
   }
 }
 :root{
@@ -139,6 +186,7 @@ body.show-header header[role="banner"] {
   --muted: #a7a7a7;
   --line:#2b2f36;
   --line2:#363b44;
+        width: 100%;
   --acc: #8ab4ff;
   --acc-weak: color-mix(in oklab, var(--acc) 35%, white 0%);
   --like:#ff6b6b;
