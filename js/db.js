@@ -1,8 +1,8 @@
 import { safeClone } from './utils.js';
 import { SUPABASE_URL, SUPABASE_ANON_KEY, USE_SUPABASE } from './config.js';
 
-const DB_KEY_V2 = 'ascii.fm/db@v2';
-const DB_KEY_V1 = 'ascii.fm/v1';
+const DB_KEY_V2 = 'tunedIn.space/db@v2';
+const DB_KEY_V1 = 'tunedIn.space/v1';
 
 const defaultDB = { users:[], posts:[], createdAt: Date.now(), version: 2 };
 

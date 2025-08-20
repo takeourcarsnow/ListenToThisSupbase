@@ -1,9 +1,9 @@
 
-# ascii.fm — Minimal Music Threads Webapp
+# tunedIn.space — Minimal Music Threads Webapp
 
 ## Overview
 
-**ascii.fm** is a minimal, modern web application for sharing and discussing music links. It supports user registration/login, posting music threads with tags, likes, comments, and playlist/queue features. The app is styled for a "monospace vibes" aesthetic and can operate in two modes:
+**tunedIn.space** is a minimal, modern web application for sharing and discussing music links. It supports user registration/login, posting music threads with tags, likes, comments, and playlist/queue features. The app is styled for a "monospace vibes" aesthetic and can operate in two modes:
 - **Local mode:** All data is stored in the browser's LocalStorage.
 - **Supabase mode:** Data is synced with a Supabase backend (cloud database).
 

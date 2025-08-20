@@ -7,9 +7,9 @@ import {
 import { USE_SUPABASE } from './config.js';
 
 // Storage keys and prefs
-const SESSION_KEY = 'ascii.fm/session@v1';
-const PREF_KEY = 'ascii.fm/prefs@v2';
-const GUEST_KEY = 'ascii.fm/guest@v1';
+const SESSION_KEY = 'tunedIn.space/session@v1';
+const PREF_KEY = 'tunedIn.space/prefs@v2';
+const GUEST_KEY = 'tunedIn.space/guest@v1';
 
 const defaultPrefs = {
   autoScroll: true,
@@ -98,7 +98,7 @@ async function render() {
   applyAccent(prefs.accent);
   applyDensity(prefs.density);
   const root = $('#app');
-  // Hide ascii.fm header if present BEFORE rendering anything
+  // Hide tunedIn.space header if present BEFORE rendering anything
   const banner = document.getElementById('ascii-banner');
   const header = document.querySelector('header[role="banner"]');
   if (!state.user && !isGuestMode()) {
@@ -116,7 +116,7 @@ async function render() {
 
 // Login
 function renderLogin(root) {
-  // Hide ascii.fm header if present
+  // Hide tunedIn.space header if present
   const banner = document.getElementById('ascii-banner');
   const header = document.querySelector('header[role="banner"]');
   if (banner) banner.style.display = 'none';
@@ -131,7 +131,7 @@ function renderLogin(root) {
   div.innerHTML = `
     <div style="display:inline-block; text-align:center;">
       <div class="small muted" style="margin-bottom:2px;">┌─ login or register to</div>
-      <div class="logo" style="margin:0 auto;">ascii.fm</div>
+  <div class="logo" style="margin:0 auto;">tunedIn.space</div>
       <div class="small muted" style="margin-bottom:12px;">└──────────────────────</div>
       <form id="loginForm" class="stack" autocomplete="off" style="max-width:340px; margin:0 auto; text-align:center;">
   <div class="title" style="margin-bottom:8px;">Music that you care about.</div>
@@ -959,7 +959,7 @@ async function onActionClick(e){
     const perma = btn.dataset.perma || (location.pathname+'#post-'+postId);
     const db = DB.getAll();
     const p = postId ? db.posts.find(x=>x.id===postId) : null;
-    const title = p ? `${p.title}${p.artist? ' — '+p.artist:''}` : 'ascii.fm';
+  const title = p ? `${p.title}${p.artist? ' — '+p.artist:''}` : 'tunedIn.space';
     if(navigator.share){
       navigator.share({ title, url: perma }).catch(()=> copyText(perma));
     }else{
@@ -1005,9 +1005,9 @@ async function onActionClick(e){
       alert('Reset all is only for local mode. For Supabase, use Import to replace remote data.');
       return;
     }
-    if(confirm('Reset all ascii.fm data (posts, users, prefs)? This cannot be undone.')){
-      localStorage.removeItem('ascii.fm/db@v2');
-      localStorage.removeItem('ascii.fm/v1');
+    if(confirm('Reset all tunedIn.space data (posts, users, prefs)? This cannot be undone.')){
+      localStorage.removeItem('tunedIn.space/db@v2');
+      localStorage.removeItem('tunedIn.space/v1');
       localStorage.removeItem(PREF_KEY);
       localStorage.removeItem(SESSION_KEY);
       localStorage.removeItem(GUEST_KEY);
@@ -1391,7 +1391,7 @@ async function storageInfo(){
       };
     }
   }catch{}
-  const raw = (localStorage.getItem('ascii.fm/db@v2') || '') + (localStorage.getItem(PREF_KEY) || '');
+  const raw = (localStorage.getItem('tunedIn.space/db@v2') || '') + (localStorage.getItem(PREF_KEY) || '');
   return { text: 'Storage approx: ' + approxSize(raw) + ' · Local-only.', percent: null };
 }
 
