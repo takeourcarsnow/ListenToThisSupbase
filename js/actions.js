@@ -27,6 +27,16 @@ export async function onActionClick(e, state, DB, render) {
       pl.innerHTML = '';
       card.classList.remove('is-playing');
     } else {
+      // Close any other active players
+      document.querySelectorAll('.player.active').forEach(otherPl => {
+        if (otherPl !== pl) {
+          otherPl.classList.remove('active');
+          try { otherPl._cleanup && otherPl._cleanup(); } catch {}
+          otherPl.innerHTML = '';
+          const otherCard = otherPl.closest('.post');
+          if (otherCard) otherCard.classList.remove('is-playing');
+        }
+      });
       pl.classList.add('active');
       const db = DB.getAll();
       const p = db.posts.find(x => x.id === postId);

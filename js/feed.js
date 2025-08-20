@@ -39,12 +39,12 @@ export function renderCommentHTML(c, postId, state, DB) {
   const db = DB.getAll();
   const u = db.users.find(x => x.id === c.userId) || null;
   const uname = userName(c.userId, state, DB);
-  return `<div class="comment small" data-comment="${c.id}" data-post="${postId}">
-    <span class="muted">${fmtTime(c.createdAt)}</span> <b>${
-      u ? `<a href="#" data-action="view-user" data-uid="${esc(u.id)}">${esc(uname)}</a>` : esc(uname)
-    }</b>: ${esc(c.text)}
-    ${canDel ? ` <button class="btn btn-ghost small" data-action="delete-comment" data-post="${postId}" data-comment="${c.id}">[ delete ]</button>` : ''}
-  </div>`;
+  const avatarUrl = u && u.avatarUrl ? esc(u.avatarUrl) : '/favicon-32x32.png';
+    return `<div class="comment small" data-comment="${c.id}" data-post="${postId}">
+      <img class="avatar avatar-sm" src="${avatarUrl}" alt="avatar" />
+      <span class="muted">${fmtTime(c.createdAt)}</span> <b>${u ? `<a href="#" data-action="view-user" data-uid="${esc(u.id)}">${esc(uname)}</a>` : esc(uname)}</b>: ${esc(c.text)}
+      ${canDel ? ` <button class="btn btn-ghost small" data-action="delete-comment" data-post="${postId}" data-comment="${c.id}">[ delete ]</button>` : ''}
+    </div>`;
 }
 
 export function renderPostHTML(p, state, DB) {
@@ -61,19 +61,17 @@ export function renderPostHTML(p, state, DB) {
   const commentsCount = p.comments ? p.comments.length : 0;
   const commentsHTML = (p.comments || []).map(c => renderCommentHTML(c, p.id, state, DB)).join('');
 
-  return `
-<article class="post" id="post-${p.id}" data-post="${p.id}" aria-label="${esc(p.title)}">
-  <div class="title">${esc(p.title)} ${p.artist ? `<span class="muted thin">by ${esc(p.artist)}</span>` : ''}</div>
-  <div class="small meta">
-    <span class="muted">posted by ${
-      user
-        ? `<a href="#" data-action="view-user" data-uid="${esc(user.id)}">${esc(user.name)}</a>`
-        : 'anon'
-    }</span>
-    <span class="muted dot">·</span>
-    <span class="muted">${fmtTime(p.createdAt)}</span>
-    ${tgs ? `<span class="muted dot">·</span> ${tgs}` : ''}
-  </div>
+  const authorAvatar = user && user.avatarUrl ? esc(user.avatarUrl) : '/favicon-32x32.png';
+    return `
+  <article class="post" id="post-${p.id}" data-post="${p.id}" aria-label="${esc(p.title)}">
+    <div class="title">${esc(p.title)} ${p.artist ? `<span class="muted thin">by ${esc(p.artist)}</span>` : ''}</div>
+    <div class="small meta">
+      <img class="avatar avatar-sm" src="${authorAvatar}" alt="avatar" />
+      <span class="muted">posted by ${user ? `<a href="#" data-action="view-user" data-uid="${esc(user.id)}">${esc(user.name)}</a>` : 'anon'}</span>
+      <span class="muted dot">·</span>
+      <span class="muted">${fmtTime(p.createdAt)}</span>
+      ${tgs ? `<span class="muted dot">·</span> ${tgs}` : ''}
+    </div>
   ${p.body ? `<div class="sep"></div><div>${esc(p.body)}</div>` : ''}
   <div class="actions hstack" style="margin-top:8px">
     <button class="btn" data-action="toggle-player">[ play ]</button>
@@ -81,7 +79,6 @@ export function renderPostHTML(p, state, DB) {
     <button class="btn" data-action="comment" title="comments">[ comments ${commentsCount} ]</button>
     <button class="btn btn-ghost" data-action="queue" title="add to queue">[ add to queue ]</button>
     <button class="btn btn-ghost" data-action="share" data-perma="${esc(perma)}" title="share/copy link">[ share ]</button>
-    <a class="btn btn-ghost" href="${esc(p.url)}" target="_blank" rel="noopener noreferrer">[ open src ]</a>
     ${canEdit ? `
       <button class="btn btn-ghost" data-action="edit">[ edit ]</button>
       <button class="btn btn-ghost" data-action="delete">[ delete ]</button>

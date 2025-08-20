@@ -121,7 +121,7 @@ export async function renderMain(root, state, DB, render) {
           <div id="postFormError" class="muted small" style="color:#c00;min-height:18px;"></div>
           <div class="hstack">
             <button class="btn" type="submit">[ post ]</button>
-            <button class="btn btn-ghost" type="button" id="previewBtn">[ preview player ]</button>
+            <button class="btn btn-ghost" type="button" id="previewBtn">[ preview ]</button>
           </div>
           <div id="preview" class="player" aria-live="polite"></div>
         </form>
