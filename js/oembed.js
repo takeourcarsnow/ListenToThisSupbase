@@ -26,7 +26,8 @@ export async function fetchOEmbed(url) {
   // SoundCloud
   if (/soundcloud\.com/.test(url)) {
     try {
-      const res = await fetch(`https://soundcloud.com/oembed?url=${encodeURIComponent(url)}&format=json`);
+      // Use Vercel proxy endpoint to avoid CORS issues
+      const res = await fetch(`/api/soundcloud-oembed?url=${encodeURIComponent(url)}`);
       if (!res.ok) return null;
       return await res.json();
     } catch {}
