@@ -337,12 +337,17 @@ async function renderMain(root){
     const meUser = db.users.find(u => u.id === me.id) || null;
     const myAbout = meUser?.about || '';
     right.innerHTML = `
-      <div class="box">
+      <div class="box" id="aboutBox">
         <div class="muted small">my profile</div>
-        <form class="stack" data-action="profile-form" autocomplete="off">
+        <div id="aboutCollapsed" style="display:flex; align-items:center; justify-content:space-between; min-height:38px;">
+          <div id="aboutText" class="about-preview">${myAbout ? esc(myAbout).replace(/\n/g,'<br>') : '<span class=\'muted small\'>no about yet.</span>'}</div>
+          <button class="btn btn-ghost small" id="editAboutBtn" type="button">[ edit ]</button>
+        </div>
+        <form class="stack" id="aboutEditForm" data-action="profile-form" autocomplete="off" style="display:none; margin-top:8px;">
           <textarea class="field" id="aboutMe" name="about" rows="3" maxlength="500" placeholder="Write a short bio...">${esc(myAbout)}</textarea>
           <div class="hstack">
             <button class="btn" type="submit">[ save about ]</button>
+            <button class="btn btn-ghost small" id="cancelAboutBtn" type="button">[ cancel ]</button>
             <span class="muted small" id="profileMsg"></span>
           </div>
         </form>
@@ -392,6 +397,30 @@ async function renderMain(root){
 
   grid.appendChild(right);
   root.appendChild(grid);
+
+  // About section interactivity
+  if (me) {
+    const aboutBox = right.querySelector('#aboutBox');
+    const aboutCollapsed = aboutBox.querySelector('#aboutCollapsed');
+    const aboutEditForm = aboutBox.querySelector('#aboutEditForm');
+    const editBtn = aboutBox.querySelector('#editAboutBtn');
+    const cancelBtn = aboutBox.querySelector('#cancelAboutBtn');
+    editBtn.addEventListener('click', () => {
+      aboutCollapsed.style.display = 'none';
+      aboutEditForm.style.display = '';
+      aboutEditForm.querySelector('#aboutMe').focus();
+    });
+    cancelBtn.addEventListener('click', () => {
+      aboutEditForm.style.display = 'none';
+      aboutCollapsed.style.display = 'flex';
+    });
+    aboutEditForm.addEventListener('submit', (e) => {
+      setTimeout(() => {
+        aboutEditForm.style.display = 'none';
+        aboutCollapsed.style.display = 'flex';
+      }, 100); // let save finish, UI will rerender anyway
+    });
+  }
 
   // FEED
   state.page = 1;
@@ -1237,7 +1266,6 @@ function showUserProfile(userId){
             <div class="title">${esc(u.name)}</div>
             <div class="small muted" style="margin-bottom:8px">member since ${new Date(u.createdAt||Date.now()).toLocaleDateString()}</div>
             <div>${u.about ? esc(u.about).replace(/\n/g,'<br>') : '<span class="muted small">no about yet.</span>'}</div>
-            ${me && me.id===u.id ? `<div style="margin-top:10px"><button class="btn btn-ghost" data-action="go-edit-profile">[ edit my about ]</button></div>` : ''}
           `
           : `<div class="muted small">user not found</div>`
       }

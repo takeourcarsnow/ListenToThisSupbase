@@ -1,3 +1,10 @@
+.about-preview {
+  max-height: 3.5em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: pre-line;
+  flex: 1;
+}
 /* Responsive styles for mobile */
 @media (max-width: 600px) {
   input, textarea, button {
