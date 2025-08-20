@@ -5,6 +5,7 @@ import { SESSION_KEY, GUEST_KEY, setGuestMode, clearSession } from './session.js
 import { renderFeed, renderPostHTML, renderCommentHTML } from './feed.js';
 import { openEditInline } from './posts.js';
 import { showUserProfile } from './profile.js';
+import { supabase } from './supabase_client.js';
 import { pickAccent } from './theme.js';
 import { updateDock, queuePrev, queueNext, markNowPlaying, getActiveQueueId } from './queue.js';
 import { openHelpOverlay } from './overlays.js';
@@ -223,14 +224,49 @@ export async function onDelegatedSubmit(e, state, DB, render) {
   }
 
   if (form.dataset.action === 'profile-form') {
-    if (!state.user) { toast(document.getElementById('app'), 'login first', true); return; }
+    if (!state.user) {
+      toast(document.getElementById('app'), 'login first', true);
+      return;
+    }
     const about = form.querySelector('[name=about]').value.trim();
+    let avatarUrl = undefined;
+    const fileInput = form.querySelector('[name=avatar]');
+    const file = fileInput && fileInput.files && fileInput.files[0];
+    if (file) {
+      try {
+        // Check bucket existence and permissions in Supabase dashboard if this fails
+        const fileExt = file.name.split('.').pop();
+        const filePath = `avatars/${state.user.id}_${Date.now()}.${fileExt}`;
+        const uploadRes = await supabase.storage.from('avatars').upload(filePath, file, { upsert: true });
+        if (uploadRes.error) {
+          console.error('Avatar upload error:', uploadRes.error);
+          const msg = document.getElementById('profileMsg');
+          if (msg) msg.textContent = 'Avatar upload failed: ' + uploadRes.error.message;
+          return;
+        }
+        const publicUrlRes = supabase.storage.from('avatars').getPublicUrl(filePath);
+        if (publicUrlRes.error) {
+          console.error('Get public URL error:', publicUrlRes.error);
+          const msg = document.getElementById('profileMsg');
+          if (msg) msg.textContent = 'Avatar URL error: ' + publicUrlRes.error.message;
+          return;
+        }
+        avatarUrl = publicUrlRes.data?.publicUrl || '';
+      } catch (err) {
+        console.error('Unexpected avatar upload error:', err);
+        const msg = document.getElementById('profileMsg');
+        if (msg) msg.textContent = 'Avatar upload failed (unexpected error)';
+        return;
+      }
+    }
     try {
-      await DB.updateUser(state.user.id, { about });
+      const patch = avatarUrl ? { about, avatarUrl } : { about };
+      await DB.updateUser(state.user.id, patch);
       await DB.refresh();
       toast(document.getElementById('app'), 'profile updated');
       render();
     } catch (err) {
+      console.error('Profile update error:', err);
       const msg = document.getElementById('profileMsg');
       if (msg) msg.textContent = 'Save failed';
     }

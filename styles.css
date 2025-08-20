@@ -1,3 +1,14 @@
+/* Profile avatar */
+.profile-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--line, #444);
+  background: #222;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 8px #0002;
+}
 /* Fade-in animation for login screen */
 .login-fadein {
   opacity: 0;

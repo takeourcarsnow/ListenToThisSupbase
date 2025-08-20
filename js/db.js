@@ -171,6 +171,7 @@ class SupabaseAdapter {
       id: row.id,
       name: row.name,
       about: row.about || '', // NEW
+  avatarUrl: row.avatarurl || '',
       createdAt: row.created_at ? new Date(row.created_at).getTime() : Date.now()
     };
   }
@@ -269,14 +270,15 @@ class SupabaseAdapter {
   }
 
   async updateUser(id, patch){
-    const update = {};
-    if (patch.name !== undefined) update.name = patch.name;
-    if (patch.about !== undefined) update.about = patch.about;
-    if (Object.keys(update).length === 0) return this.getUserById(id);
-    const { error } = await this.supabase.from('users').update(update).eq('id', id);
-    if(error) console.error('updateUser error', error);
-    await this.refresh();
-    return this.getUserById(id);
+  const update = {};
+  if (patch.name !== undefined) update.name = patch.name;
+  if (patch.about !== undefined) update.about = patch.about;
+  if (patch.avatarUrl !== undefined) update.avatarurl = patch.avatarUrl;
+  if (Object.keys(update).length === 0) return this.getUserById(id);
+  const { error } = await this.supabase.from('users').update(update).eq('id', id);
+  if(error) console.error('updateUser error', error);
+  await this.refresh();
+  return this.getUserById(id);
   }
 
   async replaceAll(data){

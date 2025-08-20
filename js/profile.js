@@ -20,6 +20,9 @@ export function showUserProfile(userId, DB) {
       ${
         u
           ? `
+            <div style="display:flex; flex-direction:column; align-items:center; margin-bottom:12px;">
+              <img class="profile-avatar" src="${u.avatarUrl ? esc(u.avatarUrl) : '/favicon-32x32.png'}" alt="avatar" />
+            </div>
             <div class="title">${esc(u.name)}</div>
             <div class="small muted" style="margin-bottom:8px">member since ${new Date(u.createdAt||Date.now()).toLocaleDateString()}</div>
             <div>${u.about ? esc(u.about).replace(/\n/g,'<br>') : '<span class="muted small">no about yet.</span>'}</div>
