@@ -98,53 +98,71 @@ async function render() {
   applyAccent(prefs.accent);
   applyDensity(prefs.density);
   const root = $('#app');
-  root.innerHTML = '';
-  if (!state.user && !isGuestMode()) return renderLogin(root);
-  return renderMain(root);
+  // Hide ascii.fm banner if present BEFORE rendering anything
+  const banner = document.getElementById('ascii-banner');
+  if (!state.user && !isGuestMode()) {
+    if (banner) banner.style.display = 'none';
+    root.innerHTML = '';
+    return renderLogin(root);
+  } else {
+    if (banner) banner.style.display = '';
+    root.innerHTML = '';
+    return renderMain(root);
+  }
 }
 
 // Login
 function renderLogin(root) {
+  // Hide ascii.fm banner if present
+  const banner = document.getElementById('ascii-banner');
+  if (banner) banner.style.display = 'none';
   const div = document.createElement('div');
-  div.className = 'box login';
+  div.className = 'login';
+  div.style.display = 'flex';
+  div.style.flexDirection = 'column';
+  div.style.alignItems = 'center';
+  div.style.justifyContent = 'center';
+  div.style.minHeight = '70vh';
   div.innerHTML = `
-    <div class="small muted" style="margin-bottom:2px;">┌─ login or register to</div>
-    <div class="logo">ascii.fm</div>
-    <div class="small muted" style="margin-bottom:12px;">└──────────────────────</div>
-    <form id="loginForm" class="stack" autocomplete="off">
-      <div class="title" style="margin-bottom:8px;">Sign in to ascii.fm</div>
-      <label>Email
-        <input required type="email" id="loginEmail" class="field" placeholder="your@email.com" />
-      </label>
-      <label>Password
-        <input required minlength="6" maxlength="64" id="loginPass" class="field" type="password" placeholder="password" />
-      </label>
-      <button class="btn" type="submit" style="margin-top:8px;">[ sign in ]</button>
-      <div style="margin-top:8px; text-align:center;">
-        <a href="#" id="showRegister" class="muted small" style="text-decoration:underline;">Don't have an account? Create one</a>
+    <div style="display:inline-block; text-align:center;">
+      <div class="small muted" style="margin-bottom:2px;">┌─ login or register to</div>
+      <div class="logo" style="margin:0 auto;">ascii.fm</div>
+      <div class="small muted" style="margin-bottom:12px;">└──────────────────────</div>
+      <form id="loginForm" class="stack" autocomplete="off" style="max-width:340px; margin:0 auto; text-align:center;">
+  <div class="title" style="margin-bottom:8px;">Music that you care about.</div>
+        <div style="margin:0 auto 8px auto; max-width:320px;">
+          <input required type="email" id="loginEmail" class="field" placeholder="Email" style="width:100%; margin-top:2px; text-align:center;" />
+        </div>
+        <div style="margin:0 auto 8px auto; max-width:320px;">
+          <input required minlength="6" maxlength="64" id="loginPass" class="field" type="password" placeholder="Password" style="width:100%; margin-top:2px; text-align:center;" />
+        </div>
+        <button class="btn" type="submit" style="margin-top:8px; width:100%;">[ sign in ]</button>
+        <div style="margin-top:8px; text-align:center;">
+          <a href="#" id="showRegister" class="muted small" style="text-decoration:underline;">Don't have an account? Create one</a>
+        </div>
+  <div class="muted small" id="loginMsg" style="min-height:18px;">${DB.isRemote ? 'Sign in to access content, ' : ''} or use guest mode below to just view posts.</div>
+      </form>
+      <form id="registerForm" class="stack" autocomplete="off" style="display:none; max-width:340px; margin:0 auto; text-align:center;">
+        <div class="title" style="margin-bottom:8px;">Create an account</div>
+        <label style="display:block; text-align:left; margin:0 auto 8px auto; max-width:320px;">Username
+          <input required minlength="2" maxlength="24" id="regName" class="field" placeholder="e.g. moonbeam" style="width:100%; margin-top:2px;" />
+        </label>
+        <label style="display:block; text-align:left; margin:0 auto 8px auto; max-width:320px;">Email
+          <input required type="email" id="regEmail" class="field" placeholder="e.g. you@email.com" style="width:100%; margin-top:2px;" />
+        </label>
+        <label style="display:block; text-align:left; margin:0 auto 8px auto; max-width:320px;">Password
+          <input required minlength="6" maxlength="64" id="regPass" class="field" type="password" placeholder="password" style="width:100%; margin-top:2px;" />
+        </label>
+        <button class="btn" type="submit" style="margin-top:8px; width:100%;">[ create account ]</button>
+        <div style="margin-top:8px; text-align:center;">
+          <a href="#" id="showLogin" class="muted small" style="text-decoration:underline;">Already have an account? Sign in</a>
+        </div>
+        <div class="muted small" id="regMsg" style="min-height:18px;">${DB.isRemote ? 'Register to post.  ' : ''}Or view in guest mode.</div>
+      </form>
+      <div class="sep"></div>
+      <div class="hstack" style="justify-content:center; margin-top:8px;">
+        <button class="btn btn-ghost" id="guestBtn" type="button">[ continue as guest ]</button>
       </div>
-      <div class="muted small" id="loginMsg" style="min-height:18px;">${DB.isRemote ? 'Synced with Supabase. ' : ''}Sign in to access content.</div>
-    </form>
-    <form id="registerForm" class="stack" autocomplete="off" style="display:none">
-      <div class="title" style="margin-bottom:8px;">Create an account</div>
-      <label>Username
-        <input required minlength="2" maxlength="24" id="regName" class="field" placeholder="e.g. moonbeam" />
-      </label>
-      <label>Email
-        <input required type="email" id="regEmail" class="field" placeholder="e.g. you@email.com" />
-      </label>
-      <label>Password
-        <input required minlength="6" maxlength="64" id="regPass" class="field" type="password" placeholder="password" />
-      </label>
-      <button class="btn" type="submit" style="margin-top:8px;">[ create account ]</button>
-      <div style="margin-top:8px; text-align:center;">
-        <a href="#" id="showLogin" class="muted small" style="text-decoration:underline;">Already have an account? Sign in</a>
-      </div>
-      <div class="muted small" id="regMsg" style="min-height:18px;">${DB.isRemote ? 'Register to post.  ' : ''}Or view in guest mode.</div>
-    </form>
-    <div class="sep"></div>
-    <div class="hstack" style="justify-content:center">
-      <button class="btn btn-ghost" id="guestBtn" type="button">[ continue as guest ]</button>
     </div>
   `;
   root.appendChild(div);
