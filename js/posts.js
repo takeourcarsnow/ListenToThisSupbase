@@ -7,6 +7,7 @@ export async function onCreatePost(e, state, DB, render) {
   const me = state.user;
   if (!me) { toast(document.getElementById('app'), 'login to post', true); return; }
 
+
   const title = document.getElementById('f_title').value.trim();
   const artist = document.getElementById('f_artist').value.trim();
   let url = document.getElementById('f_url').value.trim();
@@ -15,6 +16,20 @@ export async function onCreatePost(e, state, DB, render) {
   let tags = (document.getElementById('f_tags').value || '').trim();
   const errorDiv = document.getElementById('postFormError');
   if (errorDiv) errorDiv.textContent = '';
+  // Captcha check
+  const captchaBox = document.getElementById('captchaBox');
+  const captchaInput = document.getElementById('f_captcha');
+  if (captchaBox && captchaInput) {
+    const answer = captchaBox.dataset.answer;
+    if (captchaInput.value.trim() !== answer) {
+      if (errorDiv) errorDiv.textContent = 'Captcha incorrect. Please try again.';
+      captchaInput.value = '';
+      // Reset captcha
+      const evt = new Event('resetCaptcha');
+      document.getElementById('postForm').dispatchEvent(evt);
+      return;
+    }
+  }
   if (!title || !url) return;
 
   if (!tags) {
@@ -74,6 +89,9 @@ export async function onCreatePost(e, state, DB, render) {
   if (errorDiv) errorDiv.textContent = '';
   const preview = document.getElementById('preview');
   preview.classList.remove('active'); preview.innerHTML = '';
+  // Reset captcha after successful post
+  const evt = new Event('resetCaptcha');
+  document.getElementById('postForm').dispatchEvent(evt);
 
   render();
   setTimeout(() => {

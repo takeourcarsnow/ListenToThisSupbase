@@ -110,6 +110,8 @@ export async function renderMain(root, state, DB, render) {
           <div id="tagSuggestions" class="hstack" style="flex-wrap:wrap; gap:4px; margin:4px 0 0 0;"></div>
           <textarea class="field" id="f_body" rows="4" placeholder="Why should we listen? (up to 200 characters)" maxlength="200" oninput="document.getElementById('bodyCounter').textContent = this.value.length + '/200';"></textarea>
           <div class="muted small" style="text-align:right"><span id="bodyCounter">0/200</span></div>
+          <div class="muted small" id="captchaBox" style="margin:8px 0;"></div>
+          <input class="field" id="f_captcha" placeholder="Enter captcha answer" autocomplete="off" />
           <div id="postFormError" class="muted small" style="color:#c00;min-height:18px;"></div>
           <div class="hstack">
             <button class="btn" type="submit">[ post ]</button>
@@ -254,8 +256,21 @@ export async function renderMain(root, state, DB, render) {
     });
   }
 
+  // Captcha logic
+  function setCaptcha() {
+    const a = Math.floor(Math.random() * 10) + 1;
+    const b = Math.floor(Math.random() * 10) + 1;
+    right.querySelector('#captchaBox').textContent = `Captcha: What is ${a} + ${b}?`;
+    right.querySelector('#captchaBox').dataset.answer = (a + b).toString();
+    right.querySelector('#f_captcha').value = '';
+  }
+  setCaptcha();
   const postForm = right.querySelector('#postForm');
-  if (postForm) postForm.addEventListener('submit', (e) => onCreatePost(e, state, DB, render));
+  if (postForm) {
+    postForm.addEventListener('submit', (e) => onCreatePost(e, state, DB, render));
+    // Reset captcha after post
+    postForm.addEventListener('resetCaptcha', setCaptcha);
+  }
 
   // Tag suggestions
   const f_tags = right.querySelector('#f_tags');
