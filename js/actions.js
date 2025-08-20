@@ -72,11 +72,27 @@ export async function onActionClick(e, state, DB, render) {
         void likeBtn.offsetWidth;
         likeBtn.classList.add('like-animate');
       }
-      // Replace the card after a short delay to allow animation
-      setTimeout(() => {
-        const newCard = document.getElementById('post-' + postId);
-        if (newCard) newCard.outerHTML = renderPostHTML(updated, state, DB);
-      }, 320);
+      // If player is active, only update like button/count, not the whole card
+      const playerActive = card.querySelector('.player.active');
+      if (playerActive) {
+        // Update like button state and count
+        if (likeBtn) {
+          if ((updated.likes || []).includes(state.user.id)) {
+            likeBtn.classList.add('like-on');
+            likeBtn.setAttribute('aria-pressed', 'true');
+          } else {
+            likeBtn.classList.remove('like-on');
+            likeBtn.setAttribute('aria-pressed', 'false');
+          }
+          likeBtn.innerHTML = `[ ♥ ${(updated.likes ? updated.likes.length : 0)} ]`;
+        }
+      } else {
+        // Replace the card after a short delay to allow animation
+        setTimeout(() => {
+          const newCard = document.getElementById('post-' + postId);
+          if (newCard) newCard.outerHTML = renderPostHTML(updated, state, DB);
+        }, 320);
+      }
     }
   }
 
