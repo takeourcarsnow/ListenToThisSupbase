@@ -205,16 +205,42 @@ export async function renderMain(root, state, DB, render) {
     renderFeed($('#feed'), $('#pager'), state, DB, loadPrefs());
   });
 
+  // Full post preview logic
   const previewBtn = right.querySelector('#previewBtn');
   if (previewBtn) {
     previewBtn.addEventListener('click', () => {
-      const url = $('#f_url').value.trim();
-      const pv = parseProvider(url);
       const preview = $('#preview');
-      if (!url) { preview.classList.remove('active'); preview.innerHTML = ''; return; }
-      preview.classList.add('active');
-      const fakePost = { provider: pv, url };
-      buildEmbed(fakePost, preview);
+      const title = $('#f_title').value.trim();
+      const artist = $('#f_artist').value.trim();
+      const url = $('#f_url').value.trim();
+      const tags = ($('#f_tags').value || '').split(/[#\s,]+/g).map(t => t.trim().toLowerCase()).filter(Boolean);
+      const body = $('#f_body').value.trim();
+      const pv = parseProvider(url);
+      // Fake post object for preview
+      const fakePost = {
+        id: 'preview',
+        userId: (state.user && state.user.id) || 'preview',
+        title,
+        artist,
+        url,
+        provider: pv,
+        tags,
+        body,
+        likes: [],
+        comments: [],
+        createdAt: Date.now(),
+      };
+      // Use renderPostHTML for full post preview
+      import('./feed.js').then(mod => {
+        preview.classList.add('active');
+        // Render post HTML and remove action buttons for preview
+        let html = mod.renderPostHTML(fakePost, state, DB);
+        // Remove all action buttons from preview (play, like, comment, queue, share, open src, edit, delete)
+        html = html.replace(/<div class="actions[\s\S]*?<\/div>/, '');
+        // Add a preview label at the top
+        html = `<div class="muted small" style="margin-bottom:4px;">Preview Post</div>` + html;
+        preview.innerHTML = html;
+      });
     });
   }
 
@@ -319,10 +345,12 @@ export async function renderMain(root, state, DB, render) {
       if (e.target.classList.contains('tag-suggestion')) {
         let current = f_tags.value.trim();
         let tag = e.target.textContent.replace(/^#/, '');
-        let parts = current.split(/[, ]/);
-        parts[parts.length - 1] = tag;
-        parts = parts.filter(Boolean);
-        f_tags.value = parts.join(' ') + ' ';
+        // Only add if not already present
+        let tags = current.split(/[, ]+/).map(t => t.trim()).filter(Boolean);
+        if (!tags.includes(tag)) {
+          tags.push(tag);
+        }
+        f_tags.value = tags.join(' ') + ' ';
         f_tags.dispatchEvent(new Event('input'));
         f_tags.focus();
       }
