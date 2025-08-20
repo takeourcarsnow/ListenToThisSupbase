@@ -169,16 +169,17 @@ header[role="banner"] {
     text-align: center;
   }
   .head {
-  max-width: 100vw;
-  box-sizing: border-box;
-  overflow-x: auto;
-  font-size: clamp(0.55em, 2.5vw, 0.85em);
-  padding-left: 2px;
-  padding-right: 2px;
-  margin-left: 0;
-  margin-right: 0;
-  white-space: pre;
-  display: block;
+    width: 100vw;
+    max-width: 100vw;
+    min-width: 0;
+    box-sizing: border-box;
+    font-size: min(3.2vw, 0.7em);
+    padding: 0;
+    margin: 0;
+    word-break: break-all;
+    display: block;
+    overflow-x: hidden;
+    white-space: pre-wrap;
   }
 }
 .logo{ color:var(--fg); }
