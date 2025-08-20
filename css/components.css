@@ -1,0 +1,267 @@
+/* =========================================
+   components.css
+   - Cards/posts, actions
+   - Avatars, tag cloud, sort icons
+   - Player, comments, overlay
+   - Misc UI components
+   ========================================= */
+
+/* Generic “box” container */
+.box {
+  border: 1px dashed var(--line);
+  padding: var(--space-3);
+  background: var(--bg2);
+  border-radius: var(--radius-1);
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 100%;
+}
+
+/* Post/Card */
+.post {
+  border: 1px solid var(--line, #333);
+  box-shadow: 0 1px 6px 0 rgba(0,0,0,0.06);
+  padding: var(--space-3);
+  margin-bottom: 28px;
+  background: var(--bg3);
+  border-radius: var(--radius-1, 8px);
+  transition: border-color .15s, box-shadow .2s, background-color .2s;
+  width: 100%;
+  box-sizing: border-box;
+  max-width: 100%;
+}
+.post .title { font-weight: 600; }
+.post:hover {
+  border-color: var(--line2, #444);
+  box-shadow: 0 2px 10px 0 rgba(0,0,0,0.10);
+  background: var(--bg3);
+}
+.post .meta { display: flex; gap: 10px; flex-wrap: wrap; }
+.post .meta .dot { opacity: .5; }
+.post.is-playing { outline: 2px dotted var(--acc); outline-offset: 2px; }
+
+/* Density toggles */
+:root[data-density="compact"] .post { padding: 10px; }
+:root[data-density="compact"] .box { padding: 10px; }
+:root[data-density="compact"] .actions .btn { padding: 1px 6px; }
+
+/* Actions bar (always horizontal) */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+  width: 100%;
+}
+.actions > * {
+  flex: 1 1 auto;
+  min-width: 80px;
+  margin: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+.actions .btn { font-size: 12px; padding: 2px 8px; }
+
+@media (max-width: 600px) {
+  .actions {
+    flex-direction: row;
+    gap: 4px;
+  }
+  .actions > * {
+    min-width: 60px;
+    font-size: 14px;
+    padding: 6px 0;
+    flex: 1 1 100%;
+  }
+  input, textarea, button, select {
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+/* Likes micro-animation */
+.like-on { color: var(--like); }
+.like-animate { animation: likePop 0.18s cubic-bezier(0.4,0.2,0.2,1); }
+@keyframes likePop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+/* Sort icon buttons */
+.sort-icons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-left: 12px;
+}
+.sort-btn {
+  background: none;
+  border: none;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s;
+  display: flex;
+  align-items: center;
+  outline: none;
+}
+.sort-btn.active, .sort-btn:hover {
+  background: var(--accent, #2a7fff22);
+  box-shadow: 0 1px 4px #0002;
+}
+.sort-btn:focus { outline: 2px solid var(--accent, #2a7fff); }
+.icon-sort-newest::before {
+  content: '\25B2';
+  font-size: 1.2em;
+  color: var(--accent, #2a7fff);
+}
+.icon-sort-likes::before {
+  content: '\2665';
+  font-size: 1.2em;
+  color: #e25555;
+}
+.icon-sort-comments::before {
+  content: '\1F4AC';
+  font-size: 1.2em;
+  color: #888;
+}
+
+/* Avatars + profile bits */
+.avatar.avatar-sm {
+  width: 22px; height: 22px; border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--line, #444);
+  background: #222;
+  margin-right: 6px;
+  vertical-align: middle;
+  display: inline-block;
+}
+.profile-avatar {
+  width: 200px; height: 200px; border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--line, #444);
+  background: #222;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 16px #0004;
+}
+.profile-avatar-small {
+  width: 64px; height: 64px; border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--line, #444);
+  background: #222;
+  margin-bottom: 8px;
+  box-shadow: 0 2px 8px #0002;
+}
+.profile-post-list { max-width: 420px; word-break: break-word; }
+.tag-label { white-space: nowrap; }
+
+/* Tag Cloud (one-line, scrollable) */
+.tag-cloud {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  align-items: center;
+  max-width: 700px;
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  box-sizing: border-box;
+  white-space: nowrap;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.tag-cloud::-webkit-scrollbar { display: none; }
+.tag-cloud .tag {
+  display: inline-block;
+  padding: 0.18em 0.6em;
+  border-radius: 1em;
+  background: #23272f;
+  color: #fff;
+  font-family: 'Fira Mono', monospace;
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  cursor: pointer;
+}
+.tag-cloud .tag--freq-1 { font-size: 0.8rem; opacity: 0.7; }
+.tag-cloud .tag--freq-2 { font-size: 0.9rem; opacity: 0.8; }
+.tag-cloud .tag--freq-3 { font-size: 1rem; opacity: 0.9; }
+.tag-cloud .tag--freq-4 { font-size: 1.08rem; opacity: 1; }
+.tag-cloud .tag--freq-5, .tag-cloud .tag--freq-max { font-size: 1.05rem; font-weight: 700; opacity: 1; }
+.tag-cloud .tag:hover { background: #3a3f4b; color: #ffe082; }
+@media (max-width: 600px) {
+  .tag-cloud .tag { font-size: 0.75rem; padding: 0.14em 0.4em; }
+}
+
+/* Media/player */
+.player {
+  margin-top: 6px; display: none; background: #0b0e12; padding: 6px;
+  border: 1px dashed var(--line); border-radius: 4px;
+}
+.player.active { display: block; }
+iframe { border: 0; }
+iframe[loading=lazy] { contain: content; }
+.yt { width: 100%; aspect-ratio: 16/9; }
+.sp { width: 100%; height: 152px; }
+.bc iframe { width: 100% !important; }
+.audio { width: 100%; }
+
+/* Comments */
+.comment-box { display: none; margin-top: 6px; }
+.comment-box.active { display: block; }
+.comment { padding: 4px 0; border-top: 1px dashed var(--line); }
+
+/* Pills/outline */
+.pill { border: 1px dashed var(--line); padding: 3px 8px; border-radius: 999px; }
+.highlight { outline: 2px dotted var(--acc); outline-offset: 2px; }
+
+/* Storage meter */
+.meter { height: 6px; background: #0e1116; border: 1px dashed var(--line); border-radius: 999px; overflow: hidden; }
+.meter > span { display: block; height: 100%; background: var(--acc); width: 0; }
+
+/* Overlay (help) */
+.overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  background: rgba(0,0,0,.6);
+  overflow: hidden;
+  padding: 2vw;
+}
+.overlay.active { display: flex; }
+.overlay .sheet {
+  width: 100%;
+  max-width: 520px;
+  background: linear-gradient(135deg, var(--bg2) 80%, var(--bg3) 100%);
+  border: 1.5px solid var(--line2);
+  border-radius: 16px;
+  padding: 28px 20px 24px 20px;
+  box-sizing: border-box;
+  margin: 0 auto;
+  overflow-y: auto;
+  max-height: 90vh;
+  box-shadow: 0 8px 32px 0 rgba(0,0,0,0.25), 0 1.5px 8px 0 var(--line2);
+  font-size: 1.08em;
+  color: var(--fg);
+  transition: box-shadow 0.2s, background 0.2s;
+}
+@media (max-width: 600px), (max-height: 600px) {
+  .overlay .sheet {
+    max-width: 98vw;
+    width: 100vw;
+    min-width: 0;
+    padding: 8px;
+    font-size: 1em;
+    border-radius: 10px;
+  }
+  .overlay { padding: 0; }
+}
