@@ -1,3 +1,13 @@
+/* User profile modal post list improvements */
+.profile-avatar {
+  max-width: 180px;
+  max-height: 180px;
+  object-fit: cover;
+}
+.profile-post-list {
+  max-width: 420px;
+  word-break: break-word;
+}
 /* Prevent tag and count from breaking into separate lines */
 .tag-label {
   white-space: nowrap;

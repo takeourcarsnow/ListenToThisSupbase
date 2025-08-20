@@ -103,7 +103,12 @@ export function renderPostHTML(p, state, DB) {
 }
 
 export function renderFeed(el, pager, state, DB, prefs) {
-  const posts = getFilteredPosts(DB, prefs);
+  let posts = getFilteredPosts(DB, prefs);
+  // User filter support (from prefs or global)
+  const userId = prefs._userFilterId || window.filterPostsByUserId;
+  if (userId) {
+    posts = posts.filter(p => p.userId === userId);
+  }
   const total = posts.length;
   const start = 0;
   const end = Math.min(state.page * state.pageSize, total);

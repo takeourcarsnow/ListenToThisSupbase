@@ -30,13 +30,20 @@ export async function renderMain(root, state, DB, render) {
 
   const top = document.createElement('div');
   top.className = 'topbar';
-  const filteredPosts = getFilteredPosts(DB, prefs);
-  const postCount = (prefs.filterTag || prefs.search) ? filteredPosts.length : db.posts.length;
+  // User filter support
+  let userFilterId = window.filterPostsByUserId || null;
+  let filteredPosts = getFilteredPosts(DB, prefs);
+  // Only for post count display; actual filtering is handled in renderFeed
+  if (userFilterId) {
+    filteredPosts = filteredPosts.filter(p => p.userId === userFilterId);
+  }
+  const postCount = (prefs.filterTag || prefs.search || userFilterId) ? filteredPosts.length : db.posts.length;
     top.innerHTML = `
       <div class="hstack toolbar">
         <span class="pill" title="current user">user: ${me ? `<a href="#" data-action="view-user" data-uid="${esc(me.id)}">${esc(me.name)}</a>` : 'guest'}</span>
         <span class="pill" title="total posts">posts: ${postCount}</span>
-        ${prefs.filterTag ? `<span class="pill">tag: #${esc(prefs.filterTag)} <a href=\"#\" data-action=\"clear-tag\" title=\"clear tag\">✕</a></span>` : ''}
+  ${prefs.filterTag ? `<span class="pill">tag: #${esc(prefs.filterTag)} <a href=\"#\" data-action=\"clear-tag\" title=\"clear tag\">✕</a></span>` : ''}
+  ${userFilterId ? `<span class="pill">user filter: <a href="#" data-action="clear-user-filter">${esc(db.users.find(u => u.id === userFilterId)?.name || 'user')}</a> <a href="#" data-action="clear-user-filter" title="clear user filter">✕</a></span>` : ''}
       </div>
       <div class="hstack toolbar">
         <input class="field" id="search" type="search" placeholder="search title/artist/tags..." style="width:240px" value="${esc(prefs.search)}" aria-label="search"/>
@@ -53,6 +60,24 @@ export async function renderMain(root, state, DB, render) {
       </div>
     `;
   root.appendChild(top);
+
+  // Listen for user filter events
+  if (!window._userFilterHandlerAttached) {
+    window.addEventListener('filter-user-posts', (e) => {
+      window.filterPostsByUserId = e.detail.userId;
+      render();
+    });
+    window._userFilterHandlerAttached = true;
+  }
+
+  // Clear user filter
+  top.addEventListener('click', (e) => {
+    if (e.target && e.target.dataset && e.target.dataset.action === 'clear-user-filter') {
+      window.filterPostsByUserId = null;
+      render();
+      e.preventDefault();
+    }
+  });
 
   const grid = document.createElement('div');
   grid.className = 'grid';
