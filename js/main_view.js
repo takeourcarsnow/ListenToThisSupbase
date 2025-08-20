@@ -70,6 +70,7 @@ export async function renderMain(root, state, DB, render) {
   dock.className = 'dock';
   dock.id = 'dock';
   dock.style.display = 'none';
+  dock.style.borderBottom = 'none';
   dock.innerHTML = `
     <div class="hstack" style="justify-content:center; align-items:center; flex-wrap:wrap; gap:18px;">
       <div class="hstack" style="gap:18px;">
@@ -169,20 +170,47 @@ export async function renderMain(root, state, DB, render) {
     const meUser = db.users.find(u => u.id === me.id) || null;
     const myAbout = meUser?.about || '';
     const myAvatar = meUser?.avatarUrl || '/favicon-32x32.png';
+    const socials = {
+      facebook: meUser?.facebook || '',
+      instagram: meUser?.instagram || '',
+      twitter: meUser?.twitter || '',
+      bandcamp: meUser?.bandcamp || '',
+      soundcloud: meUser?.soundcloud || '',
+      youtube: meUser?.youtube || ''
+    };
+    function renderSocialLinks(s) {
+      const icons = {
+        facebook: '🌐',
+        instagram: '📸',
+        twitter: '🐦',
+        bandcamp: '🎵',
+        soundcloud: '☁️',
+        youtube: '▶️'
+      };
+      return Object.entries(s).filter(([k,v])=>v).map(([k,v]) => `<a href="${esc(v)}" target="_blank" rel="noopener" class="social-link" title="${k}">${icons[k]}</a>`).join(' ');
+    }
     right.innerHTML = `
       <div class="box" id="aboutBox">
         <div class="muted small">> my profile</div>
         <div style="display:flex; flex-direction:column; align-items:center; margin-bottom:8px;">
           <img class="profile-avatar-small" src="${esc(myAvatar)}" alt="avatar" />
         </div>
-        <div id="aboutCollapsed" style="display:flex; align-items:center; justify-content:space-between; min-height:38px;">
-          <div id="aboutText" class="about-preview">${myAbout ? esc(myAbout).replace(/\n/g,'<br>') : '<span class=\'muted small\'>no about yet.</span>'}</div>
+        <div id="aboutCollapsed" style="display:flex; flex-direction:column; gap:8px; min-height:38px;">
+          <div id="aboutText" class="about-preview">${myAbout ? esc(myAbout).replace(/\n/g,'<br>') : '<span class=\"muted small\">no about yet.</span>'}</div>
+          <div id="aboutSocials">${renderSocialLinks(socials) || '<span class="muted small">no social links</span>'}</div>
           <button class="btn btn-ghost small" id="editAboutBtn" type="button">[ edit ]</button>
         </div>
         <form class="stack" id="aboutEditForm" data-action="profile-form" autocomplete="off" style="display:none; margin-top:8px;" enctype="multipart/form-data">
           <label class="muted small" style="margin-bottom:4px;">Change avatar:</label>
           <input class="field" type="file" id="avatarFile" name="avatar" accept="image/*" style="margin-bottom:8px;" />
           <textarea class="field" id="aboutMe" name="about" rows="3" maxlength="500" placeholder="Write a short bio...">${esc(myAbout)}</textarea>
+          <input class="field" type="url" id="socialFacebook" name="facebook" placeholder="Facebook username or URL" value="${esc(socials.facebook)}" />
+          <input class="field" type="url" id="socialInstagram" name="instagram" placeholder="Instagram username or URL" value="${esc(socials.instagram)}" />
+          <input class="field" type="url" id="socialTwitter" name="twitter" placeholder="Twitter username or URL" value="${esc(socials.twitter)}" />
+          <input class="field" type="url" id="socialBandcamp" name="bandcamp" placeholder="Bandcamp username or URL" value="${esc(socials.bandcamp)}" />
+          <input class="field" type="url" id="socialSoundcloud" name="soundcloud" placeholder="SoundCloud username or URL" value="${esc(socials.soundcloud)}" />
+          <input class="field" type="url" id="socialYoutube" name="youtube" placeholder="YouTube username or URL" value="${esc(socials.youtube)}" />
+          <div class="muted small" style="margin-top:4px;">You can enter just your username (e.g. <b>nefotografija</b>) or a full URL for each social field.</div>
           <div class="hstack">
             <button class="btn" type="submit">[ save about ]</button>
             <button class="btn btn-ghost small" id="cancelAboutBtn" type="button">[ cancel ]</button>
@@ -242,10 +270,36 @@ export async function renderMain(root, state, DB, render) {
       aboutEditForm.style.display = 'none';
       aboutCollapsed.style.display = 'flex';
     });
-    aboutEditForm.addEventListener('submit', () => {
+    aboutEditForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const form = aboutEditForm;
+      const about = form.querySelector('#aboutMe').value;
+      // Helper to format username or url
+      function formatSocial(input, type) {
+        const val = input.trim();
+        if (!val) return '';
+        if (/^https?:\/\//i.test(val)) return val;
+        switch(type) {
+          case 'facebook': return 'https://facebook.com/' + val.replace(/^@/, '');
+          case 'instagram': return 'https://instagram.com/' + val.replace(/^@/, '');
+          case 'twitter': return 'https://twitter.com/' + val.replace(/^@/, '');
+          case 'bandcamp': return 'https://' + val.replace(/^https?:\/\//, '').replace(/\/$/, '') + '.bandcamp.com/';
+          case 'soundcloud': return 'https://soundcloud.com/' + val.replace(/^@/, '');
+          case 'youtube': return 'https://youtube.com/' + val.replace(/^@/, '');
+          default: return val;
+        }
+      }
+      const facebook = formatSocial(form.querySelector('#socialFacebook').value, 'facebook');
+      const instagram = formatSocial(form.querySelector('#socialInstagram').value, 'instagram');
+      const twitter = formatSocial(form.querySelector('#socialTwitter').value, 'twitter');
+      const bandcamp = formatSocial(form.querySelector('#socialBandcamp').value, 'bandcamp');
+      const soundcloud = formatSocial(form.querySelector('#socialSoundcloud').value, 'soundcloud');
+      const youtube = formatSocial(form.querySelector('#socialYoutube').value, 'youtube');
+      await DB.updateUser(me.id, { about, facebook, instagram, twitter, bandcamp, soundcloud, youtube });
       setTimeout(() => {
         aboutEditForm.style.display = 'none';
         aboutCollapsed.style.display = 'flex';
+        if (typeof render === 'function') render();
       }, 100);
     });
   }
