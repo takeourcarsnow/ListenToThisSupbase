@@ -1,4 +1,4 @@
-import { applyAccent, applyDensity } from './utils.js';
+import { applyAccent, applyDensity } from '../core/utils.js';
 
 export const PREF_KEY = 'tunedIn.space/prefs@v2';
 

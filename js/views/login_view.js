@@ -1,6 +1,6 @@
-import { $ } from './utils.js';
+import { $ } from '../core/utils.js';
 import { startPromptAnimation, startLoginPromptAnimation, stopLoginPromptAnimation } from './login_prompts.js';
-import { setGuestMode, setSession, clearSession } from './session.js';
+import { setGuestMode, setSession, clearSession } from '../auth/session.js';
 
 export function renderLogin(root, DB, render) {
   const banner = document.getElementById('ascii-banner');

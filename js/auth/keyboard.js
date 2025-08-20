@@ -1,6 +1,6 @@
-import { $, $$ } from './utils.js';
-import { queueNext, queuePrev, getActiveQueueId } from './queue.js';
-import { openHelpOverlay } from './overlays.js';
+import { $, $$ } from '../core/utils.js';
+import { queueNext, queuePrev, getActiveQueueId } from '../features/queue.js';
+import { openHelpOverlay } from '../views/overlays.js';
 
 export function onKey(e, state) {
   const tag = e.target.tagName.toLowerCase();

@@ -1,14 +1,14 @@
-import { $, esc, toast, liveSay, copyText, uid } from './utils.js';
+import { $, esc, toast, liveSay, copyText, uid } from '../core/utils.js';
 import { parseProvider, buildEmbed } from './providers.js';
-import { loadPrefs, savePrefs, PREF_KEY, resetPrefsCache } from './prefs.js';
-import { SESSION_KEY, GUEST_KEY, setGuestMode, clearSession } from './session.js';
+import { loadPrefs, savePrefs, PREF_KEY, resetPrefsCache } from '../auth/prefs.js';
+import { SESSION_KEY, GUEST_KEY, setGuestMode, clearSession } from '../auth/session.js';
 import { renderFeed, renderPostHTML, renderCommentHTML } from './feed.js';
 import { openEditInline } from './posts.js';
-import { showUserProfile } from './profile.js';
-import { supabase } from './supabase_client.js';
-import { pickAccent } from './theme.js';
+import { showUserProfile } from '../views/profile.js';
+import { supabase } from '../core/supabase_client.js';
+import { pickAccent } from '../auth/theme.js';
 import { updateDock, queuePrev, queueNext, markNowPlaying, getActiveQueueId } from './queue.js';
-import { openHelpOverlay } from './overlays.js';
+import { openHelpOverlay } from '../views/overlays.js';
 
 export async function onActionClick(e, state, DB, render) {
   const btn = e.target.closest('[data-action]');

@@ -1,4 +1,4 @@
-import { approxSize, fmtBytes, toast } from './utils.js';
+import { approxSize, fmtBytes, toast } from '../core/utils.js';
 
 export async function onImport(e, DB, state, render) {
   const file = e.target.files && e.target.files[0];

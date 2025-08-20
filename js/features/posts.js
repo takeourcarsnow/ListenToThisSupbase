@@ -1,5 +1,5 @@
 import { parseProvider } from './providers.js';
-import { uid, esc, toast } from './utils.js';
+import { uid, esc, toast } from '../core/utils.js';
 
 export async function onCreatePost(e, state, DB, render) {
   e.preventDefault();

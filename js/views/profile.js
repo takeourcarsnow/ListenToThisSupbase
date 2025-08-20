@@ -1,4 +1,4 @@
-import { esc } from './utils.js';
+import { esc } from '../core/utils.js';
 
 export function showUserProfile(userId, DB) {
   const db = DB.getAll();

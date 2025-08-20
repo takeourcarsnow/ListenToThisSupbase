@@ -1,5 +1,5 @@
 import { parseProvider } from './providers.js';
-import { uid } from './utils.js';
+import { uid } from '../core/utils.js';
 
 export async function seedDemo(DB, state, render) {
   const me = state.user || await DB.ensureUser('demo');

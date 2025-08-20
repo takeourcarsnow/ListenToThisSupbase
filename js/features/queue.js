@@ -1,5 +1,5 @@
-import { loadPrefs } from './prefs.js';
-import { $ } from './utils.js';
+import { loadPrefs } from '../auth/prefs.js';
+import { $ } from '../core/utils.js';
 
 export function getActiveQueueId(state) {
   return state.queue[state.qIndex] || null;

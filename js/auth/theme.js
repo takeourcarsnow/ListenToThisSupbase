@@ -1,5 +1,5 @@
 import { savePrefs } from './prefs.js';
-import { applyAccent } from './utils.js';
+import { applyAccent } from '../core/utils.js';
 
 export function pickAccent() {
   const colors = ['#8ab4ff','#ff79c6','#7ab6ff','#7bd389','#ffd166','#ff6b6b','#c792ea','#64d2ff','#f4a261','#00e5ff'];

@@ -1,4 +1,4 @@
-import { esc, fmtTime, $ } from './utils.js';
+import { esc, fmtTime, $ } from '../core/utils.js';
 
 function userName(id, state, DB) {
   const db = DB.getAll();

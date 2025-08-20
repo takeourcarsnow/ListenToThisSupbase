@@ -10,13 +10,13 @@ function getComposePrompt() {
   // Use a random prompt each refresh
   return prompts[Math.floor(Math.random() * prompts.length)];
 }
-import { $, debounce, esc } from './utils.js';
-import { loadPrefs, savePrefs } from './prefs.js';
-import { renderFeed, renderTags, getFilteredPosts } from './feed.js';
-import { onCreatePost } from './posts.js';
-import { updateDock } from './queue.js';
-import { onImport } from './import_export.js';
-import { parseProvider, buildEmbed } from './providers.js';
+import { $, debounce, esc } from '../core/utils.js';
+import { loadPrefs, savePrefs } from '../auth/prefs.js';
+import { renderFeed, renderTags, getFilteredPosts } from '../features/feed.js';
+import { onCreatePost } from '../features/posts.js';
+import { updateDock } from '../features/queue.js';
+import { onImport } from '../features/import_export.js';
+import { parseProvider, buildEmbed } from '../features/providers.js';
 
 export async function renderMain(root, state, DB, render) {
   const db = DB.getAll();
