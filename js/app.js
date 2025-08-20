@@ -15,7 +15,8 @@ const state = {
   queue: [],
   qIndex: 0,
   pageSize: 30,
-  page: 1
+  page: 1,
+  forceLogin: false
 };
 
 async function renderApp() {
@@ -26,7 +27,15 @@ async function renderApp() {
   const banner = document.getElementById('ascii-banner');
   const body = document.body;
 
+
   root.innerHTML = '';
+  if (state.forceLogin) {
+    state.forceLogin = false;
+    if (banner) banner.style.display = 'none';
+    body.classList.remove('show-header');
+    renderLogin(root, DB, renderApp);
+    return;
+  }
   if (!state.user && !isGuestMode()) {
     if (banner) banner.style.display = 'none';
     body.classList.remove('show-header');

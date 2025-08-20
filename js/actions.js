@@ -83,7 +83,12 @@ export async function onActionClick(e, state, DB, render) {
     }
   }
 
-  if (action === 'go-login') { setGuestMode(false); render(); }
+  if (action === 'go-login') {
+    setGuestMode(false);
+    state.forceLogin = true;
+    render();
+    return;
+  }
 
   if (action === 'share') {
     const perma = btn.dataset.perma || (location.pathname + '#post-' + postId);

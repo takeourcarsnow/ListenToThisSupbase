@@ -35,7 +35,7 @@ export async function renderMain(root, state, DB, render) {
       </select>
       <button class="btn icon" title="accent color" data-action="accent-pick">🎨</button>
       ${me
-        ? `<button class="btn btn-ghost" id="logoutBtn" title="logout">[ logout ]</button><button class="btn btn-ghost" data-action="show-help" title="keyboard shortcuts">[ help ]</button>`
+        ? `<button class="btn btn-ghost" data-action="logout" title="logout">[ logout ]</button><button class="btn btn-ghost" data-action="show-help" title="keyboard shortcuts">[ help ]</button>`
         : `<button class="btn btn-ghost" id="goLoginBtn" title="login / register">[ login / register ]</button><button class="btn btn-ghost" data-action="show-help" title="keyboard shortcuts">[ help ]</button>`
       }
     </div>
@@ -178,11 +178,17 @@ export async function renderMain(root, state, DB, render) {
   updateDock(false, state, DB);
 
   // Toolbar events
-  const logoutBtn = $('#logoutBtn');
-  if (logoutBtn) logoutBtn.addEventListener('click', render); // delegated handler handles session clear
+  // No direct handler for logoutBtn; handled by delegated click event
 
-  const goLoginBtn = $('#goLoginBtn');
-  if (goLoginBtn) goLoginBtn.addEventListener('click', render);
+  // Delegated handler for all login/register buttons (top bar and sidebar)
+  root.addEventListener('click', (e) => {
+    const btn = e.target.closest('#goLoginBtn, [data-action="go-login"]');
+    if (btn) {
+      e.preventDefault();
+      state.forceLogin = true;
+      render();
+    }
+  });
 
   $('#search').addEventListener('input', debounce((e) => {
     savePrefs({ search: e.target.value });
