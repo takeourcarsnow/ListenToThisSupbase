@@ -20,7 +20,7 @@ export function renderLogin(root, DB, render) {
       <div class="logo" style="margin:0 auto;">tunedIn.space</div>
       <div class="small muted" style="margin-bottom:12px;">└──────────────────────</div>
       <form id="loginForm" class="stack" autocomplete="off" style="max-width:340px; margin:0 auto; text-align:center;">
-        <div class="title" style="margin-bottom:8px;">Music that you care about.</div>
+        <div class="title" style="margin-bottom:8px;">Music & community that you care about.</div>
         <div style="margin:0 auto 8px auto; max-width:320px;">
           <input required type="email" id="loginEmail" class="field" placeholder="Email" style="width:100%; margin-top:2px; text-align:center;" />
         </div>
@@ -31,7 +31,7 @@ export function renderLogin(root, DB, render) {
         <div style="margin-top:8px; text-align:center;">
           <a href="#" id="showRegister" class="muted small" style="text-decoration:underline;">Don't have an account? Create one</a>
         </div>
-        <div class="muted small" id="loginMsg" style="min-height:18px;">${DB.isRemote ? 'Sign in to access content, ' : ''} or use guest mode below to just view posts.</div>
+  <div class="muted small" id="loginMsg" style="min-height:18px;">${DB.isRemote ? 'Sign in to be able to post content,<br>' : ''}or use guest mode below.</div>
       </form>
       <form id="registerForm" class="stack" autocomplete="off" style="display:none; max-width:340px; margin:0 auto; text-align:center;">
         <div class="title" style="margin-bottom:8px;">Create an account</div>
