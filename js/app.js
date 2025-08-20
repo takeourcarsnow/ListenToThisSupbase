@@ -762,6 +762,22 @@ async function onActionClick(e){
     }
   }
 
+    // Handle edit and delete post actions
+    if(action==='edit' && postId){
+      openEditInline(postId);
+      return;
+    }
+    if(action==='delete' && postId){
+      const db = DB.getAll();
+      const p = db.posts.find(x=>x.id===postId);
+      if(!p) return;
+      if(!state.user || p.userId !== state.user.id){ toast(card||root, 'you can only delete your posts', true); return; }
+      if(confirm('Delete this post?')){
+        await DB.deletePost(postId);
+        render();
+      }
+      return;
+    }
   if(action==='like' && postId){
     if (!state.user) { toast(card||root, 'login to like', true); return; }
     const updated = await DB.toggleLike(postId, state.user.id);
