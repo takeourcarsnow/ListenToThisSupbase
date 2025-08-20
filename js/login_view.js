@@ -7,7 +7,7 @@ export function renderLogin(root, DB, render) {
   document.body.classList.remove('show-header');
 
   const div = document.createElement('div');
-  div.className = 'login';
+  div.className = 'login login-fadein';
   div.style.display = 'flex';
   div.style.flexDirection = 'column';
   div.style.alignItems = 'center';
@@ -15,6 +15,7 @@ export function renderLogin(root, DB, render) {
   div.style.minHeight = '70vh';
   div.innerHTML = `
     <div style="display:inline-block; text-align:center;">
+  <img src="/logo_white_no_bg.png" alt="Logo" class="login-logo-anim" style="display:block; margin:0 auto 10px auto; width:64px; height:64px; object-fit:contain;" />
       <div class="small muted" style="margin-bottom:2px;">┌─ login or register to</div>
       <div class="logo" style="margin:0 auto;">tunedIn.space</div>
       <div class="small muted" style="margin-bottom:12px;">└──────────────────────</div>
