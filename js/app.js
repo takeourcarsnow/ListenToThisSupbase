@@ -280,8 +280,7 @@ async function renderMain(root){
         <option value="likes" ${prefs.sort==='likes'?'selected':''}>sort: most liked</option>
         <option value="comments" ${prefs.sort==='comments'?'selected':''}>sort: most commented</option>
       </select>
-      <button class="btn icon" title="accent color" data-action="accent-pick">🎨</button>
-      <button class="btn icon" title="density" data-action="toggle-density">${prefs.density==='compact'?'▥':'▤'}</button>
+  <button class="btn icon" title="accent color" data-action="accent-pick">🎨</button>
       ${me
         ? `<button class="btn btn-ghost" id="logoutBtn" title="logout">[ logout ]</button><button class="btn btn-ghost" data-action="show-help" title="keyboard shortcuts">[ help ]</button>`
         : `<button class="btn btn-ghost" id="goLoginBtn" title="login / register">[ login / register ]</button><button class="btn btn-ghost" data-action="show-help" title="keyboard shortcuts">[ help ]</button>`
@@ -517,7 +516,7 @@ async function renderMain(root){
   const postForm = right.querySelector('#postForm');
   if (postForm) postForm.addEventListener('submit', onCreatePost);
 
-  // Hashtag suggestions for tags input
+  // Hashtag suggestions for tags input (show only on focus or when typing)
   const f_tags = right.querySelector('#f_tags');
   const tagSuggestions = right.querySelector('#tagSuggestions');
   if (f_tags && tagSuggestions) {
@@ -545,9 +544,23 @@ async function renderMain(root){
       tagSuggestions.innerHTML = filtered.map(t => `<span class="tag small tag-suggestion" style="cursor:pointer;">#${esc(t)}</span>`).join(' ');
       tagSuggestions.style.display = 'flex';
     }
-    f_tags.addEventListener('input', (e) => {
-      const val = f_tags.value.split(/[, ]/).pop().replace(/^#/, '');
-      renderTagSuggestions(val);
+    function maybeShowSuggestions() {
+      const val = f_tags.value;
+      if (document.activeElement === f_tags || val.length > 0) {
+        const last = val.split(/[, ]/).pop().replace(/^#/, '');
+        renderTagSuggestions(last);
+      } else {
+        tagSuggestions.style.display = 'none';
+      }
+    }
+    f_tags.addEventListener('input', maybeShowSuggestions);
+    f_tags.addEventListener('focus', maybeShowSuggestions);
+    f_tags.addEventListener('blur', () => {
+      setTimeout(() => { tagSuggestions.style.display = 'none'; }, 100);
+    });
+    tagSuggestions.addEventListener('mousedown', (e) => {
+      // Prevent blur when clicking suggestion
+      e.preventDefault();
     });
     tagSuggestions.addEventListener('click', (e) => {
       if (e.target.classList.contains('tag-suggestion')) {
@@ -563,8 +576,8 @@ async function renderMain(root){
         f_tags.focus();
       }
     });
-    // Initial render
-    renderTagSuggestions();
+    // Hide initially
+    tagSuggestions.style.display = 'none';
   }
 
   root.addEventListener('click', onActionClick);
