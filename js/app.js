@@ -101,14 +101,15 @@ async function render() {
   // Hide tunedIn.space header if present BEFORE rendering anything
   const banner = document.getElementById('ascii-banner');
   const header = document.querySelector('header[role="banner"]');
+  const body = document.body;
   if (!state.user && !isGuestMode()) {
     if (banner) banner.style.display = 'none';
-    if (header) header.style.display = 'none';
+    body.classList.remove('show-header');
     root.innerHTML = '';
     return renderLogin(root);
   } else {
     if (banner) banner.style.display = '';
-    if (header) header.style.display = '';
+    body.classList.add('show-header');
     root.innerHTML = '';
     return renderMain(root);
   }
@@ -118,9 +119,8 @@ async function render() {
 function renderLogin(root) {
   // Hide tunedIn.space header if present
   const banner = document.getElementById('ascii-banner');
-  const header = document.querySelector('header[role="banner"]');
   if (banner) banner.style.display = 'none';
-  if (header) header.style.display = 'none';
+  document.body.classList.remove('show-header');
   const div = document.createElement('div');
   div.className = 'login';
   div.style.display = 'flex';

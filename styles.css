@@ -1,3 +1,10 @@
+/* Hide header by default, only show when logged in */
+header[role="banner"] {
+  display: none !important;
+}
+body.show-header header[role="banner"] {
+  display: flex !important;
+}
 /* Responsive ASCII header: show split version on mobile */
 @media (max-width: 600px) {
   .ascii-banner-long {
