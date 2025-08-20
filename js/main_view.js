@@ -222,13 +222,59 @@ export async function renderMain(root, state, DB, render) {
   // Dock
   updateDock(false, state, DB);
 
-  // --- Auto-refresh feed, comments, and likes ---
+  // --- Auto-refresh feed, comments, and likes (preserve player) ---
   if (!window._autoFeedRefresh) {
     window._autoFeedRefresh = setInterval(async () => {
       if (typeof DB.refresh === 'function') {
-        await DB.refresh();
-        renderFeed($('#feed'), $('#pager'), state, DB, loadPrefs());
-        renderTags($('#tags'), DB);
+        const activePlayer = document.querySelector('.player.active');
+        if (!activePlayer) {
+          // No player active, safe to re-render
+          await DB.refresh();
+          renderFeed($('#feed'), $('#pager'), state, DB, loadPrefs());
+          renderTags($('#tags'), DB);
+        } else {
+          // Player is active, update only likes/comments and append new posts
+          await DB.refresh();
+          const feedEl = $('#feed');
+          const pagerEl = $('#pager');
+          const prefs = loadPrefs();
+          const db = DB.getAll();
+          const posts = getFilteredPosts(DB, prefs);
+          // Update likes/comments for visible posts
+          posts.forEach(p => {
+            const postEl = document.getElementById('post-' + p.id);
+            if (postEl) {
+              // Update like count
+              const likeBtn = postEl.querySelector('[data-action="like"]');
+              if (likeBtn) {
+                likeBtn.innerHTML = `[ ♥ ${p.likes ? p.likes.length : 0} ]`;
+                likeBtn.setAttribute('aria-pressed', (p.likes || []).includes(state.user?.id) ? 'true' : 'false');
+                if ((p.likes || []).includes(state.user?.id)) likeBtn.classList.add('like-on');
+                else likeBtn.classList.remove('like-on');
+              }
+              // Update comments count
+              const commentBtn = postEl.querySelector('[data-action="comment"]');
+              if (commentBtn) commentBtn.innerHTML = `[ comments ${p.comments ? p.comments.length : 0} ]`;
+            }
+          });
+          // Append new posts if any
+          const existingIds = Array.from(feedEl.querySelectorAll('.post')).map(el => el.getAttribute('data-post'));
+          const newPosts = posts.filter(p => !existingIds.includes(String(p.id)));
+          if (newPosts.length > 0) {
+            import('./feed.js').then(mod => {
+              const html = newPosts.map(p => mod.renderPostHTML(p, state, DB)).join('');
+              feedEl.insertAdjacentHTML('beforeend', html);
+            });
+          }
+          // Update pager
+          if (posts.length > existingIds.length) {
+            pagerEl.innerHTML = `<button class="btn btn-ghost" data-action="load-more">[ load more (${existingIds.length}/${posts.length}) ]</button>`;
+          } else {
+            pagerEl.innerHTML = `<div class="small muted">${posts.length} loaded</div>`;
+          }
+          // Optionally update tags
+          renderTags($('#tags'), DB);
+        }
       }
     }, 30000); // 30 seconds
   }
@@ -237,9 +283,47 @@ export async function renderMain(root, state, DB, render) {
   if (!window._feedVisibilityHandler) {
     const instantRefresh = async () => {
       if (typeof DB.refresh === 'function') {
-        await DB.refresh();
-        renderFeed($('#feed'), $('#pager'), state, DB, loadPrefs());
-        renderTags($('#tags'), DB);
+        const activePlayer = document.querySelector('.player.active');
+        if (!activePlayer) {
+          await DB.refresh();
+          renderFeed($('#feed'), $('#pager'), state, DB, loadPrefs());
+          renderTags($('#tags'), DB);
+        } else {
+          await DB.refresh();
+          const feedEl = $('#feed');
+          const pagerEl = $('#pager');
+          const prefs = loadPrefs();
+          const db = DB.getAll();
+          const posts = getFilteredPosts(DB, prefs);
+          posts.forEach(p => {
+            const postEl = document.getElementById('post-' + p.id);
+            if (postEl) {
+              const likeBtn = postEl.querySelector('[data-action="like"]');
+              if (likeBtn) {
+                likeBtn.innerHTML = `[ ♥ ${p.likes ? p.likes.length : 0} ]`;
+                likeBtn.setAttribute('aria-pressed', (p.likes || []).includes(state.user?.id) ? 'true' : 'false');
+                if ((p.likes || []).includes(state.user?.id)) likeBtn.classList.add('like-on');
+                else likeBtn.classList.remove('like-on');
+              }
+              const commentBtn = postEl.querySelector('[data-action="comment"]');
+              if (commentBtn) commentBtn.innerHTML = `[ comments ${p.comments ? p.comments.length : 0} ]`;
+            }
+          });
+          const existingIds = Array.from(feedEl.querySelectorAll('.post')).map(el => el.getAttribute('data-post'));
+          const newPosts = posts.filter(p => !existingIds.includes(String(p.id)));
+          if (newPosts.length > 0) {
+            import('./feed.js').then(mod => {
+              const html = newPosts.map(p => mod.renderPostHTML(p, state, DB)).join('');
+              feedEl.insertAdjacentHTML('beforeend', html);
+            });
+          }
+          if (posts.length > existingIds.length) {
+            pagerEl.innerHTML = `<button class=\"btn btn-ghost\" data-action=\"load-more\">[ load more (${existingIds.length}/${posts.length}) ]</button>`;
+          } else {
+            pagerEl.innerHTML = `<div class=\"small muted\">${posts.length} loaded</div>`;
+          }
+          renderTags($('#tags'), DB);
+        }
       }
     };
     window.addEventListener('focus', instantRefresh);
