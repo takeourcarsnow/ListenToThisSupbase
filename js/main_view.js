@@ -204,12 +204,12 @@ export async function renderMain(root, state, DB, render) {
           <label class="muted small" style="margin-bottom:4px;">Change avatar:</label>
           <input class="field" type="file" id="avatarFile" name="avatar" accept="image/*" style="margin-bottom:8px;" />
           <textarea class="field" id="aboutMe" name="about" rows="3" maxlength="500" placeholder="Write a short bio...">${esc(myAbout)}</textarea>
-          <input class="field" type="url" id="socialFacebook" name="facebook" placeholder="Facebook username or URL" value="${esc(socials.facebook)}" />
-          <input class="field" type="url" id="socialInstagram" name="instagram" placeholder="Instagram username or URL" value="${esc(socials.instagram)}" />
-          <input class="field" type="url" id="socialTwitter" name="twitter" placeholder="Twitter username or URL" value="${esc(socials.twitter)}" />
-          <input class="field" type="url" id="socialBandcamp" name="bandcamp" placeholder="Bandcamp username or URL" value="${esc(socials.bandcamp)}" />
-          <input class="field" type="url" id="socialSoundcloud" name="soundcloud" placeholder="SoundCloud username or URL" value="${esc(socials.soundcloud)}" />
-          <input class="field" type="url" id="socialYoutube" name="youtube" placeholder="YouTube username or URL" value="${esc(socials.youtube)}" />
+          <input class="field" type="text" id="socialFacebook" name="facebook" placeholder="Facebook username or URL" value="${esc(socials.facebook)}" />
+          <input class="field" type="text" id="socialInstagram" name="instagram" placeholder="Instagram username or URL" value="${esc(socials.instagram)}" />
+          <input class="field" type="text" id="socialTwitter" name="twitter" placeholder="Twitter username or URL" value="${esc(socials.twitter)}" />
+          <input class="field" type="text" id="socialBandcamp" name="bandcamp" placeholder="Bandcamp username or URL" value="${esc(socials.bandcamp)}" />
+          <input class="field" type="text" id="socialSoundcloud" name="soundcloud" placeholder="SoundCloud username or URL" value="${esc(socials.soundcloud)}" />
+          <input class="field" type="text" id="socialYoutube" name="youtube" placeholder="YouTube username or URL" value="${esc(socials.youtube)}" />
           <div class="muted small" style="margin-top:4px;">You can enter just your username (e.g. <b>nefotografija</b>) or a full URL for each social field.</div>
           <div class="hstack">
             <button class="btn" type="submit">[ save about ]</button>
