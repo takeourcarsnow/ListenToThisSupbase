@@ -25,6 +25,9 @@
 	Export/import all data as JSON, with clear warnings and feedback.
 - **Supabase Integration:**  
 	Seamless switching between local and Supabase modes, with all CRUD mirrored to the backend if enabled.
+
+- **Modularization:**  
+	The main application logic (`app.js`) has been split into multiple focused modules for better maintainability and clarity. See the updated File Structure and Component Analysis below.
 - **Provider Detection:**  
 	Robust detection and embedding for YouTube, Spotify, Bandcamp, SoundCloud, and direct audio files.
 - **Queue & Player:**  
@@ -52,7 +55,16 @@
 
 - `index.html` — Main HTML entry point, loads styles and JS. Contains the help overlay and main app shell.
 - `styles.css` — Modern, dark, responsive CSS with monospace font and custom accent.
-- `js/app.js` — Main application logic, UI rendering, event handling, state management.
+- `js/app.js` — Main entry point; initializes app, manages global state, and delegates to modules.
+- `js/main_view.js` — Renders the main UI (feed, profile, compose, tags, etc.).
+- `js/actions.js` — Handles all global and delegated UI actions/events.
+- `js/feed.js` — Feed rendering, post filtering, and comment rendering.
+- `js/posts.js` — Post creation, editing, and inline editing logic.
+- `js/queue.js` — Queue management and now playing logic.
+- `js/login_view.js` — Login/register UI rendering.
+- `js/overlays.js` — Help overlay and modal overlays.
+- `js/keyboard.js` — Keyboard shortcuts and navigation.
+- `js/seed.js` — Demo data seeding.
 - `js/config.js` — Configuration for Supabase (URL, anon key, toggle).
 - `js/db.js` — Data layer: handles local and Supabase storage, CRUD for users/posts.
 - `js/providers.js` — Detects music provider from URL and builds embed players.
@@ -75,19 +87,33 @@
 - Accessibility: visually hidden elements for screen readers, focus outlines.
 - Custom accent color and density (cozy/compact) toggles.
 
-### 3. `js/app.js` (Main Logic)
+### 3. `js/app.js` (App Entrypoint)
+- **Entrypoint:** Initializes the app, manages global state, and delegates rendering and events to other modules.
 - **State Management:** Handles user, queue, preferences, and page state.
-- **Preferences:** Saved in LocalStorage, includes sort, search, accent, density, etc.
 - **Session:** User session is stored locally.
-- **Rendering:** Renders login/register forms, main UI, feed, tags, compose form, and settings.
-- **Feed:** Supports filtering, searching, sorting, and pagination.
-- **Posts:** Create, edit, delete, like, comment, and share posts.
-- **Queue:** Add posts to a play queue, supports shuffle and repeat.
-- **Player:** Embeds music players for supported providers.
-- **Import/Export:** JSON import/export for all data.
-- **Keyboard Shortcuts:** For navigation, liking, playing, and help overlay.
-- **Accessibility:** Live region for announcements, focus management.
-- **Autofill:** Composer auto-fills title/artist from oEmbed for YouTube/SoundCloud.
+- **Delegation:** Calls `main_view.js` for main UI, `login_view.js` for login/register, and binds global event handlers from `actions.js`, `keyboard.js`, etc.
+
+### 4. `js/main_view.js` (Main UI)
+- **Main UI Rendering:** Renders the main feed, profile, compose form, tags, and settings.
+- **Integrates:** Uses `feed.js`, `queue.js`, `posts.js`, and others for subcomponents.
+
+### 5. `js/actions.js` (Event Handling)
+- **Global & Delegated Events:** Handles all click, submit, and keyboard events for the app.
+- **Integrates:** Calls functions from `feed.js`, `posts.js`, `profile.js`, `queue.js`, etc.
+
+### 6. `js/feed.js` (Feed & Comments)
+- **Feed Rendering:** Renders the post feed, filters posts, and renders comments.
+
+### 7. `js/posts.js` (Post Logic)
+- **Post Creation & Editing:** Handles creating, editing, and inline editing of posts.
+
+### 8. `js/queue.js` (Queue Management)
+- **Queue Logic:** Manages the play queue, now playing, shuffle, and repeat.
+
+### 9. `js/login_view.js`, `js/overlays.js`, `js/keyboard.js`, `js/seed.js`
+- **Other UI & Utility Modules:** Login/register UI, overlays/help, keyboard shortcuts, and demo data seeding.
+
+*Other component numbers incremented accordingly.*
 
 ### 4. `js/config.js`
 - Toggle between Supabase and local mode.
