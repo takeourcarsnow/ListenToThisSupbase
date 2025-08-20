@@ -1,1 +1,3 @@
 name ideas: heardit, frenstunes
+
+let users add their contact information such as a link to their instagram or facebook or x in about section

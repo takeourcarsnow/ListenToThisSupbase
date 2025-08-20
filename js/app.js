@@ -360,6 +360,7 @@ async function renderMain(root){
           <input class="field" id="f_tags" placeholder="tags (space/comma or #tag #chill #2020)"/>
   <div id="tagSuggestions" class="hstack" style="flex-wrap:wrap; gap:4px; margin:4px 0 0 0;"></div>
           <textarea class="field" id="f_body" rows="4" placeholder="Why should we listen?"></textarea>
+          <div id="postFormError" class="muted small" style="color:#c00;min-height:18px;"></div>
           <div class="hstack">
             <button class="btn" type="submit">[ post ]</button>
             <button class="btn btn-ghost" type="button" id="previewBtn">[ preview player ]</button>
@@ -788,7 +789,19 @@ async function onCreatePost(e){
   let url = $('#f_url').value.trim();
   const body = $('#f_body').value.trim();
   let tags = ($('#f_tags').value || '').trim();
+  const errorDiv = document.getElementById('postFormError');
+  if (errorDiv) errorDiv.textContent = '';
   if(!title || !url){ return; }
+  // Prevent post if no tags are inputted
+  if (!tags) {
+    if (errorDiv) errorDiv.textContent = 'Please enter at least one tag.';
+    return;
+  }
+  // Prevent post if no description/body is inputted
+  if (!body) {
+    if (errorDiv) errorDiv.textContent = 'Please enter a description (why should we listen?).';
+    return;
+  }
   // For YouTube, if URL contains '?', strip everything from '?' onward (remove all query params)
   if (/youtube\.com|youtu\.be/.test(url)) {
     const qm = url.indexOf('?');
@@ -837,6 +850,7 @@ async function onCreatePost(e){
   $('#f_url').value='';
   $('#f_tags').value='';
   $('#f_body').value='';
+  if (errorDiv) errorDiv.textContent = '';
   const preview = $('#preview'); preview.classList.remove('active'); preview.innerHTML='';
 
   render();
