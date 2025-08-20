@@ -66,8 +66,10 @@ export function renderPostHTML(p, state, DB) {
   <article class="post" id="post-${p.id}" data-post="${p.id}" aria-label="${esc(p.title)}">
     <div class="title">${esc(p.title)} ${p.artist ? `<span class="muted thin">by ${esc(p.artist)}</span>` : ''}</div>
     <div class="small meta">
-      <img class="avatar avatar-sm" src="${authorAvatar}" alt="avatar" />
-      <span class="muted">posted by ${user ? `<a href="#" data-action="view-user" data-uid="${esc(user.id)}">${esc(user.name)}</a>` : 'anon'}</span>
+      <a href="#" data-action="view-user" data-uid="${user ? esc(user.id) : ''}">
+        <img class="avatar avatar-sm" src="${authorAvatar}" alt="avatar" />
+      </a>
+      <span class="muted">by ${user ? `<a href=\"#\" data-action=\"view-user\" data-uid=\"${esc(user.id)}\">${esc(user.name)}</a>` : 'anon'}</span>
       <span class="muted dot">·</span>
       <span class="muted">${fmtTime(p.createdAt)}</span>
       ${tgs ? `<span class="muted dot">·</span> ${tgs}` : ''}

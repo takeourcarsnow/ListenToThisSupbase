@@ -54,6 +54,11 @@ function bindGlobalHandlers() {
   const root = $('#app');
   root.addEventListener('click', (e) => onActionClick(e, state, DB, renderApp));
   root.addEventListener('submit', (e) => onDelegatedSubmit(e, state, DB, renderApp));
+  // Also bind action clicks in help overlay
+  const help = document.getElementById('help');
+  if (help) {
+    help.addEventListener('click', (e) => onActionClick(e, state, DB, renderApp));
+  }
   document.addEventListener('keydown', (e) => onKey(e, state));
 
   // Double click to like

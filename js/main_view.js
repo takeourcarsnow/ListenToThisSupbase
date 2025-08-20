@@ -52,7 +52,6 @@ export async function renderMain(root, state, DB, render) {
           <option value="likes" ${prefs.sort==='likes'?'selected':''}>sort: most liked</option>
           <option value="comments" ${prefs.sort==='comments'?'selected':''}>sort: most commented</option>
         </select>
-        <button class="btn icon" title="accent color" data-action="accent-pick">🎨</button>
         ${me
           ? `<button class="btn btn-ghost" data-action="logout" title="logout">[ logout ]</button><button class="btn btn-ghost" data-action="show-help" title="keyboard shortcuts">[ help ]</button>`
           : `<button class="btn btn-ghost" id="goLoginBtn" title="login / register">[ login / register ]</button><button class="btn btn-ghost" data-action="show-help" title="keyboard shortcuts">[ help ]</button>`
