@@ -1,3 +1,33 @@
+/* Responsive styles for mobile */
+@media (max-width: 600px) {
+  input, textarea, button {
+  box-sizing: border-box;
+  }
+}
+
+/* Responsive styles for mobile */
+@media (max-width: 600px) {
+  body, html {
+    padding: 0;
+    margin: 0;
+    width: 100vw;
+    overflow-x: hidden;
+  }
+  .container, .main, .feed, .profile, .compose, .data, .tags, .settings, .header, .search, .posts, .about, .player, .queue, .footer {
+    width: 100% !important;
+    max-width: 100vw !important;
+    margin: 0 !important;
+    padding-left: 5px !important;
+    padding-right: 5px !important;
+    box-sizing: border-box;
+  }
+  input, textarea, button {
+  box-sizing: border-box;
+  }
+  .feed {
+    min-width: 0 !important;
+  }
+}
 :root{
   color-scheme: dark;
   /* Palette */
@@ -47,12 +77,71 @@ a{color:var(--acc); text-decoration:none}
 a:hover{text-decoration:underline}
 
 .wrap{max-width:1040px; margin:0 auto; padding:var(--space-3);}
-header pre.head{
-  white-space:pre;
-  color:var(--muted);
-  padding:var(--space-2) 0 var(--space-2) 0;
-  border-bottom:1px dashed var(--line);
-  margin-bottom:var(--space-3);
+/* Modern header styles */
+/* Center the classic header */
+header[role="banner"] {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.head {
+  display: block;
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+}
+.header-modern {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: var(--space-3);
+  margin-top: var(--space-3);
+}
+.header-bar {
+  width: 100%;
+  max-width: 900px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--line), var(--line2), var(--line));
+  margin: 0.5em 0;
+}
+.header-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3em;
+  width: 100%;
+}
+.logo {
+  font-size: 2.1em;
+  font-weight: bold;
+  color: var(--fg);
+  letter-spacing: 0.04em;
+  font-family: inherit;
+}
+.subtitle {
+  color: var(--muted);
+  font-size: 1em;
+  font-family: inherit;
+  text-align: center;
+  margin-top: 0.2em;
+}
+.dot {
+  color: var(--line2);
+  margin: 0 0.4em;
+}
+@media (max-width: 600px) {
+  .header-modern {
+    margin-top: var(--space-2);
+    margin-bottom: var(--space-2);
+  }
+  .logo {
+    font-size: 1.3em;
+  }
+  .subtitle {
+    font-size: 0.95em;
+  }
 }
 .logo{ color:var(--fg); }
 
@@ -87,6 +176,13 @@ header pre.head{
   font:inherit;
   transition:border-color .15s ease, transform .02s ease, background-color .15s ease;
   user-select:none;
+}
+button, .button, [class*="button"], [class*="btn"] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  /* Add your existing button styles below or above as needed */
 }
 .btn:hover{border-color:var(--line2)}
 .btn:active{transform:translateY(1px)}
@@ -127,6 +223,30 @@ input[type="search"]::-webkit-search-cancel-button{filter:invert(70%)}
 .sep{border-top:1px dashed var(--line); margin:var(--space-2) 0}
 
 .actions .btn{font-size:12px; padding:2px 8px}
+
+/* Always arrange .actions horizontally */
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.actions > * {
+  flex: 1 1 auto;
+  min-width: 80px;
+  margin: 0;
+}
+@media (max-width: 600px) {
+  .actions {
+    flex-direction: row;
+    gap: 4px;
+  }
+  .actions > * {
+    min-width: 60px;
+    font-size: 14px;
+    padding: 6px 0;
+  }
+}
 .like-on{color:var(--like)}
 .player{
   margin-top:6px; display:none; background:#0b0e12; padding:6px; border:1px dashed var(--line); border-radius:4px;

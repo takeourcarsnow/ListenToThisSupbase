@@ -108,55 +108,60 @@ function renderLogin(root) {
   const div = document.createElement('div');
   div.className = 'box login';
   div.innerHTML = `
-    <div class="small muted">┌─ register or login to</div>
+    <div class="small muted" style="margin-bottom:2px;">┌─ login or register to</div>
     <div class="logo">ascii.fm</div>
-    <div class="small muted">└──────────────────────</div>
-    <div class="sep"></div>
-    <form id="registerForm" class="stack" autocomplete="off">
-      <label>username
-        <input required minlength="2" maxlength="24" id="regName" class="field" placeholder="e.g. moonbeam" />
-      </label>
-      <label>email
-        <input required type="email" id="regEmail" class="field" placeholder="e.g. you@email.com" />
-      </label>
-      <label>password
-        <input required minlength="6" maxlength="64" id="regPass" class="field" type="password" placeholder="password" />
-      </label>
-      <div class="hstack">
-        <button class="btn" type="submit">[ register ]</button>
-        <button class="btn btn-ghost" id="showLoginBtn" type="button">[ login ]</button>
-      </div>
-      <div class="muted small" id="regMsg">${DB.isRemote ? 'Synced with Supabase. ' : ''}Register to access content.</div>
-    </form>
-    <form id="loginForm" class="stack" autocomplete="off" style="display:none">
-      <label>email
+    <div class="small muted" style="margin-bottom:12px;">└──────────────────────</div>
+    <form id="loginForm" class="stack" autocomplete="off">
+      <div class="title" style="margin-bottom:8px;">Sign in to ascii.fm</div>
+      <label>Email
         <input required type="email" id="loginEmail" class="field" placeholder="your@email.com" />
       </label>
-      <label>password
+      <label>Password
         <input required minlength="6" maxlength="64" id="loginPass" class="field" type="password" placeholder="password" />
       </label>
-      <div class="hstack">
-        <button class="btn" type="submit">[ login ]</button>
-        <button class="btn btn-ghost" id="showRegBtn" type="button">[ register ]</button>
+      <button class="btn" type="submit" style="margin-top:8px;">[ sign in ]</button>
+      <div style="margin-top:8px; text-align:center;">
+        <a href="#" id="showRegister" class="muted small" style="text-decoration:underline;">Don't have an account? Create one</a>
       </div>
-      <div class="muted small" id="loginMsg">${DB.isRemote ? 'Synced with Supabase. ' : ''}Login to access content.</div>
+      <div class="muted small" id="loginMsg" style="min-height:18px;">${DB.isRemote ? 'Synced with Supabase. ' : ''}Sign in to access content.</div>
+    </form>
+    <form id="registerForm" class="stack" autocomplete="off" style="display:none">
+      <div class="title" style="margin-bottom:8px;">Create an account</div>
+      <label>Username
+        <input required minlength="2" maxlength="24" id="regName" class="field" placeholder="e.g. moonbeam" />
+      </label>
+      <label>Email
+        <input required type="email" id="regEmail" class="field" placeholder="e.g. you@email.com" />
+      </label>
+      <label>Password
+        <input required minlength="6" maxlength="64" id="regPass" class="field" type="password" placeholder="password" />
+      </label>
+      <button class="btn" type="submit" style="margin-top:8px;">[ create account ]</button>
+      <div style="margin-top:8px; text-align:center;">
+        <a href="#" id="showLogin" class="muted small" style="text-decoration:underline;">Already have an account? Sign in</a>
+      </div>
+      <div class="muted small" id="regMsg" style="min-height:18px;">${DB.isRemote ? 'Register to post.  ' : ''}Or view in guest mode.</div>
     </form>
     <div class="sep"></div>
     <div class="hstack" style="justify-content:center">
-      <button class="btn btn-ghost" id="guestBtn" type="button">[ continue as guest (read-only) ]</button>
+      <button class="btn btn-ghost" id="guestBtn" type="button">[ continue as guest ]</button>
     </div>
   `;
   root.appendChild(div);
 
-  // Toggle forms
-  $('#showLoginBtn').onclick = () => {
-    $('#registerForm').style.display = 'none';
+  // Only link/toggle between forms, no tab buttons
+  function showLoginForm() {
     $('#loginForm').style.display = '';
-  };
-  $('#showRegBtn').onclick = () => {
-    $('#registerForm').style.display = '';
+    $('#registerForm').style.display = 'none';
+    $('#loginEmail').focus();
+  }
+  function showRegisterForm() {
     $('#loginForm').style.display = 'none';
-  };
+    $('#registerForm').style.display = '';
+    $('#regName').focus();
+  }
+  $('#showLogin').onclick = (e) => { e.preventDefault(); showLoginForm(); };
+  $('#showRegister').onclick = (e) => { e.preventDefault(); showRegisterForm(); };
 
   // Guest button
   $('#guestBtn').onclick = () => {
@@ -231,7 +236,8 @@ function renderLogin(root) {
     }
   });
 
-  $('#regName').focus();
+  // Default to login form
+  showLoginForm();
 }
 
 // Main
@@ -330,6 +336,7 @@ async function renderMain(root){
           <input class="field" id="f_artist" placeholder="Artist" maxlength="120"/>
           <input class="field" id="f_url" placeholder="Link (YouTube / Spotify / Bandcamp / SoundCloud / direct .mp3)" required/>
           <input class="field" id="f_tags" placeholder="tags (space/comma or #tag #chill #2020)"/>
+  <div id="tagSuggestions" class="hstack" style="flex-wrap:wrap; gap:4px; margin:4px 0 0 0;"></div>
           <textarea class="field" id="f_body" rows="4" placeholder="Why should we listen?"></textarea>
           <div class="hstack">
             <button class="btn" type="submit">[ post ]</button>
@@ -345,24 +352,7 @@ async function renderMain(root){
         </div>
         <div id="tags" class="hstack" style="margin-top:6px; flex-wrap:wrap"></div>
       </div>
-      <div class="box">
-        <div class="muted small">data & settings</div>
-        <div class="hstack" style="margin-top:6px; flex-wrap:wrap">
-          <button class="btn" data-action="export">[ export json ]</button>
-          <label class="btn btn-ghost">
-            <input type="file" id="importFile" accept="application/json" class="sr-only" />
-            <span>[ import (replace) ]</span>
-          </label>
-          <button class="btn btn-ghost" data-action="reset">[ reset all ]</button>
-        </div>
-        <div class="small muted" style="margin-top:8px">${storageText.text}</div>
-        ${storageText.percent !== null ?
-          `<div class="meter" style="margin-top:6px"><span style="width:${storageText.percent}%"></span></div>` : ''
-        }
-      </div>
-      <div class="notice small">
-        Tip: Works with YouTube (watch / youtu.be / shorts), Spotify (tracks/albums/playlists), Bandcamp (page or EmbeddedPlayer URL), SoundCloud, or direct audio files. ${DB.isRemote ? 'Data is synced with Supabase.' : 'Everything stays in LocalStorage.'}
-      </div>
+      
     `;
   } else {
     right.innerHTML = `
@@ -378,24 +368,7 @@ async function renderMain(root){
         </div>
         <div id="tags" class="hstack" style="margin-top:6px; flex-wrap:wrap"></div>
       </div>
-      <div class="box">
-        <div class="muted small">data & settings</div>
-        <div class="hstack" style="margin-top:6px; flex-wrap:wrap">
-          <button class="btn" data-action="export">[ export json ]</button>
-          <label class="btn btn-ghost">
-            <input type="file" id="importFile" accept="application/json" class="sr-only" />
-            <span>[ import (replace) ]</span>
-          </label>
-          <button class="btn btn-ghost" data-action="reset">[ reset all ]</button>
-        </div>
-        <div class="small muted" style="margin-top:8px">${storageText.text}</div>
-        ${storageText.percent !== null ?
-          `<div class="meter" style="margin-top:6px"><span style="width:${storageText.percent}%"></span></div>` : ''
-        }
-      </div>
-      <div class="notice small">
-        Tip: You can browse, search, and play posts. Login to like or comment. ${DB.isRemote ? 'Data is synced with Supabase.' : 'Local mode available.'}
-      </div>
+
     `;
   }
 
@@ -496,6 +469,56 @@ async function renderMain(root){
 
   const postForm = right.querySelector('#postForm');
   if (postForm) postForm.addEventListener('submit', onCreatePost);
+
+  // Hashtag suggestions for tags input
+  const f_tags = right.querySelector('#f_tags');
+  const tagSuggestions = right.querySelector('#tagSuggestions');
+  if (f_tags && tagSuggestions) {
+    function getPopularTags() {
+      const db = DB.getAll();
+      const m = new Map();
+      db.posts.forEach(p => (p.tags || []).forEach(t => m.set(t, (m.get(t) || 0) + 1)));
+      return Array.from(m.entries())
+        .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+        .slice(0, 20)
+        .map(([t]) => t);
+    }
+    function renderTagSuggestions(filter = '') {
+      const tags = getPopularTags();
+      let filtered = tags;
+      if (filter) {
+        const q = filter.toLowerCase();
+        filtered = tags.filter(t => t.toLowerCase().includes(q));
+      }
+      if (filtered.length === 0) {
+        tagSuggestions.innerHTML = '';
+        tagSuggestions.style.display = 'none';
+        return;
+      }
+      tagSuggestions.innerHTML = filtered.map(t => `<span class="tag small tag-suggestion" style="cursor:pointer;">#${esc(t)}</span>`).join(' ');
+      tagSuggestions.style.display = 'flex';
+    }
+    f_tags.addEventListener('input', (e) => {
+      const val = f_tags.value.split(/[, ]/).pop().replace(/^#/, '');
+      renderTagSuggestions(val);
+    });
+    tagSuggestions.addEventListener('click', (e) => {
+      if (e.target.classList.contains('tag-suggestion')) {
+        let current = f_tags.value.trim();
+        let tag = e.target.textContent.replace(/^#/, '');
+        // Remove last partial tag and add selected
+        let parts = current.split(/[, ]/);
+        parts[parts.length - 1] = tag;
+        // Remove empty
+        parts = parts.filter(Boolean);
+        f_tags.value = parts.join(' ') + ' ';
+        f_tags.dispatchEvent(new Event('input'));
+        f_tags.focus();
+      }
+    });
+    // Initial render
+    renderTagSuggestions();
+  }
 
   root.addEventListener('click', onActionClick);
   root.addEventListener('submit', onDelegatedSubmit);
