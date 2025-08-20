@@ -271,10 +271,13 @@ async function renderMain(root){
 
   const top = document.createElement('div');
   top.className = 'topbar';
+  // Show filtered post count if filterTag or search is active
+  const filteredPosts = getFilteredPosts();
+  const postCount = (prefs.filterTag || prefs.search) ? filteredPosts.length : db.posts.length;
   top.innerHTML = `
     <div class="hstack toolbar">
       <span class="pill" title="current user">user: ${me ? `<a href="#" data-action="view-user" data-uid="${esc(me.id)}">${esc(me.name)}</a>` : 'guest'}</span>
-      <span class="pill" title="total posts">posts: ${db.posts.length}</span>
+      <span class="pill" title="total posts">posts: ${postCount}</span>
       ${prefs.filterTag ? `<span class="pill">tag: #${esc(prefs.filterTag)} <a href="#" data-action="clear-tag" title="clear tag">✕</a></span>` : ''}
       
     </div>
