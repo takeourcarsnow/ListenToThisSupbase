@@ -4,3 +4,11 @@ let users add their contact information such as a link to their instagram or fac
 
 
 remove open src button
+
+fix login screen responsiveness
+
+when i click on user show me his other posts 
+
+help screen doesnt fit when zoomed in
+
+move accent chooser maybe in user about me section 
