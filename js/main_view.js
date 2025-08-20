@@ -108,7 +108,8 @@ export async function renderMain(root, state, DB, render) {
           <input class="field" id="f_url" placeholder="Link (YouTube / Spotify / Bandcamp / SoundCloud / direct .mp3)" required/>
           <input class="field" id="f_tags" placeholder="tags (space/comma or #tag #chill #2020)"/>
           <div id="tagSuggestions" class="hstack" style="flex-wrap:wrap; gap:4px; margin:4px 0 0 0;"></div>
-          <textarea class="field" id="f_body" rows="4" placeholder="Why should we listen?"></textarea>
+          <textarea class="field" id="f_body" rows="4" placeholder="Why should we listen? (up to 200 characters)" maxlength="200" oninput="document.getElementById('bodyCounter').textContent = this.value.length + '/200';"></textarea>
+          <div class="muted small" style="text-align:right"><span id="bodyCounter">0/200</span></div>
           <div id="postFormError" class="muted small" style="color:#c00;min-height:18px;"></div>
           <div class="hstack">
             <button class="btn" type="submit">[ post ]</button>

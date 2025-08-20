@@ -10,7 +10,8 @@ export async function onCreatePost(e, state, DB, render) {
   const title = document.getElementById('f_title').value.trim();
   const artist = document.getElementById('f_artist').value.trim();
   let url = document.getElementById('f_url').value.trim();
-  const body = document.getElementById('f_body').value.trim();
+  let body = document.getElementById('f_body').value.trim();
+  if (body.length > 200) body = body.slice(0, 200);
   let tags = (document.getElementById('f_tags').value || '').trim();
   const errorDiv = document.getElementById('postFormError');
   if (errorDiv) errorDiv.textContent = '';
@@ -106,7 +107,8 @@ export function openEditInline(postId, state, DB) {
       <input class="field" name="artist" value="${esc(p.artist || '')}"/>
       <input class="field" name="url" value="${esc(p.url)}" required/>
       <input class="field" name="tags" value="${esc((p.tags || []).join(' '))}" placeholder="#tag another"/>
-      <textarea class="field" name="body" rows="4">${esc(p.body || '')}</textarea>
+  <textarea class="field" name="body" rows="4" maxlength="200" oninput="this.nextElementSibling.textContent = this.value.length + '/200';">${esc(p.body || '')}</textarea>
+  <div class="muted small" style="text-align:right">${(p.body||'').length}/200</div>
       <div class="hstack">
         <button class="btn" type="submit">[ save ]</button>
         <button class="btn btn-ghost" type="button" data-action="toggle-player">[ preview ]</button>
