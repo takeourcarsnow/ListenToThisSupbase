@@ -570,14 +570,50 @@ async function renderMain(root){
   root.addEventListener('click', onActionClick);
   root.addEventListener('submit', onDelegatedSubmit);
 
-  $('#importFile').addEventListener('change', onImport);
+  const importFile = $('#importFile');
+  if (importFile) {
+    importFile.addEventListener('change', onImport);
+  }
 
   document.addEventListener('keydown', onKey);
 
   const chk = $('#autoScroll'); if(chk){ chk.onchange = e => savePrefs({autoScroll: chk.checked}); }
 
-  $('[data-close-help]')?.addEventListener('click', ()=> $('#help').classList.remove('active'));
-  $('#help')?.addEventListener('click', (e)=>{ if(e.target.id==='help') $('#help').classList.remove('active'); });
+// --- Global help overlay close events ---
+function closeHelpOverlay() {
+  const help = document.getElementById('help');
+  if (help) {
+    help.classList.remove('active');
+  }
+}
+
+// Close button (delegated)
+document.addEventListener('click', function(e) {
+  if (e.target.matches('[data-close-help]')) {
+    closeHelpOverlay();
+  }
+});
+// Overlay background click (direct, always rebind after render)
+function bindHelpOverlay() {
+  const helpOverlay = document.getElementById('help');
+  if (helpOverlay) {
+    helpOverlay.onclick = function(e) {
+      if (e.target === helpOverlay) closeHelpOverlay();
+    };
+  }
+}
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', bindHelpOverlay);
+} else {
+  bindHelpOverlay();
+}
+// Also rebind after every render
+const origRender = render;
+render = async function(...args) {
+  const result = await origRender.apply(this, args);
+  bindHelpOverlay();
+  return result;
+};
 }
 
 // Feed & tags
