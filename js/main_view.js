@@ -20,26 +20,26 @@ export async function renderMain(root, state, DB, render) {
   top.className = 'topbar';
   const filteredPosts = getFilteredPosts(DB, prefs);
   const postCount = (prefs.filterTag || prefs.search) ? filteredPosts.length : db.posts.length;
-  top.innerHTML = `
-    <div class="hstack toolbar">
-      <span class="pill" title="current user">user: ${me ? `<a href="#" data-action="view-user" data-uid="${esc(me.id)}">${esc(me.name)}</a>` : 'guest'}</span>
-      <span class="pill" title="total posts">posts: ${postCount}</span>
-      ${prefs.filterTag ? `<span class="pill">tag: #${esc(prefs.filterTag)} <a href="#" data-action="clear-tag" title="clear tag">✕</a></span>` : ''}
-    </div>
-    <div class="hstack toolbar">
-      <input class="field" id="search" type="search" placeholder="search title/artist/tags..." style="width:240px" value="${esc(prefs.search)}" aria-label="search"/>
-      <select class="field" id="sort" style="width:150px" aria-label="sort order">
-        <option value="new" ${prefs.sort==='new'?'selected':''}>sort: newest</option>
-        <option value="likes" ${prefs.sort==='likes'?'selected':''}>sort: most liked</option>
-        <option value="comments" ${prefs.sort==='comments'?'selected':''}>sort: most commented</option>
-      </select>
-      <button class="btn icon" title="accent color" data-action="accent-pick">🎨</button>
-      ${me
-        ? `<button class="btn btn-ghost" data-action="logout" title="logout">[ logout ]</button><button class="btn btn-ghost" data-action="show-help" title="keyboard shortcuts">[ help ]</button>`
-        : `<button class="btn btn-ghost" id="goLoginBtn" title="login / register">[ login / register ]</button><button class="btn btn-ghost" data-action="show-help" title="keyboard shortcuts">[ help ]</button>`
-      }
-    </div>
-  `;
+    top.innerHTML = `
+      <div class="hstack toolbar">
+        <span class="pill" title="current user">user: ${me ? `<a href="#" data-action="view-user" data-uid="${esc(me.id)}">${esc(me.name)}</a>` : 'guest'}</span>
+        <span class="pill" title="total posts">posts: ${postCount}</span>
+        ${prefs.filterTag ? `<span class="pill">tag: #${esc(prefs.filterTag)} <a href=\"#\" data-action=\"clear-tag\" title=\"clear tag\">✕</a></span>` : ''}
+      </div>
+      <div class="hstack toolbar">
+        <input class="field" id="search" type="search" placeholder="search title/artist/tags..." style="width:240px" value="${esc(prefs.search)}" aria-label="search"/>
+        <select class="field" id="sort" style="width:150px" aria-label="sort order">
+          <option value="new" ${prefs.sort==='new'?'selected':''}>sort: newest</option>
+          <option value="likes" ${prefs.sort==='likes'?'selected':''}>sort: most liked</option>
+          <option value="comments" ${prefs.sort==='comments'?'selected':''}>sort: most commented</option>
+        </select>
+        <button class="btn icon" title="accent color" data-action="accent-pick">🎨</button>
+        ${me
+          ? `<button class="btn btn-ghost" data-action="logout" title="logout">[ logout ]</button><button class="btn btn-ghost" data-action="show-help" title="keyboard shortcuts">[ help ]</button>`
+          : `<button class="btn btn-ghost" id="goLoginBtn" title="login / register">[ login / register ]</button><button class="btn btn-ghost" data-action="show-help" title="keyboard shortcuts">[ help ]</button>`
+        }
+      </div>
+    `;
   root.appendChild(top);
 
   const grid = document.createElement('div');
