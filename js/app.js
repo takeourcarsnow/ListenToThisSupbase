@@ -268,7 +268,7 @@ async function renderMain(root){
   top.className = 'topbar';
   top.innerHTML = `
     <div class="hstack toolbar">
-      <span class="pill" title="current user">user: ${me ? `<a href="#" data-action="view-user" data-uid="${esc(me.id)}">${esc(me.name)}</a>` : 'guest (read-only)'}</span>
+      <span class="pill" title="current user">user: ${me ? `<a href="#" data-action="view-user" data-uid="${esc(me.id)}">${esc(me.name)}</a>` : 'guest'}</span>
       <span class="pill" title="total posts">posts: ${db.posts.length}</span>
       ${prefs.filterTag ? `<span class="pill">tag: #${esc(prefs.filterTag)} <a href="#" data-action="clear-tag" title="clear tag">✕</a></span>` : ''}
       
