@@ -1,3 +1,44 @@
+/* --- Sort Icon Buttons --- */
+.sort-icons {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-left: 12px;
+}
+.sort-btn {
+  background: none;
+  border: none;
+  padding: 6px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, box-shadow 0.15s;
+  display: flex;
+  align-items: center;
+  outline: none;
+}
+.sort-btn.active, .sort-btn:hover {
+  background: var(--accent, #2a7fff22);
+  box-shadow: 0 1px 4px #0002;
+}
+.sort-btn:focus {
+  outline: 2px solid var(--accent, #2a7fff);
+}
+/* Placeholder icons for sort types */
+.icon-sort-newest::before {
+  content: '\25B2'; /* Upwards triangle for newest */
+  font-size: 1.2em;
+  color: var(--accent, #2a7fff);
+}
+.icon-sort-likes::before {
+  content: '\2665'; /* Heart for likes */
+  font-size: 1.2em;
+  color: #e25555;
+}
+.icon-sort-comments::before {
+  content: '\1F4AC'; /* Speech balloon for comments */
+  font-size: 1.2em;
+  color: #888;
+}
 /* User profile modal post list improvements */
 .profile-avatar {
   max-width: 180px;

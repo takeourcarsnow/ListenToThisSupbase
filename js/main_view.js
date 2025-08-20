@@ -47,11 +47,17 @@ export async function renderMain(root, state, DB, render) {
       </div>
       <div class="hstack toolbar">
         <input class="field" id="search" type="search" placeholder="search title/artist/tags..." style="width:240px" value="${esc(prefs.search)}" aria-label="search"/>
-        <select class="field" id="sort" style="width:150px" aria-label="sort order">
-          <option value="new" ${prefs.sort==='new'?'selected':''}>sort: newest</option>
-          <option value="likes" ${prefs.sort==='likes'?'selected':''}>sort: most liked</option>
-          <option value="comments" ${prefs.sort==='comments'?'selected':''}>sort: most commented</option>
-        </select>
+        <div class="sort-icons" id="sort-icons" aria-label="sort order">
+          <button class="sort-btn${prefs.sort==='new' ? ' active' : ''}" data-sort="new" title="Sort by newest">
+            <span class="icon-sort-newest"></span>
+          </button>
+          <button class="sort-btn${prefs.sort==='likes' ? ' active' : ''}" data-sort="likes" title="Sort by most liked">
+            <span class="icon-sort-likes"></span>
+          </button>
+          <button class="sort-btn${prefs.sort==='comments' ? ' active' : ''}" data-sort="comments" title="Sort by most commented">
+            <span class="icon-sort-comments"></span>
+          </button>
+        </div>
         ${me
           ? `<button class="btn btn-ghost" data-action="logout" title="logout">[ logout ]</button><button class="btn btn-ghost" data-action="show-help" title="keyboard shortcuts">[ help ]</button>`
           : `<button class="btn btn-ghost" id="goLoginBtn" title="login / register">[ login / register ]</button><button class="btn btn-ghost" data-action="show-help" title="keyboard shortcuts">[ help ]</button>`
@@ -59,7 +65,6 @@ export async function renderMain(root, state, DB, render) {
       </div>
     `;
   root.appendChild(top);
-
   // Listen for user filter events
   if (!window._userFilterHandlerAttached) {
     window.addEventListener('filter-user-posts', (e) => {
@@ -236,11 +241,19 @@ export async function renderMain(root, state, DB, render) {
     renderFeed($('#feed'), $('#pager'), state, DB, loadPrefs());
   }, 120));
 
-  $('#sort').addEventListener('change', (e) => {
-    savePrefs({ sort: e.target.value });
-    state.page = 1;
-    renderFeed($('#feed'), $('#pager'), state, DB, loadPrefs());
-  });
+  // Sort icon button handler
+  const sortIcons = document.getElementById('sort-icons');
+  if (sortIcons) {
+    sortIcons.addEventListener('click', (e) => {
+      const btn = e.target.closest('.sort-btn');
+      if (btn) {
+        const sortType = btn.getAttribute('data-sort');
+        savePrefs({ sort: sortType });
+        state.page = 1;
+        renderFeed($('#feed'), $('#pager'), state, DB, loadPrefs());
+      }
+    });
+  }
 
   // Full post preview logic
   const previewBtn = right.querySelector('#previewBtn');
