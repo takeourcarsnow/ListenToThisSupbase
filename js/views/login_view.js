@@ -70,6 +70,7 @@ export function renderLogin(root, DB, render) {
   let stopRegisterPrompt = null;
 
   function showLoginForm() {
+    setGuestMode(false); // Always disable guest mode when showing login
     $('#loginForm').style.display = '';
     $('#registerForm').style.display = 'none';
     $('#loginAnimatedPrompt').style.display = '';
