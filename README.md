@@ -1,146 +1,125 @@
 
+## Help
+
+**👋 Welcome to tunedIn.space!**
+
+Your new favorite place to overshare your music taste. (We won't judge. Much.)
+
+### Getting Started
+
+- Scroll the feed and eavesdrop on what everyone else is jamming to.
+- Smash **[ login / register ]** to join the party and drop your own bangers.
+- Share links from YouTube, Spotify, Bandcamp, SoundCloud, or even that obscure .mp3 you found at 3am.
+- Tag your posts (#vibes, #throwback, #2020) so fellow music nerds can find them.
+- Hit **[ play all ]** to turn the feed into your personal radio station.
+
+### How to Post
+
+- Give us a title, an artist, and a legit music link. (No Rickrolls. Or... maybe just one.)
+- Tags = discoverability. Don’t be shy.
+- Optional: Tell us why this track slaps. Or just type "banger." We get it.
+
+### Listening & Queue
+
+- Player controls up top: play, skip, shuffle, clear. DJ skills not required.
+- The queue is just the current feed, so filter and sort to your heart’s content.
+
+### Personalize
+
+- Pick an accent color. Express yourself. (Sorry, no glitter... yet.)
+
+### Tips & Tricks
+
+- Click tags to filter the feed. Use [ clear tag ] to see everything again.
+- Everything is keyboard accessible, so you can flex your shortcut skills.
+- Be kind, have fun, and remember: one person’s guilty pleasure is another’s anthem.
+
+
 # tunedIn.space — Minimal Music Threads Webapp
 
-## Overview
-
-**tunedIn.space** is a minimal, modern web application for sharing and discussing music links. It supports user registration/login, posting music threads with tags, likes, comments, and playlist/queue features. The app is styled for a "monospace vibes" aesthetic and can operate in two modes:
+**tunedIn.space** is a modern, minimal web app for sharing and discussing music. Features include user authentication, music threads with tags, likes, comments, and a built-in playlist/queue. The app rocks a "monospace vibes" look and supports two modes:
 - **Local mode:** All data is stored in the browser's LocalStorage.
 - **Supabase mode:** Data is synced with a Supabase backend (cloud database).
 
 ---
 
 
-## Recent Updates
+## Highlights
 
-- **Auto-Refresh (Autorefetch) Feed:**  
-	The app now automatically refreshes the feed, likes, and comments every 30 seconds, even while you are viewing or listening. If a music player is active, only likes/comments and new posts are updated in-place, so playback is never interrupted. The feed also refreshes instantly when you return to the tab or window.
-- **Help Menu Revamp:**  
-	The help overlay is now a full-featured new user guide, including step-by-step instructions, posting tips, queue/player info, keyboard shortcuts, and accessibility tips.
-- **UI Improvement:**  
-	The help button is now located next to the logout/login button in the topbar for easier access and a cleaner feed area.
-- **Accessibility:**  
-	Improved keyboard navigation, focus management, and live region for announcements.
-- **Autofill Composer:**  
-	When pasting a YouTube or SoundCloud link, the composer auto-fills title/artist using oEmbed and smart parsing.
-- **Settings & Customization:**  
-	Users can pick an accent color and toggle between cozy/compact layouts.
-- **Data Management:**  
-	Export/import all data as JSON, with clear warnings and feedback.
-- **Supabase Integration:**  
-	Seamless switching between local and Supabase modes, with all CRUD mirrored to the backend if enabled.
-- **Modularization:**  
-	The main application logic (`app.js`) has been split into multiple focused modules for better maintainability and clarity. See the updated File Structure and Component Analysis below.
-- **Provider Detection:**  
-	Robust detection and embedding for YouTube, Spotify, Bandcamp, SoundCloud, and direct audio files.
-- **Queue & Player:**  
-	Play, shuffle, repeat, and auto-scroll queue, with keyboard shortcuts for all major actions.
-- **Security:**  
-	Local mode is for demo/testing only; Supabase mode uses RLS for security.
+- **Auto-Refresh Feed:** Feed, likes, and comments update every 30 seconds, or instantly when you return to the tab. Playback is never interrupted.
+- **Full Help Guide:** In-app help overlay with step-by-step instructions, posting tips, queue/player info, keyboard shortcuts, and accessibility.
+- **UI & Accessibility:** Clean topbar, improved keyboard navigation, focus management, and live region for announcements.
+- **Smart Composer:** Paste a YouTube or SoundCloud link to auto-fill title/artist using oEmbed and parsing.
+- **Customization:** Pick your accent color, choose cozy or compact layout.
+- **Data Management:** Export/import all data as JSON, with clear warnings and feedback.
+- **Supabase Integration:** Seamless switching between local and Supabase modes, with all CRUD mirrored to the backend if enabled.
+- **Modular Codebase:** Main logic split into focused modules for maintainability. See File Structure below.
+- **Provider Detection:** Robust embedding for YouTube, Spotify, Bandcamp, SoundCloud, and direct audio files.
+- **Queue & Player:** Play, shuffle, repeat, and auto-scroll queue, with keyboard shortcuts for all major actions.
+- **Security:** Local mode is for demo/testing only; Supabase mode uses RLS for security.
 
-----
+---
 
-## Main Features
+## Features
 
-- **User Authentication:** Register and log in with email/password (Supabase or local).
+- **User Authentication:** Register/login with email/password (Supabase or local).
 - **Music Posts:** Share music links (YouTube, Spotify, Bandcamp, SoundCloud, direct audio).
-- **Tags & Search:** Tag posts and filter/search by tags, title, artist, or body.
+- **Tags & Search:** Tag posts, filter/search by tags, title, artist, or body.
 - **Likes & Comments:** Like posts and add comments.
-- **Queue & Player:** Add posts to a queue, play embedded music, and auto-advance.
-- **Import/Export:** Export all data as JSON or import/replace data.
+- **Queue & Player:** Add posts to a queue, play embedded music, auto-advance, shuffle, repeat.
+- **Import/Export:** Export/import all data as JSON.
 - **Settings:** Accent color, density (cozy/compact), and storage info.
 - **Keyboard Shortcuts:** For navigation, liking, playing, and more.
 - **Accessibility:** Skip links, ARIA roles, live region, and full keyboard support.
 
 ---
 
+
 ## File Structure
 
-- `index.html` — Main HTML entry point, loads styles and JS. Contains the help overlay and main app shell.
-- `styles.css` — Modern, dark, responsive CSS with monospace font and custom accent.
-- `js/app.js` — Main entry point; initializes app, manages global state, and delegates to modules.
-- `js/main_view.js` — Renders the main UI (feed, profile, compose, tags, etc.).
-- `js/actions.js` — Handles all global and delegated UI actions/events.
-- `js/feed.js` — Feed rendering, post filtering, and comment rendering.
-- `js/posts.js` — Post creation, editing, and inline editing logic.
-- `js/queue.js` — Queue management and now playing logic.
-- `js/login_view.js` — Login/register UI rendering.
-- `js/overlays.js` — Help overlay and modal overlays.
-- `js/keyboard.js` — Keyboard shortcuts and navigation.
-- `js/seed.js` — Demo data seeding.
-- `js/config.js` — Configuration for Supabase (URL, anon key, toggle).
-- `js/db.js` — Data layer: handles local and Supabase storage, CRUD for users/posts.
-- `js/providers.js` — Detects music provider from URL and builds embed players.
-- `js/utils.js` — Utility functions (DOM helpers, debounce, formatting, etc.).
-- `js/oembed.js` — Fetches oEmbed metadata for supported providers.
-- `js/yt_title_parse.js` — Smart parsing of YouTube titles for artist/title extraction.
+- `index.html` — Main HTML entry point, includes help overlay and app shell.
+- `css/` — Modular, dark, responsive CSS (base, layout, components, auth).
+
+### JavaScript Modules
+
+**js/core/**
+	- `app.js` — App entry point; initializes app, manages global state, delegates to modules.
+	- `config.js` — Supabase config (URL, anon key, toggle).
+	- `constants.js` — App-wide constants.
+	- `db.js` — Data layer: handles local and Supabase storage, CRUD for users/posts.
+	- `supabase_client.js` — Supabase client setup.
+	- `utils.js` — Utility functions (DOM helpers, debounce, formatting, etc.).
+
+**js/features/**
+	- `actions.js` — Handles global and delegated UI actions/events.
+	- `automod.js` — Auto-moderation logic.
+	- `feed.js` — Feed rendering, post filtering, comment rendering.
+	- `import_export.js` — Data import/export logic.
+	- `oembed.js` — Fetches oEmbed metadata for supported providers.
+	- `posts.js` — Post creation, editing, inline editing logic.
+	- `providers.js` — Detects music provider from URL, builds embed players.
+	- `queue.js` — Queue management and now playing logic.
+	- `seed.js` — Demo data seeding.
+	- `tagcloud_scroll.js` — Tag cloud scrolling logic.
+	- `yt_title_parse.js` — Smart parsing of YouTube titles for artist/title extraction.
+
+**js/views/**
+	- `login_prompts.js` — Login prompt UI.
+	- `login_view.js` — Login/register UI rendering.
+	- `main_view.js` — Renders main UI (feed, profile, compose, tags, etc.).
+	- `overlays.js` — Help overlay and modal overlays.
+	- `profile.js` — User profile view.
+
+**js/auth/**
+	- `auth.js` — Auth logic.
+	- `keyboard.js` — Keyboard shortcuts for auth.
+	- `prefs.js` — User preferences for auth.
+	- `session.js` — Session management for auth.
+	- `theme.js` — Theme switching for auth.
 
 ---
 
-## Detailed Component Analysis
-
-### 1. `index.html`
-- Loads the app shell, header, and main content area.
-- Includes a help overlay with a comprehensive new user guide and keyboard shortcuts.
-- Loads `styles.css` and `js/app.js` as a module.
-
-### 2. `styles.css`
-- Uses CSS variables for palette, spacing, and radius.
-- Responsive grid layout, styled forms, buttons, tags, posts, and overlays.
-- Accessibility: visually hidden elements for screen readers, focus outlines.
-- Custom accent color and density (cozy/compact) toggles.
-
-### 3. `js/app.js` (App Entrypoint)
-- **Entrypoint:** Initializes the app, manages global state, and delegates rendering and events to other modules.
-- **State Management:** Handles user, queue, preferences, and page state.
-- **Session:** User session is stored locally.
-- **Delegation:** Calls `main_view.js` for main UI, `login_view.js` for login/register, and binds global event handlers from `actions.js`, `keyboard.js`, etc.
-
-### 4. `js/main_view.js` (Main UI)
-- **Main UI Rendering:** Renders the main feed, profile, compose form, tags, and settings.
-- **Integrates:** Uses `feed.js`, `queue.js`, `posts.js`, and others for subcomponents.
-
-### 5. `js/actions.js` (Event Handling)
-- **Global & Delegated Events:** Handles all click, submit, and keyboard events for the app.
-- **Integrates:** Calls functions from `feed.js`, `posts.js`, `profile.js`, `queue.js`, etc.
-
-### 6. `js/feed.js` (Feed & Comments)
-- **Feed Rendering:** Renders the post feed, filters posts, and renders comments.
-
-### 7. `js/posts.js` (Post Logic)
-- **Post Creation & Editing:** Handles creating, editing, and inline editing of posts.
-
-### 8. `js/queue.js` (Queue Management)
-- **Queue Logic:** Manages the play queue, now playing, shuffle, and repeat.
-
-### 9. `js/login_view.js`, `js/overlays.js`, `js/keyboard.js`, `js/seed.js`
-- **Other UI & Utility Modules:** Login/register UI, overlays/help, keyboard shortcuts, and demo data seeding.
-
-*Other component numbers incremented accordingly.*
-
-### 4. `js/config.js`
-- Toggle between Supabase and local mode.
-- Stores Supabase project URL and anon key.
-
-### 5. `js/db.js` (Data Layer)
-- **LocalAdapter:** Stores users and posts in LocalStorage.
-- **SupabaseAdapter:** Syncs users and posts with Supabase tables.
-- **CRUD:** Create, update, delete posts/users, toggle likes, add comments.
-- **Import/Export:** Replace all data or export as JSON.
-- **Auto-detects** which adapter to use based on config.
-
-### 6. `js/providers.js`
-- **parseProvider:** Detects provider (YouTube, Spotify, Bandcamp, SoundCloud, direct audio) from a URL.
-- **buildEmbed:** Builds the correct embed player for each provider.
-- **Fallback:** If provider is unknown, shows a link.
-
-### 7. `js/utils.js`
-- DOM helpers (`$`, `$$`), debounce, safeClone, unique ID, HTML escaping.
-- Formatting for time, bytes, and storage size.
-- Clipboard copy, toast notifications, accent/density application.
-
-### 8. `js/oembed.js` and `js/yt_title_parse.js`
-- Fetch oEmbed metadata for YouTube/SoundCloud.
-- Parse YouTube titles for best-guess artist/title autofill.
+---
 
 ---
 
@@ -184,7 +163,7 @@
 
 ---
 
-## How to Use
+## Quick Start
 
 1. **Register or log in** (Supabase or local).
 2. **Post music links** with title, artist, tags, and description.
@@ -195,41 +174,6 @@
 7. **Use the help menu** for a full new user guide and keyboard shortcuts.
 
 ---
-
-## Help
-
-**👋 Welcome to tunedIn.space!**
-
-Your new favorite place to overshare your music taste. (We won't judge. Much.)
-
-### Getting Started
-
-- Scroll the feed and eavesdrop on what everyone else is jamming to.
-- Smash **[ login / register ]** to join the party and drop your own bangers.
-- Share links from YouTube, Spotify, Bandcamp, SoundCloud, or even that obscure .mp3 you found at 3am.
-- Tag your posts (#vibes, #throwback, #2020) so fellow music nerds can find them.
-- Hit **[ play all ]** to turn the feed into your personal radio station.
-
-### How to Post
-
-- Give us a title, an artist, and a legit music link. (No Rickrolls. Or... maybe just one.)
-- Tags = discoverability. Don’t be shy.
-- Optional: Tell us why this track slaps. Or just type "banger." We get it.
-
-### Listening & Queue
-
-- Player controls up top: play, skip, shuffle, clear. DJ skills not required.
-- The queue is just the current feed, so filter and sort to your heart’s content.
-
-### Personalize
-
-- Pick an accent color. Express yourself. (Sorry, no glitter... yet.)
-
-### Tips & Tricks
-
-- Click tags to filter the feed. Use [ clear tag ] to see everything again.
-- Everything is keyboard accessible, so you can flex your shortcut skills.
-- Be kind, have fun, and remember: one person’s guilty pleasure is another’s anthem.
 
 ## Extending the App
 
