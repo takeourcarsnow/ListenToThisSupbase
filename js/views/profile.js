@@ -54,12 +54,20 @@ export function showUserProfile(userId, DB) {
                       const m = u.match(/https?:\/\/(.*?)\.bandcamp\.com/);
                       return m ? m[1] : url;
                     }
+                    if (type === 'youtube') {
+                      // If it's a video or shorts link, return a label
+                      if (/youtube\.com\/(watch\?v=|shorts\/)/i.test(u)) {
+                        return 'YouTube Video';
+                      }
+                      // Otherwise, try to extract handle/channel
+                      const m = u.match(/youtube\.com\/(?:@)?([^/?#]+)/i);
+                      return m ? m[1] : url;
+                    }
                     const patterns = {
                       facebook: /facebook\.com\/([^/?#]+)/i,
                       instagram: /instagram\.com\/([^/?#]+)/i,
                       twitter: /twitter\.com\/([^/?#]+)/i,
-                      soundcloud: /soundcloud\.com\/([^/?#]+)/i,
-                      youtube: /youtube\.com\/(?:@)?([^/?#]+)/i
+                      soundcloud: /soundcloud\.com\/([^/?#]+)/i
                     };
                     if (patterns[type]) {
                       const m = u.match(patterns[type]);

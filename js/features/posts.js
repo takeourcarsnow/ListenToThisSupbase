@@ -62,11 +62,7 @@ export async function onCreatePost(e, state, DB, render) {
     return;
   }
 
-  // Strip YouTube query params
-  if (/youtube\.com|youtu\.be/.test(url)) {
-    const qm = url.indexOf('?');
-    if (qm !== -1) url = url.slice(0, qm);
-  }
+  // Do not strip YouTube query params; preserve full video URLs
 
   const provider = parseProvider(url);
   tags = tagsArr;

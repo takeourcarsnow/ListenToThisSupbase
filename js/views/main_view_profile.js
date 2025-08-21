@@ -7,6 +7,17 @@ export function renderProfileBox(right, state, DB, render) {
     if (!val) return '';
     let v = val.trim();
     if (!v) return '';
+    if (type === 'youtube') {
+      // If it's a full YouTube video or shorts URL, return as-is
+      if (/^https?:\/\/(www\.)?youtube\.com\/(watch\?v=|shorts\/)[^\s]+/i.test(v)) {
+        return v;
+      }
+      // Remove protocol and www for username/handle extraction
+      v = v.replace(/^https?:\/\//i, '').replace(/^www\./i, '');
+      v = v.replace(/^youtube\.com\//i, '');
+      v = v.replace(/^@/, '').replace(/\/$/, '');
+      return v ? '@' + v : '';
+    }
     // Remove protocol
     v = v.replace(/^https?:\/\//i, '');
     switch (type) {
@@ -24,9 +35,6 @@ export function renderProfileBox(right, state, DB, render) {
         break;
       case 'soundcloud':
         v = v.replace(/^(www\.)?soundcloud\.com\//i, '');
-        break;
-      case 'youtube':
-        v = v.replace(/^(www\.)?youtube\.com\//i, '');
         break;
       default:
         break;
@@ -140,15 +148,32 @@ export function renderProfileBox(right, state, DB, render) {
   function formatSocial(val, type) {
     const input = (val || '').trim();
     if (!input) return '';
+    // If input is a full URL, return as-is
     if (/^https?:\/\//i.test(input)) return input;
     switch (type) {
-      case 'facebook': return 'https://facebook.com/' + input.replace(/^@/, '');
-      case 'instagram': return 'https://instagram.com/' + input.replace(/^@/, '');
-      case 'twitter': return 'https://twitter.com/' + input.replace(/^@/, '');
-      case 'bandcamp': return 'https://' + input.replace(/^https?:\/\//, '').replace(/\/$/, '') + '.bandcamp.com/';
-      case 'soundcloud': return 'https://soundcloud.com/' + input.replace(/^@/, '');
-      case 'youtube': return 'https://youtube.com/' + input.replace(/^@/, '');
-      default: return input;
+      case 'facebook':
+        return 'https://facebook.com/' + input.replace(/^@/, '');
+      case 'instagram':
+        return 'https://instagram.com/' + input.replace(/^@/, '');
+      case 'twitter':
+        return 'https://twitter.com/' + input.replace(/^@/, '');
+      case 'bandcamp':
+        return 'https://' + input.replace(/^https?:\/\//, '').replace(/\/$/, '') + '.bandcamp.com/';
+      case 'soundcloud':
+        return 'https://soundcloud.com/' + input.replace(/^@/, '');
+      case 'youtube':
+        // If input looks like a YouTube video ID, build a watch URL
+        if (/^[\w-]{11}$/.test(input)) {
+          return 'https://www.youtube.com/watch?v=' + input;
+        }
+        // If input looks like a handle (starts with @), build a channel URL
+        if (/^@/.test(input)) {
+          return 'https://www.youtube.com/' + input;
+        }
+        // Otherwise, assume it's a username or channel name
+        return 'https://www.youtube.com/c/' + input.replace(/^@/, '');
+      default:
+        return input;
     }
   }
 
