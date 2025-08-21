@@ -19,14 +19,16 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
   const top = document.createElement('div');
   top.className = 'topbar';
   top.innerHTML = `
-    <div class="hstack toolbar">
-      <span class="pill" title="total posts">posts: ${postCount}</span>
-      <input class="field" id="search" type="search" placeholder="search title/artist/tags..." style="width:240px" value="${esc(prefs.search)}" aria-label="search"/>
-      ${
-        me
-          ? `<span class="pill" title="current user">user: <a href="#" data-action="view-user" data-uid="${esc(me.id)}">${esc(me.name)}</a></span><button class="btn btn-ghost" data-action="logout" title="logout">[ logout ]</button>`
-          : `<span class="pill" title="current user">user: guest</span><button class="btn btn-ghost" id="goLoginBtn" title="login / register">[ login / register ]</button>`
-      }
+    <div class="stack toolbar" style="align-items:center; gap:8px;">
+      <div class="hstack" style="justify-content:center; align-items:center; gap:16px;">
+        <span class="pill" title="total posts">posts: ${postCount}</span>
+        ${
+          me
+            ? `<span class="pill" title="current user">user: <a href="#" data-action="view-user" data-uid="${esc(me.id)}">${esc(me.name)}</a></span><button class="btn btn-ghost" data-action="logout" title="logout">[ logout ]</button>`
+            : `<span class="pill" title="current user">user: guest</span><button class="btn btn-ghost" id="goLoginBtn" title="login / register">[ login / register ]</button>`
+        }
+      </div>
+      <input class="field" id="search" type="search" placeholder="search title/artist/tags..." style="width:240px; margin:0 auto;" value="${esc(prefs.search)}" aria-label="search"/>
       <button class="btn btn-ghost" data-action="show-help" title="keyboard shortcuts">[ help ]</button>
     </div>
   `;
