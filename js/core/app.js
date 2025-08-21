@@ -20,6 +20,7 @@ const state = {
 };
 
 async function renderApp() {
+  if (DB.refresh) await DB.refresh();
   state.user = await currentUser(DB);
   const prefs = loadPrefs();
 
