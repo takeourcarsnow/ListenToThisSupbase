@@ -1,5 +1,5 @@
 import { safeClone } from './utils.js';
-import { hashPassword, comparePassword } from './password.js';
+
 import { SUPABASE_URL, SUPABASE_ANON_KEY, USE_SUPABASE } from './config.js';
 
 const DB_KEY_V2 = 'tunedIn.space/db@v2';
@@ -40,12 +40,11 @@ class LocalAdapter {
     await this.init();
     let u = this.cache.users.find(x => x.name.toLowerCase() === name.toLowerCase() || (email && x.email === email));
     if (!u) {
-      const hashed = password ? await hashPassword(password) : '';
       u = {
         id: crypto.randomUUID ? crypto.randomUUID() : 'u_' + Math.random().toString(36).slice(2),
         name: name.trim(),
         email: email || '',
-        password: hashed,
+        password: password || '',
         about: '',
         facebook: '',
         instagram: '',
@@ -64,8 +63,7 @@ class LocalAdapter {
     await this.init();
     const user = this.cache.users.find(u => u.email === email);
     if (!user) return null;
-    const match = await comparePassword(password, user.password);
-    return match ? user : null;
+    return user.password === password ? user : null;
   }
   getUserById(id){ return (this.cache?.users || []).find(u=>u.id===id) || null; }
 
