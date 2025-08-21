@@ -49,7 +49,7 @@ export function renderProfileBox(right, state, DB, render) {
 
   const meUser = db.users.find(u => u.id === me.id) || null;
   const myAbout = meUser?.about || '';
-  const myAvatar = meUser?.avatarUrl || '/favicon-32x32.png';
+  const myAvatar = meUser?.avatarUrl || '/assets/android-chrome-512x512.png';
   const socials = {
     facebook: meUser?.facebook || '',
     instagram: meUser?.instagram || '',
