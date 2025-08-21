@@ -5,9 +5,9 @@ export function renderHeader() {
     <img src="/assets/logo.png" alt="Logo" class="login-logo-anim header-logo-anim" style="width:44px; height:44px; object-fit:contain; display:block; margin:0 auto 8px auto;" />
     <pre id="ascii-banner" class="head ascii-banner" aria-hidden="true" style="font-family:'Fira Mono','Consolas','Menlo','Monaco','Liberation Mono',monospace !important;font-size:1.15em;line-height:1.1;letter-spacing:0;white-space:pre;overflow-x:auto;margin:0 auto 8px auto;max-width:100vw;">
 <!--ascii-start-->
-┏━━━━━━━━━━━━ tunedIn.space ━━━━━━━━━━━┓
-┃   overshare your music taste         ┃
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
++------------------- tunedIn.space -------------------+
+|              overshare your music taste             |
++-----------------------------------------------------+
 <!--ascii-end-->
     </pre>
   `;
