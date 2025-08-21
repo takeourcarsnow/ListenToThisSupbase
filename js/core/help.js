@@ -6,10 +6,6 @@ export function renderHelpOverlay() {
         <div class="muted small">Welcome / Help</div>
         <button class="btn btn-ghost small" data-close-help>[ close ]</button>
       </div>
-      <div style="text-align:center; margin-top:2em;">
-        <button class="btn btn-danger" data-action="delete-account">Delete My Account</button>
-        <div class="muted small" style="margin-top:0.5em;">This will permanently remove your account and posts.</div>
-      </div>
       <div class="sep"></div>
       <div class="small stack" style="gap:1.5em">
         <div style="text-align:center;">
@@ -54,6 +50,11 @@ export function renderHelpOverlay() {
             <li>Be kind, have fun, and remember: one person’s guilty pleasure is another’s anthem.</li>
           </ul>
         </div>
+      </div>
+      <div class="sep"></div>
+      <div style="text-align:center; margin-top:2em;">
+        <button class="btn btn-danger" data-action="delete-account">Delete My Account</button>
+        <div class="muted small" style="margin-top:0.5em;">This will permanently remove your account and posts.</div>
       </div>
     </div>
   `;
