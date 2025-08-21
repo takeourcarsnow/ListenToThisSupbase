@@ -2,6 +2,9 @@
 input[name*="facebook"], input[name*="instagram"], input[name*="twitter"], input[placeholder*="Facebook"], input[placeholder*="Instagram"], input[placeholder*="Twitter"] {
   display: block !important;
   visibility: visible !important;
+  opacity: 1 !important;
+  position: relative !important;
+  z-index: 1000 !important;
   min-height: 2em;
   min-width: 60%;
 }
