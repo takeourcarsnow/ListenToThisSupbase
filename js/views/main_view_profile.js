@@ -155,15 +155,16 @@ export function renderProfileBox(right, state, DB, render) {
   aboutEditForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     const form = aboutEditForm;
-    const about = form.querySelector('#aboutMe').value;
-    const facebook = formatSocial(form.querySelector('#socialFacebook').value, 'facebook');
-    const instagram = formatSocial(form.querySelector('#socialInstagram').value, 'instagram');
-    const twitter = formatSocial(form.querySelector('#socialTwitter').value, 'twitter');
-    const bandcamp = formatSocial(form.querySelector('#socialBandcamp').value, 'bandcamp');
-    const soundcloud = formatSocial(form.querySelector('#socialSoundcloud').value, 'soundcloud');
-    const youtube = formatSocial(form.querySelector('#socialYoutube').value, 'youtube');
 
-    await DB.updateUser(me.id, { about, facebook, instagram, twitter, bandcamp, soundcloud, youtube });
+  const about = form.querySelector('#aboutMe').value;
+  const facebook = formatSocial(form.querySelector('#socialFb').value, 'facebook');
+  const instagram = formatSocial(form.querySelector('#socialInsta').value, 'instagram');
+  const twitter = formatSocial(form.querySelector('#socialTwtr').value, 'twitter');
+  const bandcamp = formatSocial(form.querySelector('#socialBandcamp').value, 'bandcamp');
+  const soundcloud = formatSocial(form.querySelector('#socialSoundcloud').value, 'soundcloud');
+  const youtube = formatSocial(form.querySelector('#socialYoutube').value, 'youtube');
+
+  await DB.updateUser(me.id, { about, facebook, instagram, twitter, bandcamp, soundcloud, youtube });
     setTimeout(() => {
       aboutEditForm.style.display = 'none';
       aboutCollapsed.style.display = 'flex';

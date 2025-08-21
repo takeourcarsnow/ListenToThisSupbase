@@ -2,7 +2,14 @@ import { parseProvider } from './providers.js';
 import { uid } from '../core/utils.js';
 
 export async function seedDemo(DB, state, render) {
-  const me = state.user || await DB.ensureUser('demo');
+  // Always ensure demo user exists in DB (handles both local and remote)
+  let me = null;
+  try {
+    me = await DB.ensureUser('demo');
+  } catch (e) {
+    console.error('Failed to ensure demo user', e);
+    throw e;
+  }
   if (!state.user) {
     localStorage.setItem('tunedIn.space/session@v1', JSON.stringify({ userId: me.id }));
     state.user = me;
@@ -40,8 +47,10 @@ export async function seedDemo(DB, state, render) {
   ];
 
   if (DB.isRemote && DB.replaceAll) {
-    const users = DB.getAll().users;
+    // Keep only the demo user in remote DB before seeding posts
+    const users = [me];
     await DB.replaceAll({ users, posts: [] });
+    await DB.refresh();
   } else if (DB.getAll && DB.getAll().posts) {
     DB.getAll().posts.length = 0;
     await DB.refresh();
