@@ -28,13 +28,6 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
           : `<span class="pill" title="current user">user: guest</span><button class="btn btn-ghost" id="goLoginBtn" title="login / register">[ login / register ]</button>`
       }
       <button class="btn btn-ghost" data-action="show-help" title="keyboard shortcuts">[ help ]</button>
-      ${
-        userFilterId
-          ? `<span class="pill">user filter: <a href="#" data-action="clear-user-filter">${esc(
-              db.users.find(u => u.id === userFilterId)?.name || 'user'
-            )}</a> <a href="#" data-action="clear-user-filter" title="clear user filter">✕</a></span>`
-          : ''
-      }
     </div>
   `;
 
@@ -97,6 +90,13 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
     <div class="hstack feed-header-bar" style="justify-content:space-between; flex-wrap:wrap; align-items:center; margin-bottom:8px;">
       <div class="hstack" style="gap:10px; align-items:center;">
         <span class="muted">&gt; feed</span>
+        ${
+          userFilterId
+            ? `<span class="pill">user filter: <a href="#" data-action="clear-user-filter">${esc(
+                db.users.find(u => u.id === userFilterId)?.name || 'user'
+              )}</a> <a href="#" data-action="clear-user-filter" title="clear user filter">✕</a></span>`
+            : ''
+        }
         ${prefs.filterTag ? `<span class="pill">tag: #${esc(prefs.filterTag)} <a href="#" data-action="clear-tag" title="clear tag">✕</a></span>` : ''}
       </div>
       <div class="hstack" style="gap:12px; align-items:center;">
@@ -126,8 +126,8 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
     window._userFilterHandlerAttached = true;
   }
 
-  // Clear user filter
-  top.addEventListener('click', (e) => {
+  // Clear user filter (now in feed header bar)
+  feedBox.addEventListener('click', (e) => {
     if (e.target && e.target.dataset && e.target.dataset.action === 'clear-user-filter') {
       window.filterPostsByUserId = null;
       render();
