@@ -6,6 +6,11 @@ export function renderLogin(root, DB, render) {
   const banner = document.getElementById('ascii-banner');
   if (banner) banner.style.display = 'none';
   document.body.classList.remove('show-header');
+  // Prevent vertical scrollbar on login view (html & body)
+  const prevBodyOverflow = document.body.style.overflow;
+  const prevHtmlOverflow = document.documentElement.style.overflow;
+  document.body.style.overflow = 'hidden';
+  document.documentElement.style.overflow = 'hidden';
 
   const div = document.createElement('div');
   div.className = 'login login-fadein';
@@ -50,6 +55,16 @@ export function renderLogin(root, DB, render) {
   `;
 
   root.appendChild(div);
+  // Restore overflow when leaving login view
+  const restoreOverflow = () => {
+    document.body.style.overflow = prevBodyOverflow || '';
+    document.documentElement.style.overflow = prevHtmlOverflow || '';
+  };
+  // Patch render to restore overflow if main view is rendered
+  const wrappedRender = (...args) => {
+    restoreOverflow();
+    render(...args);
+  };
 
   // Animations
   let stopRegisterPrompt = null;
@@ -94,7 +109,7 @@ export function renderLogin(root, DB, render) {
 
   $('#guestBtn').onclick = () => {
     setGuestMode(true);
-    render();
+    wrappedRender();
   };
 
   // Register
@@ -113,16 +128,16 @@ export function renderLogin(root, DB, render) {
         const userId = data.session?.user?.id || data.user?.id;
         u = { id: userId, name, email };
         await DB.ensureUser(name);
-        setSession({ userId: u.id });
-        setGuestMode(false);
-        await DB.refresh();
-        render();
+  setSession({ userId: u.id });
+  setGuestMode(false);
+  await DB.refresh();
+  wrappedRender();
       } else {
         u = await DB.ensureUser(name, email, pass);
-        setSession({ userId: u.id });
-        setGuestMode(false);
-        await DB.refresh();
-        render();
+  setSession({ userId: u.id });
+  setGuestMode(false);
+  await DB.refresh();
+  wrappedRender();
       }
     } catch (err) {
       $('#regMsg').textContent = 'Registration failed: ' + (err.message || err);
@@ -143,17 +158,17 @@ export function renderLogin(root, DB, render) {
         if (error) throw error;
         const userId = data.session?.user?.id || data.user?.id;
         u = { id: userId, email };
-        setSession({ userId: u.id });
-        setGuestMode(false);
-        await DB.refresh();
-        render();
+  setSession({ userId: u.id });
+  setGuestMode(false);
+  await DB.refresh();
+  wrappedRender();
       } else {
         u = await DB.loginUser(email, pass);
         if (!u) throw new Error('Invalid credentials');
-        setSession({ userId: u.id });
-        setGuestMode(false);
-        await DB.refresh();
-        render();
+  setSession({ userId: u.id });
+  setGuestMode(false);
+  await DB.refresh();
+  wrappedRender();
       }
     } catch (err) {
       $('#loginMsg').textContent = 'Login failed: ' + (err.message || err);
