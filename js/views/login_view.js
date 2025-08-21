@@ -84,7 +84,10 @@ export function renderLogin(root, DB, render) {
     $('#loginAnimatedPrompt').textContent = '';
     startLoginPromptAnimation();
 
-    $('#loginEmail').focus();
+    // Prevent auto-focus on mobile devices (avoid keyboard pop-up)
+    if (!/Mobi|Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)) {
+      $('#loginEmail').focus();
+    }
   }
 
   function showRegisterForm() {
@@ -101,7 +104,10 @@ export function renderLogin(root, DB, render) {
     regEl.textContent = '';
     stopRegisterPrompt = startPromptAnimation(regEl);
 
-    $('#regName').focus();
+    // Prevent auto-focus on mobile devices (avoid keyboard pop-up)
+    if (!/Mobi|Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)) {
+      $('#regName').focus();
+    }
   }
 
   $('#showLogin').onclick = (e) => { e.preventDefault(); showLoginForm(); };

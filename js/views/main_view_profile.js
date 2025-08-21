@@ -69,7 +69,10 @@ export function renderProfileBox(right, state, DB, render) {
   editBtn.addEventListener('click', () => {
     aboutCollapsed.style.display = 'none';
     aboutEditForm.style.display = '';
-    aboutEditForm.querySelector('#aboutMe').focus();
+    // Prevent auto-focus on mobile devices (avoid keyboard pop-up)
+    if (!/Mobi|Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)) {
+      aboutEditForm.querySelector('#aboutMe').focus();
+    }
   });
   cancelBtn.addEventListener('click', () => {
     aboutEditForm.style.display = 'none';
