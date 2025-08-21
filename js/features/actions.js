@@ -3,6 +3,7 @@ import { parseProvider, buildEmbed } from './providers.js';
 import { loadPrefs, savePrefs, PREF_KEY, resetPrefsCache } from '../auth/prefs.js';
 import { SESSION_KEY, GUEST_KEY, setGuestMode, clearSession } from '../auth/session.js';
 import { renderFeed, renderPostHTML, renderCommentHTML } from './feed.js';
+import { containsBannedWords, looksLikeSpam } from './automod.js';
 import { openEditInline } from './posts.js';
 import { showUserProfile } from '../views/profile.js';
 import { supabase } from '../core/supabase_client.js';
@@ -238,6 +239,24 @@ export async function onDelegatedSubmit(e, state, DB, render) {
     const input = form.querySelector('input');
     const text = input.value.trim();
     if (!text) return;
+    // Automoderation for comments
+    if (containsBannedWords(text) || looksLikeSpam(text)) {
+      // Remove any previous moderation message
+      let modMsg = form.querySelector('.mod-msg');
+      if (modMsg) modMsg.remove();
+      // Find the send button
+      const sendBtn = form.querySelector('button, input[type=submit], [data-action="send"]');
+      // Create and insert the moderation message after the button
+      modMsg = document.createElement('div');
+      modMsg.className = 'mod-msg notice small warn';
+      modMsg.textContent = 'Comment blocked by moderation.';
+      if (sendBtn && sendBtn.parentNode) {
+        sendBtn.parentNode.insertBefore(modMsg, sendBtn.nextSibling);
+      } else {
+        form.appendChild(modMsg);
+      }
+      return;
+    }
     const c = { id: uid('c'), userId: state.user.id, text, createdAt: Date.now() };
     await DB.addComment(pid, c);
     input.value = '';

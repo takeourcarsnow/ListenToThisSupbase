@@ -1,5 +1,6 @@
 import { parseProvider } from './providers.js';
 import { uid, esc, toast } from '../core/utils.js';
+import { checkPostModeration, containsBannedWords, looksLikeSpam } from './automod.js';
 
 export async function onCreatePost(e, state, DB, render) {
   e.preventDefault();
@@ -41,6 +42,26 @@ export async function onCreatePost(e, state, DB, render) {
     return;
   }
 
+  // Automoderation check (title, artist, body, tags)
+  const tagsArr = tags.split(/[#,\s]+/g).map(t => t.trim().toLowerCase()).filter(Boolean).slice(0, 12);
+  if (
+    containsBannedWords(title) ||
+    containsBannedWords(artist) ||
+    containsBannedWords(body) ||
+    tagsArr.some(containsBannedWords)
+  ) {
+    if (errorDiv) errorDiv.textContent = 'Your post contains banned words.';
+    return;
+  }
+  if (
+    looksLikeSpam(title) ||
+    looksLikeSpam(artist) ||
+    looksLikeSpam(body)
+  ) {
+    if (errorDiv) errorDiv.textContent = 'Your post looks like spam.';
+    return;
+  }
+
   // Strip YouTube query params
   if (/youtube\.com|youtu\.be/.test(url)) {
     const qm = url.indexOf('?');
@@ -48,7 +69,7 @@ export async function onCreatePost(e, state, DB, render) {
   }
 
   const provider = parseProvider(url);
-  tags = tags.split(/[#,\s]+/g).map(t => t.trim().toLowerCase()).filter(Boolean).slice(0, 12);
+  tags = tagsArr;
 
   const dup = db.posts.find(p =>
     p.url.trim() === url ||
