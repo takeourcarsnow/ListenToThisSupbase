@@ -1,0 +1,78 @@
+// js/views/main_view_refresh.js
+import { $ } from '../core/utils.js';
+import { loadPrefs } from '../auth/prefs.js';
+import { renderFeed, renderTags, getFilteredPosts } from '../features/feed.js';
+
+async function smartRefresh(state, DB) {
+  if (typeof DB.refresh !== 'function') return;
+
+  const activePlayer = document.querySelector('.player.active');
+  await DB.refresh();
+
+  const feedEl = $('#feed');
+  const pagerEl = $('#pager');
+  const tagsEl = $('#tags');
+  if (!feedEl || !pagerEl || !tagsEl) return; // Not on main view
+
+  if (!activePlayer) {
+    renderFeed(feedEl, pagerEl, state, DB, loadPrefs());
+    renderTags(tagsEl, DB);
+    return;
+  }
+
+  const prefs = loadPrefs();
+  const posts = getFilteredPosts(DB, prefs);
+
+  // Update like counts and comment counts for visible posts
+  posts.forEach(p => {
+    const postEl = document.getElementById('post-' + p.id);
+    if (postEl) {
+      const likeBtn = postEl.querySelector('[data-action="like"]');
+      if (likeBtn) {
+        likeBtn.innerHTML = `[ ♥ ${p.likes ? p.likes.length : 0} ]`;
+        const pressed = (p.likes || []).includes(state.user && state.user.id) ? 'true' : 'false';
+        likeBtn.setAttribute('aria-pressed', pressed);
+        if (pressed === 'true') likeBtn.classList.add('like-on');
+        else likeBtn.classList.remove('like-on');
+      }
+      const commentBtn = postEl.querySelector('[data-action="comment"]');
+      if (commentBtn) commentBtn.innerHTML = `[ comments ${p.comments ? p.comments.length : 0} ]`;
+    }
+  });
+
+  // Append new posts if any
+  const existingIds = Array.from(feedEl.querySelectorAll('.post')).map(el => el.getAttribute('data-post'));
+  const newPosts = posts.filter(p => !existingIds.includes(String(p.id)));
+  if (newPosts.length > 0) {
+    const mod = await import('../features/feed.js'); // dynamic import from features
+    const html = newPosts.map(p => mod.renderPostHTML(p, state, DB)).join('');
+    feedEl.insertAdjacentHTML('beforeend', html);
+  }
+
+  // Update pager and tags
+  if (posts.length > existingIds.length) {
+    pagerEl.innerHTML = `<button class="btn btn-ghost" data-action="load-more">[ load more (${existingIds.length}/${posts.length}) ]</button>`;
+  } else {
+    pagerEl.innerHTML = `<div class="small muted">${posts.length} loaded</div>`;
+  }
+  renderTags(tagsEl, DB);
+}
+
+export function setupAutoRefresh(state, DB) {
+  if (!window._autoFeedRefresh) {
+    window._autoFeedRefresh = setInterval(() => {
+      smartRefresh(state, DB).catch(console.error);
+    }, 30000); // 30s
+  }
+}
+
+export function setupVisibilityRefresh(state, DB) {
+  if (!window._feedVisibilityHandler) {
+    const instantRefresh = () => smartRefresh(state, DB).catch(console.error);
+    window.addEventListener('focus', instantRefresh);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') instantRefresh();
+    });
+    window._feedVisibilityHandler = true;
+  }
+}

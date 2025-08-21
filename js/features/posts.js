@@ -38,7 +38,7 @@ export async function onCreatePost(e, state, DB, render) {
     return;
   }
   if (!body) {
-    if (errorDiv) errorDiv.textContent = 'Please enter a description (why should we listen?).';
+    if (errorDiv) errorDiv.textContent = "Don't be shy! Tell us what makes this track stand out.";
     return;
   }
 
