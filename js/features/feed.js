@@ -105,8 +105,17 @@ export function renderPostHTML(p, state, DB) {
 }
 
 export function renderFeed(el, pager, state, DB, prefs) {
-  // --- Preserve open comment boxes ---
+  // --- Preserve open comment boxes and their input values ---
   const openComments = Array.from(document.querySelectorAll('.comment-box.active')).map(box => box.id);
+  // Map of comment box id -> input value
+  const commentInputs = {};
+  openComments.forEach(id => {
+    const box = document.getElementById(id);
+    if (box) {
+      const inp = box.querySelector('input.field');
+      if (inp) commentInputs[id] = inp.value;
+    }
+  });
 
   let posts = getFilteredPosts(DB, prefs);
   // User filter support (from prefs or global)
@@ -126,10 +135,14 @@ export function renderFeed(el, pager, state, DB, prefs) {
   }
   el.innerHTML = chunk.map(p => renderPostHTML(p, state, DB)).join('');
 
-  // --- Restore open comment boxes ---
+  // --- Restore open comment boxes and their input values ---
   openComments.forEach(id => {
     const box = document.getElementById(id);
-    if (box) box.classList.add('active');
+    if (box) {
+      box.classList.add('active');
+      const inp = box.querySelector('input.field');
+      if (inp && commentInputs[id] !== undefined) inp.value = commentInputs[id];
+    }
   });
 
   if (end < total) {
