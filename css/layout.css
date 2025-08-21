@@ -138,7 +138,7 @@ body.show-header header[role="banner"] {
   -ms-overflow-style: none; /* IE 10+ */
 }
 .ascii-banner::-webkit-scrollbar {
-  display: none;
+
 }
 
 /* Top Dock/Notice */
