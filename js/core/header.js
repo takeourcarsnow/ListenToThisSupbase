@@ -3,7 +3,9 @@ export function renderHeader() {
   const headerHTML = `
     <img src="/assets/logo.png" alt="Logo" class="login-logo-anim header-logo-anim" style="width:44px; height:44px; object-fit:contain; display:block; margin:0 auto 8px auto;" />
     <pre id="ascii-banner" class="head ascii-banner" aria-hidden="true">
-┌─────────────────────────────────── tunedIn.space ──┐\n│ tune in to music  &  community that you care about │\n└────────────────────────────────────────────────────┘
+┌─────────── tunedIn.space ──┐
+│ overshare your music taste │
+└────────────────────────────┘
     </pre>
   `;
   const header = document.createElement('header');
