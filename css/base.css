@@ -49,6 +49,16 @@ html, body {
   overflow-x: hidden;
   overflow-y: auto;
 }
+
+@media (max-width: 600px) {
+  html, body {
+    font-size: 15px;
+    width: 100vw;
+    max-width: 100vw;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+}
 body {
   background: var(--bg);
   color: var(--fg);

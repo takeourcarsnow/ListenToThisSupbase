@@ -42,31 +42,20 @@ export async function renderMain(root, state, DB, render) {
   }
   const postCount = (prefs.filterTag || prefs.search || userFilterId) ? filteredPosts.length : db.posts.length;
     top.innerHTML = `
-      <div class="hstack toolbar">
-        <span class="pill" title="current user">user: ${me ? `<a href="#" data-action="view-user" data-uid="${esc(me.id)}">${esc(me.name)}</a>` : 'guest'}</span>
-        <span class="pill" title="total posts">posts: ${postCount}</span>
-  ${prefs.filterTag ? `<span class="pill">tag: #${esc(prefs.filterTag)} <a href=\"#\" data-action=\"clear-tag\" title=\"clear tag\">✕</a></span>` : ''}
-  ${userFilterId ? `<span class="pill">user filter: <a href="#" data-action="clear-user-filter">${esc(db.users.find(u => u.id === userFilterId)?.name || 'user')}</a> <a href="#" data-action="clear-user-filter" title="clear user filter">✕</a></span>` : ''}
-      </div>
-      <div class="hstack toolbar">
-        <input class="field" id="search" type="search" placeholder="search title/artist/tags..." style="width:240px" value="${esc(prefs.search)}" aria-label="search"/>
-        <div class="sort-icons" id="sort-icons" aria-label="sort order">
-          <button class="sort-btn${prefs.sort==='new' ? ' active' : ''}" data-sort="new" title="Sort by newest">
-            <span class="icon-sort-newest"></span>
-          </button>
-          <button class="sort-btn${prefs.sort==='likes' ? ' active' : ''}" data-sort="likes" title="Sort by most liked">
-            <span class="icon-sort-likes"></span>
-          </button>
-          <button class="sort-btn${prefs.sort==='comments' ? ' active' : ''}" data-sort="comments" title="Sort by most commented">
-            <span class="icon-sort-comments"></span>
-          </button>
+        <div class="hstack toolbar">
+          <span class="pill" title="current user">user: ${me ? `<a href="#" data-action="view-user" data-uid="${esc(me.id)}">${esc(me.name)}</a>` : 'guest'}</span>
+          <span class="pill" title="total posts">posts: ${postCount}</span>
+    ${prefs.filterTag ? `<span class="pill">tag: #${esc(prefs.filterTag)} <a href=\"#\" data-action=\"clear-tag\" title=\"clear tag\">✕</a></span>` : ''}
+    ${userFilterId ? `<span class="pill">user filter: <a href="#" data-action="clear-user-filter">${esc(db.users.find(u => u.id === userFilterId)?.name || 'user')}</a> <a href="#" data-action="clear-user-filter" title="clear user filter">✕</a></span>` : ''}
         </div>
-        ${me
-          ? `<button class="btn btn-ghost" data-action="logout" title="logout">[ logout ]</button><button class="btn btn-ghost" data-action="show-help" title="keyboard shortcuts">[ help ]</button>`
-          : `<button class="btn btn-ghost" id="goLoginBtn" title="login / register">[ login / register ]</button><button class="btn btn-ghost" data-action="show-help" title="keyboard shortcuts">[ help ]</button>`
-        }
-      </div>
-    `;
+        <div class="hstack toolbar">
+          <input class="field" id="search" type="search" placeholder="search title/artist/tags..." style="width:240px" value="${esc(prefs.search)}" aria-label="search"/>
+          ${me
+            ? `<button class="btn btn-ghost" data-action="logout" title="logout">[ logout ]</button><button class="btn btn-ghost" data-action="show-help" title="keyboard shortcuts">[ help ]</button>`
+            : `<button class="btn btn-ghost" id="goLoginBtn" title="login / register">[ login / register ]</button><button class="btn btn-ghost" data-action="show-help" title="keyboard shortcuts">[ help ]</button>`
+          }
+        </div>
+      `;
   root.appendChild(top);
   // --- Player controls dock at top ---
   const dock = document.createElement('div');
@@ -155,11 +144,20 @@ export async function renderMain(root, state, DB, render) {
   const feedBox = document.createElement('div');
   feedBox.className = 'box';
   feedBox.innerHTML = `
-    <div class="hstack" style="justify-content:space-between">
+    <div class="hstack feed-header-bar" style="justify-content:space-between; flex-wrap:wrap; align-items:center; margin-bottom:8px;">
       <div class="muted">> feed</div>
-      <div class="hstack">
-        <button class="btn btn-ghost" data-action="play-all">[ ${playAllLabel} ]</button>
-      </div>
+      <button class="btn btn-ghost" data-action="play-all">[ ${playAllLabel} ]</button>
+    </div>
+    <div class="sort-icons" id="sort-icons" aria-label="sort order" style="margin-bottom:8px;">
+      <button class="sort-btn${prefs.sort==='new' ? ' active' : ''}" data-sort="new" title="Sort by newest">
+        <span class="icon-sort-newest"></span>
+      </button>
+      <button class="sort-btn${prefs.sort==='likes' ? ' active' : ''}" data-sort="likes" title="Sort by most liked">
+        <span class="icon-sort-likes"></span>
+      </button>
+      <button class="sort-btn${prefs.sort==='comments' ? ' active' : ''}" data-sort="comments" title="Sort by most commented">
+        <span class="icon-sort-comments"></span>
+      </button>
     </div>
     <div id="feed"></div>
     <div id="pager" class="hstack" style="justify-content:center; margin-top:8px"></div>
