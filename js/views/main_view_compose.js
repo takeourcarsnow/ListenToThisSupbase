@@ -59,10 +59,26 @@ export function renderComposeBox(right, state, DB, render) {
   ];
   composerFields.forEach(field => {
     if (field) {
-      field.addEventListener('focus', () => { autofillMsg.style.display = 'block'; });
-      field.addEventListener('input', () => { autofillMsg.style.display = 'block'; });
+      field.addEventListener('focus', () => {
+        const urlField = composerFields.find(f => f && f.id === 'f_url');
+        if (urlField && !urlField.value) {
+          autofillMsg.style.display = 'block';
+        } else {
+          autofillMsg.style.display = 'none';
+        }
+      });
+      if (field.id === 'f_url') {
+        field.addEventListener('input', () => {
+          if (field.value) {
+            autofillMsg.style.display = 'none';
+          } else {
+            autofillMsg.style.display = 'block';
+          }
+        });
+      }
       field.addEventListener('blur', () => {
         setTimeout(() => {
+          // Only hide if no composer field is focused
           if (!composerFields.some(f => f && document.activeElement === f)) {
             autofillMsg.style.display = 'none';
           }
@@ -108,12 +124,30 @@ export function renderComposeBox(right, state, DB, render) {
     const f_artist = box.querySelector('#f_artist');
     let userEdited = { title: false, artist: false };
 
+    // Helper: reset autofill state if all fields are empty
+    function maybeResetAutofill() {
+      if (!f_url.value.trim() && !f_title.value.trim() && !f_artist.value.trim()) {
+        lastMetaUrl = '';
+        lastAutofill = { title: '', artist: '' };
+        userEdited = { title: false, artist: false };
+      }
+    }
+
     f_title.addEventListener('input', () => { userEdited.title = true; });
     f_artist.addEventListener('input', () => { userEdited.artist = true; });
 
+    // Reset autofill state if any of the three fields are cleared
+    [f_url, f_title, f_artist].forEach(field => {
+      field.addEventListener('input', maybeResetAutofill);
+    });
+
     f_url.addEventListener('input', async () => {
       const url = f_url.value.trim();
-      if (!url || url === lastMetaUrl) return;
+      if (!url) {
+        lastMetaUrl = '';
+        return;
+      }
+      if (url === lastMetaUrl) return;
       lastMetaUrl = url;
 
       const { fetchOEmbed } = await import('../features/oembed.js');
@@ -125,14 +159,25 @@ export function renderComposeBox(right, state, DB, render) {
           const parsed = parseYouTubeTitle(meta);
           ytArtist = parsed.artist;
           ytTitle = parsed.title;
+          // Clean up artist if it ends with ' - Topic'
+          if (ytArtist && ytArtist.endsWith(' - Topic')) {
+            ytArtist = ytArtist.replace(/ - Topic$/, '').trim();
+          }
         }
-        if ((ytTitle || meta.title) && (!userEdited.title || f_title.value === lastAutofill.title)) {
-          f_title.value = ytTitle || meta.title;
+        // Prefer parsed title/artist, fallback to oEmbed
+        let autofillTitle = ytTitle || meta.title;
+        let autofillArtist = ytArtist || meta.author_name || '';
+        // Clean up oEmbed author_name if it ends with ' - Topic'
+        if (!ytArtist && autofillArtist.endsWith(' - Topic')) {
+          autofillArtist = autofillArtist.replace(/ - Topic$/, '').trim();
+        }
+        if ((autofillTitle) && (!userEdited.title || f_title.value === lastAutofill.title)) {
+          f_title.value = autofillTitle;
           lastAutofill.title = f_title.value;
           userEdited.title = false;
         }
-        if ((ytArtist || meta.author_name) && (!userEdited.artist || f_artist.value === lastAutofill.artist)) {
-          f_artist.value = ytArtist || meta.author_name;
+        if ((autofillArtist) && (!userEdited.artist || f_artist.value === lastAutofill.artist)) {
+          f_artist.value = autofillArtist;
           lastAutofill.artist = f_artist.value;
           userEdited.artist = false;
         }
