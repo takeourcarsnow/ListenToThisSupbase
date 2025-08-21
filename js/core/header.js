@@ -1,12 +1,10 @@
 // Header module: injects the header HTML into the page
 export function renderHeader() {
   const headerHTML = `
-    <div class="header-modern">
-      <img src="/assets/logo.png" alt="tunedIn.space logo" class="login-logo-anim header-logo-anim" style="width:44px; height:44px; object-fit:contain; display:block; margin:0 auto 8px auto;" />
-      <div class="logo">tunedIn.space</div>
-      <div class="subtitle">tune in to music <span class="dot">&amp;</span> community that you care about</div>
-    </div>
-    <div class="header-bar"></div>
+    <img src="/assets/logo.png" alt="Logo" class="login-logo-anim header-logo-anim" style="width:44px; height:44px; object-fit:contain; display:block; margin:0 auto 8px auto;" />
+    <pre id="ascii-banner" class="head ascii-banner" aria-hidden="true">
+┌─────────────────────────────────── tunedIn.space ──┐\n│ tune in to music  &  community that you care about │\n└────────────────────────────────────────────────────┘
+    </pre>
   `;
   const header = document.createElement('header');
   header.setAttribute('role', 'banner');
