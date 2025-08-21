@@ -67,10 +67,16 @@ export function renderHelpOverlay() {
     if (!confirm('Are you sure you want to permanently delete your account and all your posts? This cannot be undone.')) return;
     const DB = (await import('./db.js')).default;
     const { currentUser } = await import('../auth/auth.js');
-    const user = await currentUser(DB);
+    const { clearSession } = await import('../auth/session.js');
+    let user = await currentUser(DB);
     if (!user) { alert('No user logged in.'); return; }
     const ok = await DB.deleteUser(user.id);
     if (ok) {
+      // If using Supabase, also sign out
+      if (DB.isRemote && DB.supabase && DB.supabase.auth && DB.supabase.auth.signOut) {
+        try { await DB.supabase.auth.signOut(); } catch (e) { /* ignore */ }
+      }
+      clearSession();
       alert('Your account and posts have been deleted.');
       location.reload();
     } else {
