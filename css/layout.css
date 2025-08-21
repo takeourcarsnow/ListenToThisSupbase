@@ -67,12 +67,12 @@ body.show-header header[role="banner"] {
   font-weight: bold;
   color: var(--fg);
   letter-spacing: 0.04em;
-  font-family: inherit;
+  font-family: 'Fira Mono', 'Consolas', 'Menlo', 'Monaco', 'Liberation Mono', monospace !important;
 }
 .subtitle {
   color: var(--muted);
   font-size: 1em;
-  font-family: inherit;
+  font-family: 'Fira Mono', 'Consolas', 'Menlo', 'Monaco', 'Liberation Mono', monospace !important;
   text-align: center;
   margin-top: 0.2em;
 }
@@ -94,6 +94,7 @@ body.show-header header[role="banner"] {
     max-width: 95vw;
     text-align: center;
     line-height: 1.1;
+    font-family: 'Fira Mono', 'Consolas', 'Menlo', 'Monaco', 'Liberation Mono', monospace !important;
   }
   .subtitle {
     font-size: 0.95em;
@@ -101,6 +102,17 @@ body.show-header header[role="banner"] {
     white-space: normal;
     max-width: 95vw;
     text-align: center;
+    font-family: 'Fira Mono', 'Consolas', 'Menlo', 'Monaco', 'Liberation Mono', monospace !important;
+  }
+}
+@media (max-width: 400px) {
+  .logo {
+    font-size: clamp(0.9em, 8vw, 1.1em);
+    padding: 0 2vw;
+  }
+  .subtitle {
+    font-size: 0.9em;
+    padding: 0 2vw;
   }
 }
 .logo { color: var(--fg); }
