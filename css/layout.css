@@ -111,10 +111,11 @@ body.show-header header[role="banner"] {
   .ascii-banner-short {
     display: block !important;
     font-size: clamp(0.8em, 4vw, 1.1em);
-    white-space: pre-line;
+    white-space: pre;
+    font-family: 'Fira Mono', 'Consolas', 'Menlo', 'Monaco', 'Liberation Mono', monospace;
     width: 100vw;
     max-width: 100vw;
-    overflow-x: hidden;
+    overflow-x: auto;
     margin: 0 auto;
     text-align: center;
   }
@@ -122,6 +123,20 @@ body.show-header header[role="banner"] {
 @media (min-width: 601px) {
   .ascii-banner-long { display: block !important; }
   .ascii-banner-short { display: none !important; }
+}
+
+/* Always apply monospace and pre formatting to ascii-banner */
+.ascii-banner {
+  font-family: 'Fira Mono', 'Consolas', 'Menlo', 'Monaco', 'Liberation Mono', monospace;
+  white-space: pre;
+  line-height: 1.1;
+  letter-spacing: normal;
+  padding: 0;
+  margin: 0 auto 8px auto;
+  background: none;
+  border: none;
+  overflow-x: auto;
+  display: block;
 }
 
 /* Top Dock/Notice */
