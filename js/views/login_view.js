@@ -166,19 +166,26 @@ export function renderLogin(root, DB, render) {
       if (DB.isRemote && DB.supabase) {
         const { data, error } = await DB.supabase.auth.signInWithPassword({ email, password: pass });
         if (error) throw error;
-        const userId = data.session?.user?.id || data.user?.id;
+        // Check if user is confirmed (Supabase v2: user.confirmed_at, v1: user.confirmed)
+        const userObj = data.session?.user || data.user;
+        const isConfirmed = userObj?.confirmed_at || userObj?.confirmed || userObj?.email_confirmed_at;
+        if (!isConfirmed) {
+          $('#loginMsg').innerHTML = 'You must confirm your email before logging in. Please check your inbox.';
+          return;
+        }
+        const userId = userObj.id;
         u = { id: userId, email };
-  setSession({ userId: u.id });
-  setGuestMode(false);
-  await DB.refresh();
-  wrappedRender();
+        setSession({ userId: u.id });
+        setGuestMode(false);
+        await DB.refresh();
+        wrappedRender();
       } else {
         u = await DB.loginUser(email, pass);
         if (!u) throw new Error('Invalid credentials');
-  setSession({ userId: u.id });
-  setGuestMode(false);
-  await DB.refresh();
-  wrappedRender();
+        setSession({ userId: u.id });
+        setGuestMode(false);
+        await DB.refresh();
+        wrappedRender();
       }
     } catch (err) {
       $('#loginMsg').textContent = 'Login failed: ' + (err.message || err);
