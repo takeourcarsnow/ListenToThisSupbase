@@ -131,19 +131,23 @@ export function renderLogin(root, DB, render) {
       if (DB.isRemote && DB.supabase) {
         const { data, error } = await DB.supabase.auth.signUp({ email, password: pass, options: { data: { name } } });
         if (error) throw error;
-        const userId = data.session?.user?.id || data.user?.id;
-        u = { id: userId, name, email };
-        await DB.ensureUser(name);
-  setSession({ userId: u.id });
-  setGuestMode(false);
-  await DB.refresh();
-  wrappedRender();
+        // Supabase: always require email confirmation before login
+        $('#regMsg').innerHTML = 'Registration successful!<br>Please check your email and confirm your account before logging in.';
+        $('#registerForm').reset();
+        // Optionally, hide the form or disable it
+        $('#registerForm').style.display = 'none';
+        // Show login form after a short delay
+        setTimeout(() => {
+          showLoginForm();
+          $('#loginMsg').innerHTML = 'Email confirmation required. Please log in after confirming your email.';
+        }, 3500);
+        return;
       } else {
         u = await DB.ensureUser(name, email, pass);
-  setSession({ userId: u.id });
-  setGuestMode(false);
-  await DB.refresh();
-  wrappedRender();
+        setSession({ userId: u.id });
+        setGuestMode(false);
+        await DB.refresh();
+        wrappedRender();
       }
     } catch (err) {
       $('#regMsg').textContent = 'Registration failed: ' + (err.message || err);
