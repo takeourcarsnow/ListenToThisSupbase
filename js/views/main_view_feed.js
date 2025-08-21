@@ -2,6 +2,7 @@
 import { $, debounce, esc } from '../core/utils.js';
 import { loadPrefs, savePrefs } from '../auth/prefs.js';
 import { renderFeed, renderTags, getFilteredPosts } from '../features/feed.js';
+import { enableTagCloudDragScroll } from '../features/tagcloud_scroll.js';
 
 export function setupFeedPane({ root, left, state, DB, prefs, render }) {
   const db = DB.getAll();
@@ -144,6 +145,7 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
   state.page = 1;
   renderFeed($('#feed'), $('#pager'), state, DB, prefs);
   renderTags($('#tags'), DB);
+  enableTagCloudDragScroll();
 
   // Search
   const searchInput = top.querySelector('#search');
