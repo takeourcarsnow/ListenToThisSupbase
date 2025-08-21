@@ -144,20 +144,24 @@ export async function renderMain(root, state, DB, render) {
   feedBox.className = 'box';
   feedBox.innerHTML = `
     <div class="hstack feed-header-bar" style="justify-content:space-between; flex-wrap:wrap; align-items:center; margin-bottom:8px;">
-      <div class="muted">> feed</div>
-      <button class="btn btn-ghost" data-action="play-all">[ ${playAllLabel} ]</button>
-    </div>
-    ${prefs.filterTag ? `<div class="hstack" style="margin-bottom:8px;"><span class="pill">tag: #${esc(prefs.filterTag)} <a href=\"#\" data-action=\"clear-tag\" title=\"clear tag\">✕</a></span></div>` : ''}
-    <div class="sort-icons" id="sort-icons" aria-label="sort order" style="margin-bottom:8px;">
-      <button class="sort-btn${prefs.sort==='new' ? ' active' : ''}" data-sort="new" title="Sort by newest">
-        <span class="icon-sort-newest"></span>
-      </button>
-      <button class="sort-btn${prefs.sort==='likes' ? ' active' : ''}" data-sort="likes" title="Sort by most liked">
-        <span class="icon-sort-likes"></span>
-      </button>
-      <button class="sort-btn${prefs.sort==='comments' ? ' active' : ''}" data-sort="comments" title="Sort by most commented">
-        <span class="icon-sort-comments"></span>
-      </button>
+      <div class="hstack" style="gap:10px; align-items:center;">
+        <span class="muted">&gt; feed</span>
+        ${prefs.filterTag ? `<span class="pill">tag: #${esc(prefs.filterTag)} <a href=\"#\" data-action=\"clear-tag\" title=\"clear tag\">✕</a></span>` : ''}
+      </div>
+      <div class="hstack" style="gap:12px; align-items:center;">
+        <button class="btn btn-ghost" data-action="play-all">[ ${playAllLabel} ]</button>
+        <div class="sort-icons" id="sort-icons" aria-label="sort order">
+          <button class="sort-btn${prefs.sort==='new' ? ' active' : ''}" data-sort="new" title="Sort by newest">
+            <span class="icon-sort-newest"></span>
+          </button>
+          <button class="sort-btn${prefs.sort==='likes' ? ' active' : ''}" data-sort="likes" title="Sort by most liked">
+            <span class="icon-sort-likes"></span>
+          </button>
+          <button class="sort-btn${prefs.sort==='comments' ? ' active' : ''}" data-sort="comments" title="Sort by most commented">
+            <span class="icon-sort-comments"></span>
+          </button>
+        </div>
+      </div>
     </div>
     <div id="feed"></div>
     <div id="pager" class="hstack" style="justify-content:center; margin-top:8px"></div>
