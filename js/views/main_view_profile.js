@@ -2,6 +2,39 @@
 import { esc } from '../core/utils.js';
 
 export function renderProfileBox(right, state, DB, render) {
+  // Extract username from URL or return as-is if already a username
+  function getSocialUsername(val, type) {
+    if (!val) return '';
+    let v = val.trim();
+    if (!v) return '';
+    // Remove protocol
+    v = v.replace(/^https?:\/\//i, '');
+    switch (type) {
+      case 'facebook':
+        v = v.replace(/^(www\.)?facebook\.com\//i, '');
+        break;
+      case 'instagram':
+        v = v.replace(/^(www\.)?instagram\.com\//i, '');
+        break;
+      case 'twitter':
+        v = v.replace(/^(www\.)?twitter\.com\//i, '');
+        break;
+      case 'bandcamp':
+        v = v.replace(/^(www\.)?([^\.]+)\.bandcamp\.com.*/i, '$2');
+        break;
+      case 'soundcloud':
+        v = v.replace(/^(www\.)?soundcloud\.com\//i, '');
+        break;
+      case 'youtube':
+        v = v.replace(/^(www\.)?youtube\.com\//i, '');
+        break;
+      default:
+        break;
+    }
+    // Remove trailing slashes and @, then add @ for display
+    v = v.replace(/^@/, '').replace(/\/$/, '');
+    return v ? '@' + v : '';
+  }
   const db = DB.getAll();
   const me = state.user;
   if (!me) return;
@@ -48,23 +81,23 @@ export function renderProfileBox(right, state, DB, render) {
       <fieldset class="social-links-group" style="border:1px dashed var(--line); border-radius:8px; padding:12px; margin:12px 0;">
         <legend class="muted small" style="padding:0 8px;">Social Links</legend>
         <div class="social-fields" style="display:grid; grid-template-columns:1fr; gap:8px;">
-          <label><span aria-hidden="true">🌐</span> <span class="sr-only">Facebook</span>
-            <input class="field" type="text" id="socialFb" name="fb_user" placeholder="Facebook username or URL" value="${esc(socials.facebook)}" autocomplete="username" />
+          <label><span class="sr-only">Facebook</span>
+            <input class="field" type="text" id="socialFb" name="fb_user" placeholder="Facebook username or URL" value="${esc(getSocialUsername(socials.facebook, 'facebook'))}" autocomplete="username" />
           </label>
-          <label><span aria-hidden="true">📸</span> <span class="sr-only">Instagram</span>
-            <input class="field" type="text" id="socialInsta" name="insta_user" placeholder="Instagram username or URL" value="${esc(socials.instagram)}" autocomplete="username" />
+          <label><span class="sr-only">Instagram</span>
+            <input class="field" type="text" id="socialInsta" name="insta_user" placeholder="Instagram username or URL" value="${esc(getSocialUsername(socials.instagram, 'instagram'))}" autocomplete="username" />
           </label>
-          <label><span aria-hidden="true">🐦</span> <span class="sr-only">Twitter</span>
-            <input class="field" type="text" id="socialTwtr" name="twtr_user" placeholder="Twitter username or URL" value="${esc(socials.twitter)}" autocomplete="username" />
+          <label><span class="sr-only">Twitter</span>
+            <input class="field" type="text" id="socialTwtr" name="twtr_user" placeholder="Twitter username or URL" value="${esc(getSocialUsername(socials.twitter, 'twitter'))}" autocomplete="username" />
           </label>
-          <label><span aria-hidden="true">🎵</span> <span class="sr-only">Bandcamp</span>
-            <input class="field" type="text" id="socialBandcamp" name="bc_user" placeholder="Bandcamp username or URL" value="${esc(socials.bandcamp)}" autocomplete="username" />
+          <label><span class="sr-only">Bandcamp</span>
+            <input class="field" type="text" id="socialBandcamp" name="bc_user" placeholder="Bandcamp username or URL" value="${esc(getSocialUsername(socials.bandcamp, 'bandcamp'))}" autocomplete="username" />
           </label>
-          <label><span aria-hidden="true">☁️</span> <span class="sr-only">SoundCloud</span>
-            <input class="field" type="text" id="socialSoundcloud" name="sc_user" placeholder="SoundCloud username or URL" value="${esc(socials.soundcloud)}" autocomplete="username" />
+          <label><span class="sr-only">SoundCloud</span>
+            <input class="field" type="text" id="socialSoundcloud" name="sc_user" placeholder="SoundCloud username or URL" value="${esc(getSocialUsername(socials.soundcloud, 'soundcloud'))}" autocomplete="username" />
           </label>
-          <label><span aria-hidden="true">▶️</span> <span class="sr-only">YouTube</span>
-            <input class="field" type="text" id="socialYoutube" name="yt_user" placeholder="YouTube username or URL" value="${esc(socials.youtube)}" autocomplete="username" />
+          <label><span class="sr-only">YouTube</span>
+            <input class="field" type="text" id="socialYoutube" name="yt_user" placeholder="YouTube username or URL" value="${esc(getSocialUsername(socials.youtube, 'youtube'))}" autocomplete="username" />
           </label>
         </div>
         <div class="muted small" style="margin-top:8px;">You can enter just your username (e.g. <b>nefotografija</b>) or a full URL for each social field.</div>
