@@ -134,7 +134,7 @@ body.show-header header[role="banner"] {
   box-sizing: border-box;
   text-align: center;
   overflow-x: hidden;
-  scrollbar-width: none; /* Firefox */
+  scrollbar-width: none; /* Firefox  */
   -ms-overflow-style: none; /* IE 10+ */
 }
 .ascii-banner::-webkit-scrollbar {
