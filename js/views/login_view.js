@@ -16,7 +16,7 @@ export function renderLogin(root, DB, render) {
   div.className = 'login login-fadein';
   div.innerHTML = `
     <div class="auth-shell">
-      <img src="/logo_white_no_bg.png" alt="Logo" class="login-logo-anim" style="display:block; margin:0 auto; width:64px; height:64px; object-fit:contain;" />
+  <img src="/assets/logo.png" alt="Logo" class="login-logo-anim" style="display:block; margin:0 auto; width:64px; height:64px; object-fit:contain;" />
       <div class="small muted">┌─ login or register to</div>
       <div class="logo">tunedIn.space</div>
       <div class="small muted">└──────────────────────</div>
