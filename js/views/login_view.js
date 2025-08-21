@@ -139,7 +139,7 @@ export function renderLogin(root, DB, render) {
         // Show login form after a short delay
         setTimeout(() => {
           showLoginForm();
-          $('#loginMsg').innerHTML = 'Email confirmation required. Please log in after confirming your email.';
+          $('#loginMsg').innerHTML = 'A confirmation email has been sent to your address.<br><b>Please confirm your email before logging in.</b>';
         }, 3500);
         return;
       } else {
