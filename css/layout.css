@@ -127,7 +127,7 @@ body.show-header header[role="banner"] {
 
 /* Always apply monospace and pre formatting to ascii-banner */
 .ascii-banner {
-  font-family: 'Fira Mono', 'Consolas', 'Menlo', 'Monaco', 'Liberation Mono', monospace;
+  font-family: monospace !important;
   white-space: pre;
   line-height: 1.1;
   letter-spacing: normal;
@@ -137,6 +137,7 @@ body.show-header header[role="banner"] {
   border: none;
   overflow-x: auto;
   display: block;
+  font-size: 1.08em;
 }
 
 /* Top Dock/Notice */
