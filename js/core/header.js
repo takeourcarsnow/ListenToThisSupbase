@@ -1,11 +1,13 @@
 // Header module: injects the header HTML into the page
 export function renderHeader() {
+  // Use Unicode figure space (U+2007) for invisible padding
+  const fig = '\u2007';
   const headerHTML = `
     <img src="/assets/logo.png" alt="Logo" class="login-logo-anim header-logo-anim" style="width:44px; height:44px; object-fit:contain; display:block; margin:0 auto 8px auto;" />
     <pre id="ascii-banner" class="head ascii-banner" aria-hidden="true">
-┌─────────── tunedIn.space ──┐
-│ overshare your music taste │
-└────────────────────────────┘
+┌─────────── tunedIn.space ──┐${fig}${fig}${fig}
+│ overshare your music taste │${fig}${fig}${fig}
+└────────────────────────────┘${fig}${fig}${fig}
     </pre>
   `;
   const header = document.createElement('header');
