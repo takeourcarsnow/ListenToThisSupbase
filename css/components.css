@@ -1,3 +1,17 @@
+/* ASCII banner mobile styles (moved from index.html) */
+#ascii-banner-mobile {
+  font-family: 'Fira Mono', 'Consolas', 'Menlo', 'Monaco', 'Liberation Mono', monospace;
+  font-size: 1em;
+  white-space: pre;
+  line-height: 1.1;
+  letter-spacing: normal;
+  padding: 0;
+  margin: 0;
+  background: none;
+  border: none;
+  overflow-x: auto;
+  display: block;
+}
 @media (max-width: 600px) {
   .feed-header-bar {
     flex-direction: column !important;

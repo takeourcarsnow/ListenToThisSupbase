@@ -92,3 +92,14 @@ async function boot() {
 }
 
 boot();
+
+// Add header, main containers, and help overlay on DOMContentLoaded
+import { renderHeader, renderMainContainers } from './header.js';
+import { renderHelpOverlay } from './help.js';
+
+window.addEventListener('DOMContentLoaded', function() {
+  renderHeader();
+  renderMainContainers();
+  renderHelpOverlay();
+  document.body.classList.add('header-logo-ready');
+});

@@ -1,20 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>tunedIn - music & community that you care about</title>
-  <meta name="description" content="tunedIn - music that you care about" />
-  <!-- Open Graph Meta Tags for Social Sharing -->
-  <meta property="og:title" content="tunedIn - music & community that you care about" />
-  <meta property="og:description" content="tunedIn - music that you care about" />
-  <meta property="og:image" content="https://tunedin.space/assets/logo.png" />
-  <meta property="og:url" content="https://tunedin.space/" />
-  <meta property="og:type" content="website" />
-  <!-- Twitter Card Meta Tags -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="tunedIn - music & community that you care about" />
-  <meta name="twitter:description" content="tunedIn - music that you care about" />
+  <!-- style for #ascii-banner-mobile moved to css/components.css -->
   <meta name="twitter:image" content="https://tunedin.space/assets/logo.png" />
   <meta name="theme-color" content="#0b0d10" />
   <!-- Favicons -->
@@ -28,108 +14,16 @@
 <link rel="stylesheet" href="/css/base.css">
 <link rel="stylesheet" href="/css/layout.css">
 <link rel="stylesheet" href="/css/components.css">
-<link rel="stylesheet" href="/css/auth.css"> <!-- You can load this only on auth pages -->  <style>
-    #ascii-banner-mobile {
-      font-family: 'Fira Mono', 'Consolas', 'Menlo', 'Monaco', 'Liberation Mono', monospace;
-      font-size: 1em;
-      white-space: pre;
-      line-height: 1.1;
-      letter-spacing: normal;
-      padding: 0;
-      margin: 0;
-      background: none;
-      border: none;
-      overflow-x: auto;
-      display: block;
-    }
-  </style>
+<link rel="stylesheet" href="/css/auth.css"> <!-- You can load this only on auth pages -->
 </head>
 <body>
   <a class="sr-only" href="#app">Skip to content</a>
-  <div class="wrap">
-    <header role="banner">
-  <img src="/assets/logo.png" alt="Logo" class="login-logo-anim header-logo-anim" style="width:44px; height:44px; object-fit:contain; display:block; margin:0 auto 8px auto;" />
-  <pre id="ascii-banner" class="head ascii-banner-long" aria-hidden="true">
-┌─────────────────────────────────── tunedIn.space ──┐
-│ tune in to music  &  community that you care about │
-└────────────────────────────────────────────────────┘</pre>
-  <pre id="ascii-banner-mobile" class="head ascii-banner-short" aria-hidden="true" style="display:none">
-┌───────────────── tunedIn.space ──┐
-│ tune in to music  &  community   │
-│ that you care about              │
-└──────────────────────────────────┘
-  </pre>
-    </header>
-
-    <main id="app" role="main"></main>
-    <div id="live" class="sr-only" aria-live="polite"></div>
-    <noscript>
-      <div class="notice warn">This app requires JavaScript.</div>
-    </noscript>
-  </div>
-
-  <!-- help overlay -->
-  <div class="overlay" id="help">
-  <div class="sheet">
-      <div class="hstack" style="justify-content:space-between; align-items:center">
-        <div class="muted small">Welcome / Help</div>
-        <button class="btn btn-ghost small" data-close-help>[ close ]</button>
-      </div>
-      <div class="sep"></div>
-      <div class="small stack" style="gap:1.5em">
-        <div style="text-align:center;">
-          <b>👋 Welcome to <span style="color:var(--accent,#6cf)">tunedIn.space</span>!</b><br>
-          <span class="muted">Your new favorite place to overshare your music taste. (We won't judge. Much.)</span>
-        </div>
-        <div>
-          <b>Getting Started</b><br>
-          <ul style="margin:0 0 0 1.2em; padding:0;">
-            <li>Scroll the feed and eavesdrop on what everyone else is jamming to.</li>
-            <li>Smash <b>[ login / register ]</b> to join the party and drop your own bangers.</li>
-            <li>Share links from YouTube, Spotify, Bandcamp, SoundCloud, or even that obscure .mp3 you found at 3am.</li>
-            <li>Tag your posts (#vibes, #throwback, #2020) so fellow music nerds can find them.</li>
-            <li>Hit <b>[ play all ]</b> to turn the feed into your personal radio station.</li>
-          </ul>
-        </div>
-        <div>
-          <b>How to Post</b><br>
-          <ul style="margin:0 0 0 1.2em; padding:0;">
-            <li>Give us a title, an artist, and a legit music link. (No Rickrolls. Or... maybe just one.)</li>
-            <li>Tags = discoverability. Don’t be shy.</li>
-            <li>Optional: Tell us why this track slaps. Or just type "banger." We get it.</li>
-          </ul>
-        </div>
-        <div>
-          <b>Listening & Queue</b><br>
-          <ul style="margin:0 0 0 1.2em; padding:0;">
-            <li>Player controls up top: play, skip, shuffle, clear. DJ skills not required.</li>
-            <li>The queue is just the current feed, so filter and sort to your heart’s content.</li>
-          </ul>
-        </div>
-        <div>
-          <b>Personalize</b><br>
-          <button class="btn icon" title="accent color" data-action="accent-pick">🎨</button>
-          <span class="muted small">Pick an accent color. Express yourself. (Sorry, no glitter... yet.)</span>
-        </div>
-        <div>
-          <b>Tips & Tricks</b><br>
-          <ul style="margin:0 0 0 1.2em; padding:0;">
-            <li>Click tags to filter the feed. Use [ clear tag ] to see everything again.</li>
-            <li>Everything is keyboard accessible, so you can flex your shortcut skills.</li>
-            <li>Be kind, have fun, and remember: one person’s guilty pleasure is another’s anthem.</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
+  <div class="wrap"></div>
+  <noscript>
+    <div class="notice warn">This app requires JavaScript.</div>
+  </noscript>
 
   <script type="module" src="./js/core/app.js"></script>
-  <script>
-    // Ensure header logo animates only after DOM is ready
-    window.addEventListener('DOMContentLoaded', function() {
-      document.body.classList.add('header-logo-ready');
-    });
-  </script>
 </body>
 </body>
 </html>
