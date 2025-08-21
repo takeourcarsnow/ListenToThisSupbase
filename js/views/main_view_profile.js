@@ -71,7 +71,7 @@ export function renderProfileBox(right, state, DB, render) {
   box.className = 'box';
   box.id = 'aboutBox';
   box.innerHTML = `
-    <div class="muted small">> my profile</div>
+    <div class="muted small">&gt; my profile</div>
     <div style="display:flex; flex-direction:column; align-items:center; margin-bottom:8px;">
       <img class="profile-avatar-small" src="${esc(myAvatar)}" alt="avatar" />
     </div>
@@ -84,7 +84,11 @@ export function renderProfileBox(right, state, DB, render) {
     </div>
     <form class="stack" id="aboutEditForm" data-action="profile-form" autocomplete="off" style="display:none; margin-top:8px;" enctype="multipart/form-data">
       <label class="muted small" style="margin-bottom:4px;">Change avatar:</label>
-      <input class="field" type="file" id="avatarFile" name="avatar" accept="image/*" style="margin-bottom:8px;" />
+      <div class="custom-file-input-wrapper" style="margin-bottom:8px;">
+        <input class="custom-file-input" type="file" id="avatarFile" name="avatar" accept="image/*" />
+        <label for="avatarFile" class="btn btn-ghost small" id="avatarFileLabel">[ upload new avatar ]</label>
+        <span class="muted small" id="avatarFileName" style="margin-left:8px;"></span>
+      </div>
       <textarea class="field" id="aboutMe" name="about" rows="3" maxlength="500" placeholder="Write a short bio...">${esc(myAbout)}</textarea>
       <fieldset class="social-links-group" style="border:1px dashed var(--line); border-radius:8px; padding:12px; margin:12px 0;">
         <legend class="muted small" style="padding:0 8px;">Social Links</legend>
@@ -117,6 +121,15 @@ export function renderProfileBox(right, state, DB, render) {
       </div>
     </form>
   `;
+
+  // Custom file input JS: show file name, hide default text
+  const avatarFileInput = box.querySelector('#avatarFile');
+  const avatarFileName = box.querySelector('#avatarFileName');
+  if (avatarFileInput && avatarFileName) {
+    avatarFileInput.addEventListener('change', function() {
+      avatarFileName.textContent = this.files && this.files.length > 0 ? this.files[0].name : '';
+    });
+  }
   right.appendChild(box);
 
   const aboutCollapsed = box.querySelector('#aboutCollapsed');
