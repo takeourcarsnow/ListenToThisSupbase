@@ -50,6 +50,13 @@ html, body {
   overflow-y: auto;
 }
 
+/* Prevent horizontal overflow for all elements */
+*, *::before, *::after {
+  box-sizing: border-box;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
 @media (max-width: 600px) {
   html, body {
     font-size: 15px;
