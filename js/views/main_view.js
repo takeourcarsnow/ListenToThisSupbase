@@ -1,14 +1,8 @@
 // --- Compose prompt rotation ---
+import { PROMPTS } from '../core/constants.js';
 function getComposePrompt() {
-  const prompts = [
-    '> so what song has been stuck in your head lately?',
-    '> share a track that made your day better!',
-    '> what have you been looping non-stop?',
-    '> found a hidden gem? drop it here!',
-    '> what tune do you want everyone to hear right now?'
-  ];
   // Use a random prompt each refresh
-  return prompts[Math.floor(Math.random() * prompts.length)];
+  return PROMPTS[Math.floor(Math.random() * PROMPTS.length)];
 }
 import { $, debounce, esc } from '../core/utils.js';
 import { loadPrefs, savePrefs } from '../auth/prefs.js';

@@ -1,11 +1,6 @@
 // Animated rotating prompts for auth screens
-const loginPrompts = [
-  '> so what song has been stuck in your head lately?',
-  '> share a track that made your day better!',
-  '> what have you been looping non-stop?',
-  '> found a hidden gem? drop it here!',
-  '> what tune do you want everyone to hear right now?'
-];
+import { PROMPTS } from '../core/constants.js';
+const loginPrompts = PROMPTS;
 
 function rand(min, max) { return min + Math.random() * (max - min); }
 
