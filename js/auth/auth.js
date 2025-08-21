@@ -1,4 +1,4 @@
-import { getSession } from './session.js';
+import { getSession, clearSession } from './session.js';
 
 export async function currentUser(DB) {
   const s = getSession();
@@ -16,8 +16,10 @@ export async function currentUser(DB) {
       }
     } catch {}
   }
-  if (!user && s.userId) {
-    user = { id: s.userId, name: 'user' };
+  // If user is still not found, clear session and return null
+  if (!user) {
+    clearSession();
+    return null;
   }
   return user;
 }
