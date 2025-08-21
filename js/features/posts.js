@@ -121,7 +121,8 @@ export async function onCreatePost(e, state, DB, render) {
   }, 10);
 }
 
-export function openEditInline(postId, state, DB) {
+export function openEditInline(postId, state, DB, opts = {}) {
+  window.editingPostId = postId;
   const db = DB.getAll();
   const p = db.posts.find(x => x.id === postId);
   if (!p) return;
@@ -131,14 +132,11 @@ export function openEditInline(postId, state, DB) {
   const editBoxId = 'editbox-' + postId;
   const opened = card.querySelector('#' + editBoxId);
   if (opened) {
-    // Animate out before removing
-    opened.classList.remove('fade-in');
-    opened.classList.add('fade-out');
-    setTimeout(() => opened.remove(), 180);
+    // Already open, do nothing
     return;
   }
   const edit = document.createElement('div');
-  edit.className = 'box fade-in';
+  edit.className = 'box' + (opts.noAnimation ? '' : ' fade-in');
   edit.id = editBoxId;
   edit.style.marginTop = '8px';
   edit.innerHTML = `
@@ -157,4 +155,40 @@ export function openEditInline(postId, state, DB) {
     </form>
   `;
   card.appendChild(edit);
+
+  // Save draft on every input
+  if (!window.editingPostDrafts) window.editingPostDrafts = {};
+  const form = edit.querySelector('form[data-action="edit-form"]');
+  if (form) {
+    const saveDraft = () => {
+      window.editingPostDrafts[postId] = {
+        title: form.title?.value,
+        artist: form.artist?.value,
+        url: form.url?.value,
+        tags: form.tags?.value,
+        body: form.body?.value
+      };
+    };
+    form.addEventListener('input', saveDraft);
+    // Restore draft if present
+    const draft = window.editingPostDrafts[postId];
+    if (draft) {
+      if (draft.title !== undefined) form.title.value = draft.title;
+      if (draft.artist !== undefined) form.artist.value = draft.artist;
+      if (draft.url !== undefined) form.url.value = draft.url;
+      if (draft.tags !== undefined) form.tags.value = draft.tags;
+      if (draft.body !== undefined) form.body.value = draft.body;
+    }
+  }
+
+  // Attach to window for feed.js to call
+  if (!window.openEditInline) window.openEditInline = openEditInline;
+// Ensure editingPostId is cleared on save (form submit)
+document.addEventListener('submit', function(e) {
+  const form = e.target;
+  if (form && form.matches('form[data-action="edit-form"]')) {
+    const postId = form.getAttribute('data-post');
+    if (window.editingPostId == postId) window.editingPostId = null;
+  }
+});
 }

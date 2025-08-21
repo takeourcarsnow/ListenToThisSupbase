@@ -1,4 +1,5 @@
 import { esc, fmtTime, $ } from '../core/utils.js';
+import { openEditInline } from './posts.js';
 
 function userName(id, state, DB) {
   const db = DB.getAll();
@@ -82,7 +83,7 @@ export function renderPostHTML(p, state, DB) {
     <button class="btn btn-ghost" data-action="queue" title="add to queue">[ add to queue ]</button>
     <button class="btn btn-ghost" data-action="share" data-perma="${esc(perma)}" title="share/copy link">[ share ]</button>
     ${canEdit ? `
-      <button class="btn btn-ghost" data-action="edit">[ edit ]</button>
+      <button class="btn btn-ghost" data-action="edit" data-post="${p.id}">[ edit ]</button>
       <button class="btn btn-ghost" data-action="delete">[ delete ]</button>
     ` : ''}
   </div>
@@ -144,6 +145,41 @@ export function renderFeed(el, pager, state, DB, prefs) {
       if (inp && commentInputs[id] !== undefined) inp.value = commentInputs[id];
     }
   });
+
+  // Save for edit restore
+  setFeedGlobals(state, DB);
+
+  // Restore edit panel if editingPostId is set
+  if (window.editingPostId) {
+    const card = document.getElementById('post-' + window.editingPostId);
+    const editBoxId = 'editbox-' + window.editingPostId;
+    const editPanel = document.getElementById(editBoxId);
+    if (card && editPanel && editPanel.parentNode !== card) {
+      // Move the existing edit panel back into the card (no animation, no re-creation)
+      card.appendChild(editPanel);
+    } else if (card && !editPanel) {
+      // If not present at all, create it (no animation on restore)
+      openEditInline(window.editingPostId, state, DB, { noAnimation: true });
+    }
+  }
+// Attach edit button handler globally (once)
+if (!window._editBtnHandlerAttached) {
+  document.addEventListener('click', function(e) {
+    const btn = e.target.closest('button[data-action="edit"][data-post]');
+    if (btn) {
+      const postId = btn.getAttribute('data-post');
+      openEditInline(postId, window._lastFeedState, window._lastFeedDB);
+      e.preventDefault();
+    }
+  });
+  window._editBtnHandlerAttached = true;
+}
+
+// Save last state/DB for edit restore
+function setFeedGlobals(state, DB) {
+  window._lastFeedState = state;
+  window._lastFeedDB = DB;
+}
 
   if (end < total) {
     pager.innerHTML = `<button class="btn btn-ghost" data-action="load-more">[ load more (${end}/${total}) ]</button>`;
