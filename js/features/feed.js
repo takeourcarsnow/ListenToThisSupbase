@@ -162,6 +162,6 @@ export function renderTags(el, DB) {
   }
   el.innerHTML = `<div class="tag-cloud">` +
     top.map(([t, c]) =>
-      `<span class="tag ${freqClass(c)}" data-action="filter-tag" data-tag="${esc(t)}"><span class="tag-label">#${esc(t)} <span class="muted">(${c})</span></span></span>`
+      `<span class="tag ${freqClass(c)}" data-action="filter-tag" data-tag="${esc(t)}"><span class="tag-label">#${esc(t)}</span></span>`
     ).join(' ') + `</div>`;
 }
