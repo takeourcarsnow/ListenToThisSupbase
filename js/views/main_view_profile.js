@@ -45,13 +45,30 @@ export function renderProfileBox(right, state, DB, render) {
       <label class="muted small" style="margin-bottom:4px;">Change avatar:</label>
       <input class="field" type="file" id="avatarFile" name="avatar" accept="image/*" style="margin-bottom:8px;" />
       <textarea class="field" id="aboutMe" name="about" rows="3" maxlength="500" placeholder="Write a short bio...">${esc(myAbout)}</textarea>
-      <input class="field" type="text" id="socialFacebook" name="facebook" placeholder="Facebook username or URL" value="${esc(socials.facebook)}" />
-      <input class="field" type="text" id="socialInstagram" name="instagram" placeholder="Instagram username or URL" value="${esc(socials.instagram)}" />
-      <input class="field" type="text" id="socialTwitter" name="twitter" placeholder="Twitter username or URL" value="${esc(socials.twitter)}" />
-      <input class="field" type="text" id="socialBandcamp" name="bandcamp" placeholder="Bandcamp username or URL" value="${esc(socials.bandcamp)}" />
-      <input class="field" type="text" id="socialSoundcloud" name="soundcloud" placeholder="SoundCloud username or URL" value="${esc(socials.soundcloud)}" />
-      <input class="field" type="text" id="socialYoutube" name="youtube" placeholder="YouTube username or URL" value="${esc(socials.youtube)}" />
-      <div class="muted small" style="margin-top:4px;">You can enter just your username (e.g. <b>nefotografija</b>) or a full URL for each social field.</div>
+      <fieldset class="social-links-group" style="border:1px dashed var(--line); border-radius:8px; padding:12px; margin:12px 0;">
+        <legend class="muted small" style="padding:0 8px;">Social Links</legend>
+        <div class="social-fields" style="display:grid; grid-template-columns:1fr; gap:8px;">
+          <label><span aria-hidden="true">🌐</span> <span class="sr-only">Facebook</span>
+            <input class="field" type="text" id="socialFacebook" name="facebook" placeholder="Facebook username or URL" value="${esc(socials.facebook)}" autocomplete="username" />
+          </label>
+          <label><span aria-hidden="true">📸</span> <span class="sr-only">Instagram</span>
+            <input class="field" type="text" id="socialInstagram" name="instagram" placeholder="Instagram username or URL" value="${esc(socials.instagram)}" autocomplete="username" />
+          </label>
+          <label><span aria-hidden="true">🐦</span> <span class="sr-only">Twitter</span>
+            <input class="field" type="text" id="socialTwitter" name="twitter" placeholder="Twitter username or URL" value="${esc(socials.twitter)}" autocomplete="username" />
+          </label>
+          <label><span aria-hidden="true">🎵</span> <span class="sr-only">Bandcamp</span>
+            <input class="field" type="text" id="socialBandcamp" name="bandcamp" placeholder="Bandcamp username or URL" value="${esc(socials.bandcamp)}" autocomplete="username" />
+          </label>
+          <label><span aria-hidden="true">☁️</span> <span class="sr-only">SoundCloud</span>
+            <input class="field" type="text" id="socialSoundcloud" name="soundcloud" placeholder="SoundCloud username or URL" value="${esc(socials.soundcloud)}" autocomplete="username" />
+          </label>
+          <label><span aria-hidden="true">▶️</span> <span class="sr-only">YouTube</span>
+            <input class="field" type="text" id="socialYoutube" name="youtube" placeholder="YouTube username or URL" value="${esc(socials.youtube)}" autocomplete="username" />
+          </label>
+        </div>
+        <div class="muted small" style="margin-top:8px;">You can enter just your username (e.g. <b>nefotografija</b>) or a full URL for each social field.</div>
+      </fieldset>
       <div class="hstack">
         <button class="btn" type="submit">[ save about ]</button>
         <button class="btn btn-ghost small" id="cancelAboutBtn" type="button">[ cancel ]</button>
