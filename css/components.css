@@ -248,8 +248,11 @@
 }
 /* Make avatar upload button as wide as about textarea */
 /* Make avatar upload button as wide as about textarea and center text */
+/* Make avatar upload button slightly wider than textarea */
 #avatarFileLabel {
   width: 100%;
+  min-width: 100%;
+  max-width: none;
   box-sizing: border-box;
   display: inline-block;
   text-align: center;
