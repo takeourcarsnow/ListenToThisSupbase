@@ -40,7 +40,7 @@ export function renderCommentHTML(c, postId, state, DB) {
   const db = DB.getAll();
   const u = db.users.find(x => x.id === c.userId) || null;
   const uname = userName(c.userId, state, DB);
-  const avatarUrl = u && u.avatarUrl ? esc(u.avatarUrl) : '/favicon-32x32.png';
+  const avatarUrl = u && u.avatarUrl ? esc(u.avatarUrl) : '/assets/android-chrome-512x512.png';
     return `<div class="comment small" data-comment="${c.id}" data-post="${postId}">
       <img class="avatar avatar-sm" src="${avatarUrl}" alt="avatar" />
       <span class="muted">${fmtTime(c.createdAt)}</span> <b>${u ? `<a href="#" data-action="view-user" data-uid="${esc(u.id)}">${esc(uname)}</a>` : esc(uname)}</b>: ${esc(c.text)}
@@ -62,7 +62,7 @@ export function renderPostHTML(p, state, DB) {
   const commentsCount = p.comments ? p.comments.length : 0;
   const commentsHTML = (p.comments || []).map(c => renderCommentHTML(c, p.id, state, DB)).join('');
 
-  const authorAvatar = user && user.avatarUrl ? esc(user.avatarUrl) : '/favicon-32x32.png';
+  const authorAvatar = user && user.avatarUrl ? esc(user.avatarUrl) : '/assets/android-chrome-512x512.png';
     return `
   <article class="post" id="post-${p.id}" data-post="${p.id}" aria-label="${esc(p.title)}">
     <div class="title">${esc(p.title)} ${p.artist ? `<span class="muted thin">by ${esc(p.artist)}</span>` : ''}</div>
