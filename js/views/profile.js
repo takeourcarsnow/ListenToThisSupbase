@@ -25,7 +25,10 @@ export function showUserProfile(userId, DB) {
               <img class="profile-avatar" src="${u.avatarUrl ? esc(u.avatarUrl) : '/assets/android-chrome-512x512.png'}" alt="avatar" />
             </div>
             <div class="title">${esc(u.name)}</div>
-            <div class="small muted" style="margin-bottom:8px">member since ${new Date(u.createdAt||Date.now()).toLocaleDateString()}</div>
+            <div class="small muted" style="margin-bottom:8px">
+              member since ${new Date(u.createdAt||Date.now()).toLocaleDateString()}<br>
+              posts: ${userPosts.length}
+            </div>
             <div>${u.about ? esc(u.about).replace(/\n/g,'<br>') : '<span class=\"muted small\">no about yet.</span>'}</div>
             <div style="margin:8px 0;">
               ${(() => {
