@@ -133,7 +133,12 @@ body.show-header header[role="banner"] {
   max-width: 100%;
   box-sizing: border-box;
   text-align: center;
-  overflow-x: auto;
+  overflow-x: hidden;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+.ascii-banner::-webkit-scrollbar {
+  display: none;
 }
 
 /* Top Dock/Notice */
