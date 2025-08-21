@@ -8,6 +8,16 @@ const DB_KEY_V1 = 'tunedIn.space/v1';
 const defaultDB = { users:[], posts:[], createdAt: Date.now(), version: 2 };
 
 class LocalAdapter {
+  async deleteUser(id) {
+    await this.init();
+    const i = (this.cache.users || []).findIndex(u => u.id === id);
+    if (i < 0) return false;
+    this.cache.users.splice(i, 1);
+    // Optionally, delete user's posts too:
+    this.cache.posts = (this.cache.posts || []).filter(p => p.userId !== id);
+    await this._save();
+    return true;
+  }
   constructor(){ this.cache = null; this.isRemote = false; }
 
   async init(){
@@ -130,6 +140,16 @@ class LocalAdapter {
 }
 
 class SupabaseAdapter {
+  async deleteUser(id) {
+    // Delete user posts first
+    const { error: postError } = await this.supabase.from('posts').delete().eq('user_id', id);
+    if (postError) console.error('deleteUser posts error', postError);
+    // Delete user
+    const { error: userError } = await this.supabase.from('users').delete().eq('id', id);
+    if (userError) console.error('deleteUser user error', userError);
+    await this.refresh();
+    return !userError;
+  }
   constructor(url, key){
     this.isRemote = true;
     this.supabase = null;

@@ -6,6 +6,10 @@ export function renderHelpOverlay() {
         <div class="muted small">Welcome / Help</div>
         <button class="btn btn-ghost small" data-close-help>[ close ]</button>
       </div>
+      <div style="text-align:center; margin-top:2em;">
+        <button class="btn btn-danger" data-action="delete-account">Delete My Account</button>
+        <div class="muted small" style="margin-top:0.5em;">This will permanently remove your account and posts.</div>
+      </div>
       <div class="sep"></div>
       <div class="small stack" style="gap:1.5em">
         <div style="text-align:center;">
@@ -58,4 +62,19 @@ export function renderHelpOverlay() {
   overlay.id = 'help';
   overlay.innerHTML = helpHTML;
   document.body.appendChild(overlay);
+  // Attach delete account handler
+  overlay.querySelector('[data-action="delete-account"]').onclick = async () => {
+    if (!confirm('Are you sure you want to permanently delete your account and all your posts? This cannot be undone.')) return;
+    const DB = (await import('./db.js')).default;
+    const { currentUser } = await import('../auth/auth.js');
+    const user = await currentUser(DB);
+    if (!user) { alert('No user logged in.'); return; }
+    const ok = await DB.deleteUser(user.id);
+    if (ok) {
+      alert('Your account and posts have been deleted.');
+      location.reload();
+    } else {
+      alert('Failed to delete account.');
+    }
+  };
 }
