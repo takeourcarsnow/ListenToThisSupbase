@@ -42,7 +42,6 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
       }
     </div>
   `;
-  root.appendChild(top);
 
   // Dock
   const prefsNow = loadPrefs();
@@ -118,6 +117,7 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
     <div id="pager" class="hstack" style="justify-content:center; margin-top:8px"></div>
   `;
 
+  left.appendChild(top);
   left.appendChild(tagsBox);
   left.appendChild(dock);
   left.appendChild(feedBox);

@@ -28,12 +28,13 @@ export function renderComposeBox(right, state, DB, render) {
   box.innerHTML = `
     <div class="muted small" style="margin-bottom:18px;">${getComposePrompt()}</div>
     <form id="postForm" class="stack" autocomplete="off">
-      <input class="field" id="f_title" placeholder="Title (song or album)" required maxlength="120" style="margin-top:8px;" />
-      <input class="field" id="f_artist" placeholder="Artist" maxlength="120"/>
-      <input class="field" id="f_url" placeholder="Link (YouTube / Spotify / Bandcamp / SoundCloud / direct .mp3)" required/>
-      <input class="field" id="f_tags" placeholder="tags (space/comma or #tag #chill #2020)"/>
+      <input class="field" id="f_url" placeholder="Link (YouTube / Spotify / Bandcamp, etc)" required/>
+  <div class="muted small" id="autofillMsg" style="margin-bottom:2px; display:none;">&#8593; Auto-fills artist & title.</div>
+      <input class="field" id="f_artist" placeholder="Artist" maxlength="120" style="margin-top:8px;" />
+      <input class="field" id="f_title" placeholder="Title (song or album)" required maxlength="120" />
+      <input class="field" id="f_tags" placeholder="#Tags go here"/>
       <div id="tagSuggestions" class="hstack" style="flex-wrap:wrap; gap:4px; margin:4px 0 0 0;"></div>
-      <textarea class="field" id="f_body" rows="4" placeholder="Why should we listen? (up to 200 characters)" maxlength="200" oninput="document.getElementById('bodyCounter').textContent = this.value.length + '/200';"></textarea>
+      <textarea class="field" id="f_body" rows="4" placeholder="Share something about this track, a memory, or the vibe it gives you." maxlength="200" oninput="document.getElementById('bodyCounter').textContent = this.value.length + '/200';"></textarea>
       <div class="hstack" style="justify-content:space-between; align-items:center; margin-bottom:4px;">
         <div class="muted small" id="captchaBox" style="margin:0;"></div>
         <span class="muted small" id="bodyCounter">0/200</span>
@@ -47,6 +48,28 @@ export function renderComposeBox(right, state, DB, render) {
       <div id="preview" class="player" aria-live="polite"></div>
     </form>
   `;
+  // Show autofill message only when user is interacting with the composer
+  const autofillMsg = box.querySelector('#autofillMsg');
+  const composerFields = [
+    box.querySelector('#f_url'),
+    box.querySelector('#f_title'),
+    box.querySelector('#f_artist'),
+    box.querySelector('#f_tags'),
+    box.querySelector('#f_body')
+  ];
+  composerFields.forEach(field => {
+    if (field) {
+      field.addEventListener('focus', () => { autofillMsg.style.display = 'block'; });
+      field.addEventListener('input', () => { autofillMsg.style.display = 'block'; });
+      field.addEventListener('blur', () => {
+        setTimeout(() => {
+          if (!composerFields.some(f => f && document.activeElement === f)) {
+            autofillMsg.style.display = 'none';
+          }
+        }, 50);
+      });
+    }
+  });
   right.appendChild(box);
 
   // Full post preview
