@@ -20,26 +20,20 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
   top.className = 'topbar';
   top.innerHTML = `
     <div class="hstack toolbar">
-      <span class="pill" title="current user">user: ${
-        me
-          ? `<a href="#" data-action="view-user" data-uid="${esc(me.id)}">${esc(me.name)}</a>`
-          : 'guest'
-      }</span>
       <span class="pill" title="total posts">posts: ${postCount}</span>
+      <input class="field" id="search" type="search" placeholder="search title/artist/tags..." style="width:240px" value="${esc(prefs.search)}" aria-label="search"/>
+      ${
+        me
+          ? `<span class="pill" title="current user">user: <a href="#" data-action="view-user" data-uid="${esc(me.id)}">${esc(me.name)}</a></span><button class="btn btn-ghost" data-action="logout" title="logout">[ logout ]</button>`
+          : `<span class="pill" title="current user">user: guest</span><button class="btn btn-ghost" id="goLoginBtn" title="login / register">[ login / register ]</button>`
+      }
+      <button class="btn btn-ghost" data-action="show-help" title="keyboard shortcuts">[ help ]</button>
       ${
         userFilterId
           ? `<span class="pill">user filter: <a href="#" data-action="clear-user-filter">${esc(
               db.users.find(u => u.id === userFilterId)?.name || 'user'
             )}</a> <a href="#" data-action="clear-user-filter" title="clear user filter">✕</a></span>`
           : ''
-      }
-    </div>
-    <div class="hstack toolbar">
-      <input class="field" id="search" type="search" placeholder="search title/artist/tags..." style="width:240px" value="${esc(prefs.search)}" aria-label="search"/>
-      ${
-        me
-          ? `<button class="btn btn-ghost" data-action="logout" title="logout">[ logout ]</button><button class="btn btn-ghost" data-action="show-help" title="keyboard shortcuts">[ help ]</button>`
-          : `<button class="btn btn-ghost" id="goLoginBtn" title="login / register">[ login / register ]</button><button class="btn btn-ghost" data-action="show-help" title="keyboard shortcuts">[ help ]</button>`
       }
     </div>
   `;
