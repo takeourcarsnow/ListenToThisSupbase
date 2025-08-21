@@ -15,18 +15,35 @@ export function renderComposeBox(right, state, DB, render) {
     const guest = document.createElement('div');
     guest.className = 'box';
     guest.innerHTML = `
-      <div class="muted small">${getComposePrompt()}</div>
+      <div class="muted small" id="composePromptGuest"></div>
       <div class="notice small">You are in guest read-only mode. Login to post, like, or comment.</div>
       <button class="btn btn-ghost" data-action="go-login">[ login / register ]</button>
     `;
     right.appendChild(guest);
+    // Looping prompt for guest
+    const promptDiv = guest.querySelector('#composePromptGuest');
+    let lastPrompt = '';
+    function setPrompt() {
+      let prompt;
+      do { prompt = getComposePrompt(); } while (prompt === lastPrompt && PROMPTS.length > 1);
+      lastPrompt = prompt;
+      promptDiv.classList.remove('fadein');
+      promptDiv.classList.add('fadeout');
+      setTimeout(() => {
+        promptDiv.textContent = prompt;
+        promptDiv.classList.remove('fadeout');
+        promptDiv.classList.add('fadein');
+      }, 250);
+    }
+    setPrompt();
+    setInterval(setPrompt, 10000);
     return;
   }
 
   const box = document.createElement('div');
   box.className = 'box';
   box.innerHTML = `
-    <div class="muted small" style="margin-bottom:18px;">${getComposePrompt()}</div>
+    <div class="muted small" id="composePrompt" style="margin-bottom:18px;"></div>
     <form id="postForm" class="stack" autocomplete="off">
       <input class="field" id="f_url" placeholder="Link (YouTube / Spotify / Bandcamp, etc)" required/>
   <div class="muted small" id="autofillMsg" style="margin-bottom:2px; display:none;">&#8593; Auto-fills artist & title.</div>
@@ -50,8 +67,9 @@ export function renderComposeBox(right, state, DB, render) {
       <div id="preview" class="player" aria-live="polite"></div>
     </form>
   `;
-  // Show autofill message only when user is interacting with the composer
-  const autofillMsg = box.querySelector('#autofillMsg');
+  // Looping prompt for logged-in user, but only if not focused in any composer field
+  const promptDiv = box.querySelector('#composePrompt');
+  let lastPrompt = '';
   const composerFields = [
     box.querySelector('#f_url'),
     box.querySelector('#f_title'),
@@ -59,6 +77,22 @@ export function renderComposeBox(right, state, DB, render) {
     box.querySelector('#f_tags'),
     box.querySelector('#f_body')
   ];
+  function setPrompt() {
+    let prompt;
+    do { prompt = getComposePrompt(); } while (prompt === lastPrompt && PROMPTS.length > 1);
+    lastPrompt = prompt;
+    promptDiv.classList.remove('fadein');
+    promptDiv.classList.add('fadeout');
+    setTimeout(() => {
+      promptDiv.textContent = prompt;
+      promptDiv.classList.remove('fadeout');
+      promptDiv.classList.add('fadein');
+    }, 250);
+  }
+  setPrompt();
+  setInterval(setPrompt, 10000);
+  // Show autofill message only when user is interacting with the composer
+  const autofillMsg = box.querySelector('#autofillMsg');
   composerFields.forEach(field => {
     if (field) {
       field.addEventListener('focus', () => {
@@ -85,6 +119,10 @@ export function renderComposeBox(right, state, DB, render) {
             autofillMsg.style.display = 'none';
           }
         }, 50);
+        // Also, if user leaves all fields, allow prompt to update again
+        setTimeout(() => {
+          if (!composerFields.some(f => f && document.activeElement === f)) setPrompt();
+        }, 60);
       });
     }
   });
