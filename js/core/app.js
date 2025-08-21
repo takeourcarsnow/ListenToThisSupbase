@@ -34,12 +34,14 @@ async function renderApp() {
     state.forceLogin = false;
     if (banner) banner.style.display = 'none';
     body.classList.remove('show-header');
+    setGuestMode(false); // Always disable guest mode before showing login
     renderLogin(root, DB, renderApp);
     return;
   }
   if (!state.user && !isGuestMode()) {
     if (banner) banner.style.display = 'none';
     body.classList.remove('show-header');
+    setGuestMode(false); // Always disable guest mode before showing login
     renderLogin(root, DB, renderApp);
   } else {
     if (banner) banner.style.display = '';
