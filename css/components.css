@@ -1,3 +1,33 @@
+/* Fade in/out for comment and edit post sections */
+.fade-out {
+  animation: fadeOutProfile 0.18s cubic-bezier(0.4,0.2,0.2,1) forwards;
+}
+.fade-in {
+  animation: fadeInProfile 0.18s cubic-bezier(0.4,0.2,0.2,1) forwards;
+}
+@keyframes fadeOutProfile {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(10px); }
+}
+@keyframes fadeInProfile {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+/* Fade in/out for profile edit section */
+.fade-out {
+  animation: fadeOutProfile 0.18s cubic-bezier(0.4,0.2,0.2,1) forwards;
+}
+.fade-in {
+  animation: fadeInProfile 0.18s cubic-bezier(0.4,0.2,0.2,1) forwards;
+}
+@keyframes fadeOutProfile {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(10px); }
+}
+@keyframes fadeInProfile {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 /* ASCII banner mobile styles (moved from index.html) */
 /* Removed #ascii-banner-mobile rules to avoid conflicts. Use .ascii-banner class for all ASCII banners. */
 @media (max-width: 600px) {

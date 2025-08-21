@@ -100,7 +100,7 @@ export function renderProfileBox(right, state, DB, render) {
             <input class="field" type="text" id="socialYoutube" name="yt_user" placeholder="YouTube username or URL" value="${esc(getSocialUsername(socials.youtube, 'youtube'))}" autocomplete="username" />
           </label>
         </div>
-        <div class="muted small" style="margin-top:8px;">You can enter just your username (e.g. <b>nefotografija</b>) or a full URL for each social field.</div>
+        <div class="muted small" style="margin-top:8px;">You can enter just your username or a full URL for each social field.</div>
       </fieldset>
       <div class="hstack">
         <button class="btn" type="submit">[ save about ]</button>
@@ -116,17 +116,25 @@ export function renderProfileBox(right, state, DB, render) {
   const editBtn = box.querySelector('#editAboutBtn');
   const cancelBtn = box.querySelector('#cancelAboutBtn');
 
+  // Animate out the collapsed section, then show the edit form
   editBtn.addEventListener('click', () => {
-    aboutCollapsed.style.display = 'none';
-    aboutEditForm.style.display = '';
-    // Prevent auto-focus on mobile devices (avoid keyboard pop-up)
-    if (!/Mobi|Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)) {
-      aboutEditForm.querySelector('#aboutMe').focus();
-    }
+    aboutCollapsed.classList.add('fade-out');
+    aboutCollapsed.classList.remove('fade-in');
+    setTimeout(() => {
+      aboutCollapsed.style.display = 'none';
+      aboutEditForm.style.display = '';
+      // Prevent auto-focus on mobile devices (avoid keyboard pop-up)
+      if (!/Mobi|Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)) {
+        aboutEditForm.querySelector('#aboutMe').focus();
+      }
+    }, 180); // match CSS duration
   });
+  // Animate in the collapsed section when canceling
   cancelBtn.addEventListener('click', () => {
     aboutEditForm.style.display = 'none';
     aboutCollapsed.style.display = 'flex';
+    aboutCollapsed.classList.remove('fade-out');
+    aboutCollapsed.classList.add('fade-in');
   });
 
   function formatSocial(val, type) {
@@ -159,6 +167,8 @@ export function renderProfileBox(right, state, DB, render) {
     setTimeout(() => {
       aboutEditForm.style.display = 'none';
       aboutCollapsed.style.display = 'flex';
+      aboutCollapsed.classList.remove('fade-out');
+      aboutCollapsed.classList.add('fade-in');
       if (typeof render === 'function') render();
     }, 100);
   });

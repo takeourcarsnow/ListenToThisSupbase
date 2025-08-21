@@ -134,9 +134,15 @@ export function openEditInline(postId, state, DB) {
   if (!card) return;
   const editBoxId = 'editbox-' + postId;
   const opened = card.querySelector('#' + editBoxId);
-  if (opened) { opened.remove(); return; }
+  if (opened) {
+    // Animate out before removing
+    opened.classList.remove('fade-in');
+    opened.classList.add('fade-out');
+    setTimeout(() => opened.remove(), 180);
+    return;
+  }
   const edit = document.createElement('div');
-  edit.className = 'box';
+  edit.className = 'box fade-in';
   edit.id = editBoxId;
   edit.style.marginTop = '8px';
   edit.innerHTML = `

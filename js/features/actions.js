@@ -99,10 +99,27 @@ export async function onActionClick(e, state, DB, render) {
 
   if (action === 'comment' && postId) {
     const cbox = document.getElementById('cbox-' + postId);
-    cbox.classList.toggle('active');
-    if (cbox.classList.contains('active') && state.user) {
-      const inp = cbox.querySelector('input.field'); inp?.focus();
+    if (cbox.classList.contains('active')) {
+      // Animate out
+      cbox.classList.remove('fade-in');
+      cbox.classList.add('fade-out');
+      setTimeout(() => {
+        cbox.classList.remove('active');
+        cbox.classList.remove('fade-out');
+      }, 180);
+    } else {
+      cbox.classList.add('active');
+      cbox.classList.remove('fade-out');
+      cbox.classList.add('fade-in');
+      if (state.user) {
+        // Focus input after animation
+        setTimeout(() => {
+          const inp = cbox.querySelector('input.field');
+          if (inp) inp.focus();
+        }, 180);
+      }
     }
+  return;
   }
 
   if (action === 'delete-comment') {
