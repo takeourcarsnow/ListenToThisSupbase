@@ -105,6 +105,9 @@ export function renderPostHTML(p, state, DB) {
 }
 
 export function renderFeed(el, pager, state, DB, prefs) {
+  // --- Preserve open comment boxes ---
+  const openComments = Array.from(document.querySelectorAll('.comment-box.active')).map(box => box.id);
+
   let posts = getFilteredPosts(DB, prefs);
   // User filter support (from prefs or global)
   const userId = prefs._userFilterId || window.filterPostsByUserId;
@@ -122,6 +125,12 @@ export function renderFeed(el, pager, state, DB, prefs) {
     return;
   }
   el.innerHTML = chunk.map(p => renderPostHTML(p, state, DB)).join('');
+
+  // --- Restore open comment boxes ---
+  openComments.forEach(id => {
+    const box = document.getElementById(id);
+    if (box) box.classList.add('active');
+  });
 
   if (end < total) {
     pager.innerHTML = `<button class="btn btn-ghost" data-action="load-more">[ load more (${end}/${total}) ]</button>`;

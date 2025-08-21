@@ -1,13 +1,13 @@
 name ideas: heardit, frenstunes
 
-let users add their contact information such as a link to their instagram or facebook or x in about section
+x let users add their contact information such as a link to their instagram or facebook or x in about section
 
 
+users with admin powers that can delete all posts
+
+x when i click on user show me his other posts 
 
 
-when i click on user show me his other posts 
-
-
-move accent chooser maybe in user about me section 
+x move accent chooser maybe in user about me section 
 
 generate spotify playlists from posts / tags / usernames
