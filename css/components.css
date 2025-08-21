@@ -1,3 +1,28 @@
+/* Compose textarea char counter in corner */
+#postForm > div[style*="position:relative"] {
+  position: relative;
+}
+#bodyCounter {
+  position: absolute !important;
+  bottom: 6px;
+  right: 10px;
+  pointer-events: none;
+  z-index: 2;
+  background: transparent;
+}
+/* Center profile box content */
+#aboutBox {
+  text-align: center;
+}
+#aboutBox .muted.small,
+#aboutBox #aboutText,
+#aboutBox #aboutSocials,
+#aboutBox #editAboutBtn {
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+  display: block;
+}
 /* Fade in/out for comment and edit post sections */
 .fade-out {
   animation: fadeOutProfile 0.18s cubic-bezier(0.4,0.2,0.2,1) forwards;

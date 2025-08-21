@@ -34,10 +34,12 @@ export function renderComposeBox(right, state, DB, render) {
       <input class="field" id="f_title" placeholder="Title (song or album)" required maxlength="120" />
       <input class="field" id="f_tags" placeholder="#Tags go here"/>
       <div id="tagSuggestions" class="hstack" style="flex-wrap:wrap; gap:4px; margin:4px 0 0 0;"></div>
-      <textarea class="field" id="f_body" rows="4" placeholder="Share something about this track, a memory, or the vibe it gives you." maxlength="200" oninput="document.getElementById('bodyCounter').textContent = this.value.length + '/200';"></textarea>
+      <div style="position:relative;">
+        <textarea class="field" id="f_body" rows="4" placeholder="Share something about this track, a memory, or the vibe it gives you." maxlength="200" oninput="document.getElementById('bodyCounter').textContent = this.value.length + '/200';"></textarea>
+        <span class="muted small" id="bodyCounter" style="position:absolute; bottom:6px; right:10px; pointer-events:none;">0/200</span>
+      </div>
       <div class="hstack" style="justify-content:space-between; align-items:center; margin-bottom:4px;">
         <div class="muted small" id="captchaBox" style="margin:0;"></div>
-        <span class="muted small" id="bodyCounter">0/200</span>
       </div>
       <input class="field" id="f_captcha" placeholder="Enter captcha answer" autocomplete="off" style="margin-bottom:2px;" />
       <div id="postFormError" class="muted small" style="color:#c00;min-height:18px;"></div>
