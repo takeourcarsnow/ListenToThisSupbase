@@ -196,6 +196,41 @@
 
 ---
 
+## Help
+
+**👋 Welcome to tunedIn.space!**
+
+Your new favorite place to overshare your music taste. (We won't judge. Much.)
+
+### Getting Started
+
+- Scroll the feed and eavesdrop on what everyone else is jamming to.
+- Smash **[ login / register ]** to join the party and drop your own bangers.
+- Share links from YouTube, Spotify, Bandcamp, SoundCloud, or even that obscure .mp3 you found at 3am.
+- Tag your posts (#vibes, #throwback, #2020) so fellow music nerds can find them.
+- Hit **[ play all ]** to turn the feed into your personal radio station.
+
+### How to Post
+
+- Give us a title, an artist, and a legit music link. (No Rickrolls. Or... maybe just one.)
+- Tags = discoverability. Don’t be shy.
+- Optional: Tell us why this track slaps. Or just type "banger." We get it.
+
+### Listening & Queue
+
+- Player controls up top: play, skip, shuffle, clear. DJ skills not required.
+- The queue is just the current feed, so filter and sort to your heart’s content.
+
+### Personalize
+
+- Pick an accent color. Express yourself. (Sorry, no glitter... yet.)
+
+### Tips & Tricks
+
+- Click tags to filter the feed. Use [ clear tag ] to see everything again.
+- Everything is keyboard accessible, so you can flex your shortcut skills.
+- Be kind, have fun, and remember: one person’s guilty pleasure is another’s anthem.
+
 ## Extending the App
 
 - Add more music providers in `providers.js`.
