@@ -19,17 +19,21 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
   const top = document.createElement('div');
   top.className = 'topbar';
   top.innerHTML = `
-    <div class="stack toolbar" style="align-items:center; gap:8px;">
-      <div class="hstack" style="justify-content:center; align-items:center; gap:16px;">
+    <div class="toolbar hstack" style="justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;">
+      <div class="hstack" style="gap:12px; align-items:center;">
         <span class="pill" title="total posts">posts: ${postCount}</span>
+      </div>
+      <div style="flex:1; display:flex; justify-content:center; align-items:center; min-width:240px;">
+        <input class="field" id="search" type="search" placeholder="search title/artist/tags..." style="width:100%; max-width:320px;" value="${esc(prefs.search)}" aria-label="search"/>
+      </div>
+      <div class="hstack" style="gap:12px; align-items:center;">
         ${
           me
             ? `<span class="pill" title="current user">user: <a href="#" data-action="view-user" data-uid="${esc(me.id)}">${esc(me.name)}</a></span><button class="btn btn-ghost" data-action="logout" title="logout">[ logout ]</button>`
             : `<span class="pill" title="current user">user: guest</span><button class="btn btn-ghost" id="goLoginBtn" title="login / register">[ login / register ]</button>`
         }
+        <button class="btn btn-ghost" data-action="show-help" title="keyboard shortcuts">[ help ]</button>
       </div>
-      <input class="field" id="search" type="search" placeholder="search title/artist/tags..." style="width:240px; margin:0 auto;" value="${esc(prefs.search)}" aria-label="search"/>
-      <button class="btn btn-ghost" data-action="show-help" title="keyboard shortcuts">[ help ]</button>
     </div>
   `;
 
