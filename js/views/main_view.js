@@ -23,6 +23,9 @@ export async function renderMain(root, state, DB, render) {
   const me = state.user;
   const prefs = loadPrefs();
 
+  // Always restore scrollbars in case login view hid them
+  document.body.style.overflow = '';
+  document.documentElement.style.overflow = '';
   // Show header
   const banner = document.getElementById('ascii-banner');
   if (banner) banner.style.display = '';
