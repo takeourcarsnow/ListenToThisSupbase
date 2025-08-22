@@ -55,7 +55,7 @@ export function renderComposeBox(right, state, DB, render) {
     <div class="muted small typewriter" id="composePrompt" style="margin-bottom:18px;"></div>
     <form id="postForm" class="stack" autocomplete="off">
       <input class="field" id="f_url" placeholder="Link (YouTube / Spotify / Bandcamp, etc)" required/>
-  <div class="muted small" id="autofillMsg" style="margin-bottom:2px; display:none;">&#8593; Auto-fills artist & title.</div>
+  <div class="muted small" id="autofillMsg" style="margin-bottom:2px; display:none;">&#8593; Should autofill artist information if we're lucky.</div>
       <input class="field" id="f_artist" placeholder="Artist" maxlength="120" style="margin-top:8px;" />
       <input class="field" id="f_title" placeholder="Title (song or album)" required maxlength="120" />
       <input class="field" id="f_tags" placeholder="#Tags go here"/>
