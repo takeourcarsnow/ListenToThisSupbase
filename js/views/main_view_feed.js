@@ -44,6 +44,7 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
   // Notification dot logic (dynamically insert dot as child of user button)
   const userBtn = top.querySelector('[data-action="view-user"], #goLoginBtn');
   let dot = null;
+  const NOTIF_SEEN_KEY = 'tunedin.notifications.lastSeen';
   if (userBtn) {
     dot = document.createElement('span');
     dot.className = 'notification-dot';
@@ -53,12 +54,29 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
     dot.style.position = 'absolute';
     userBtn.appendChild(dot);
     userBtn.style.position = 'relative';
+    // Mark notifications as seen when user opens notifications (profile/user button click)
     userBtn.addEventListener('click', () => {
-      notifications.clear();
+      if (notifications.list.length) {
+        localStorage.setItem(NOTIF_SEEN_KEY, String(Math.max(...notifications.list.map(n => n.id))));
+        updateDot(notifications.list);
+      }
     });
   }
   function updateDot(list) {
-    if (dot) dot.style.display = list.length ? 'inline-block' : 'none';
+    if (!dot) return;
+    if (!list.length) {
+      dot.style.display = 'none';
+      return;
+    }
+    dot.style.display = 'inline-block';
+    // Check if there are unseen notifications
+    const lastSeen = +(localStorage.getItem(NOTIF_SEEN_KEY) || 0);
+    const newest = Math.max(...list.map(n => n.id));
+    if (newest > lastSeen) {
+      dot.classList.add('notification-dot-blink');
+    } else {
+      dot.classList.remove('notification-dot-blink');
+    }
   }
   notifications.subscribe(updateDot);
   updateDot(notifications.list);

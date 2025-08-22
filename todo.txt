@@ -18,3 +18,4 @@ make sure about me section slides back nicer, it kind of snaps back instantly no
 edit save to close with slide up
 tag cloud by color 
 when the time is done when i hover over it should say something like go post it now
+x notifications

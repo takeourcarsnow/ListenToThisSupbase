@@ -36,20 +36,22 @@
   border: none;
 }
 /* Notification dot indicator */
-.notification-dot {
-  display: inline-block;
-  width: 12px;
-  height: 12px;
-  background: linear-gradient(135deg, #ff5252 60%, #ff1744 100%);
-  border-radius: 50%;
-  position: static;
-  margin-left: 8px;
-  vertical-align: middle;
-  border: 2px solid #222e3a;
-  box-shadow: 0 0 6px 2px #ff174455, 0 1px 4px #0008;
+  .notification-dot {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    background: linear-gradient(135deg, #ff5252 60%, #ff1744 100%);
+    border-radius: 50%;
+    position: static;
+    margin-left: 8px;
+    vertical-align: middle;
+    border: 2px solid #222e3a;
+    box-shadow: 0 0 6px 2px #ff174455, 0 1px 4px #0008;
+    cursor: pointer;
+    transition: box-shadow 0.2s, background 0.2s;
+  }
+.notification-dot-blink {
   animation: notification-dot-pulse 1.2s infinite cubic-bezier(.4,0,.2,1);
-  cursor: pointer;
-  transition: box-shadow 0.2s, background 0.2s;
 }
 
 @keyframes notification-dot-pulse {
