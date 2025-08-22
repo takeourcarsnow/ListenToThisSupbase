@@ -163,6 +163,11 @@ export function renderLogin(root, DB, render) {
     if (!email || !pass) return;
     $('#loginMsg').textContent = 'Logging in...';
     try {
+      // Always clear session and cache before login to prevent leaks
+      clearSession();
+      if (DB.isRemote && DB.supabase && DB.supabase.auth && DB.supabase.auth.signOut) {
+        try { await DB.supabase.auth.signOut(); } catch (e) { /* ignore */ }
+      }
       let u;
       if (DB.isRemote && DB.supabase) {
         const { data, error } = await DB.supabase.auth.signInWithPassword({ email, password: pass });

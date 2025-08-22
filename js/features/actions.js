@@ -285,6 +285,10 @@ export async function onActionClick(e, state, DB, render) {
     // Clear all session and user data
     clearSession();
     setGuestMode(false);
+    // Supabase: sign out from all sessions on this device
+    if (DB.isRemote && DB.supabase && DB.supabase.auth && DB.supabase.auth.signOut) {
+      try { await DB.supabase.auth.signOut(); } catch (e) { /* ignore */ }
+    }
     // Clear all localStorage and sessionStorage
     try {
       localStorage.clear();
@@ -300,7 +304,8 @@ export async function onActionClick(e, state, DB, render) {
     }
     // Reset prefs cache if available
     if (typeof resetPrefsCache === 'function') resetPrefsCache();
-    render();
+    // Force reload to ensure all in-memory state is reset
+    location.reload();
   }
 }
 
