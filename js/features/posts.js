@@ -8,6 +8,21 @@ export async function onCreatePost(e, state, DB, render) {
   const me = state.user;
   if (!me) { toast(document.getElementById('app'), 'login to post', true); return; }
 
+  // Restrict to 1 post per 24h
+  const now = Date.now();
+  const lastPost = db.posts
+    .filter(p => p.userId === me.id)
+    .sort((a, b) => b.createdAt - a.createdAt)[0];
+  if (lastPost && now - lastPost.createdAt < 24 * 60 * 60 * 1000) {
+    const timeLeft = 24 * 60 * 60 * 1000 - (now - lastPost.createdAt);
+    const hours = Math.floor(timeLeft / (60 * 60 * 1000));
+    const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
+    const seconds = Math.floor((timeLeft % (60 * 1000)) / 1000);
+    const errorDiv = document.getElementById('postFormError');
+    if (errorDiv) errorDiv.textContent = `You can post again in ${hours}h ${minutes}m ${seconds}s.`;
+    return;
+  }
+
 
   const title = document.getElementById('f_title').value.trim();
   const artist = document.getElementById('f_artist').value.trim();

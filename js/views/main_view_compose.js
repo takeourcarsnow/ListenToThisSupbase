@@ -70,12 +70,38 @@ export function renderComposeBox(right, state, DB, render) {
       <input class="field" id="f_captcha" placeholder="Enter captcha answer" autocomplete="off" style="margin-bottom:2px;" />
       <div id="postFormError" class="muted small" style="color:#c00;min-height:18px;"></div>
       <div class="hstack" style="justify-content:center; margin-top:1px; gap:10px;">
-        <button class="btn" type="submit">[ post ]</button>
+        <button class="btn" type="submit" id="postBtn">[ post ]</button>
         <button class="btn btn-ghost" type="button" id="previewBtn">[ preview ]</button>
       </div>
       <div id="preview" class="player" aria-live="polite"></div>
+      <div id="postCooldown" class="muted small" style="text-align:center;margin-top:8px;"></div>
     </form>
   `;
+  // Cooldown logic: disable post button and show timer if user posted in last 24h
+  function updateCooldown() {
+    const db = DB.getAll();
+    const me = state.user;
+    const postBtn = box.querySelector('#postBtn');
+    const cooldownDiv = box.querySelector('#postCooldown');
+    if (!me) return;
+    const now = Date.now();
+    const lastPost = db.posts
+      .filter(p => p.userId === me.id)
+      .sort((a, b) => b.createdAt - a.createdAt)[0];
+    if (lastPost && now - lastPost.createdAt < 24 * 60 * 60 * 1000) {
+      const timeLeft = 24 * 60 * 60 * 1000 - (now - lastPost.createdAt);
+      const hours = Math.floor(timeLeft / (60 * 60 * 1000));
+      const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
+      const seconds = Math.floor((timeLeft % (60 * 1000)) / 1000);
+      if (postBtn) postBtn.disabled = true;
+      if (cooldownDiv) cooldownDiv.textContent = `You can post again in ${hours}h ${minutes}m ${seconds}s.`;
+    } else {
+      if (postBtn) postBtn.disabled = false;
+      if (cooldownDiv) cooldownDiv.textContent = '';
+    }
+  }
+  setInterval(updateCooldown, 1000);
+  updateCooldown();
   // Looping prompt for logged-in user, but only if not focused in any composer field
   const promptDiv = box.querySelector('#composePrompt');
   let lastPrompt = '';
