@@ -95,8 +95,8 @@ export function renderPostHTML(p, state, DB) {
     </div>
     ${state.user ? `
       <form class="hstack" data-action="comment-form" data-post="${p.id}">
-        <label class="sr-only" for="c-${p.id}">Write a comment</label>
-        <input class="field" id="c-${p.id}" placeholder="write a comment…" maxlength="500" />
+  <label class="sr-only" for="c-${p.id}">Write a comment</label>
+  <input class="field" id="c-${p.id}" placeholder="write a comment…" maxlength="500" aria-label="Write a comment" />
         <button class="btn">[ send ]</button>
       </form>
     ` : `<div class="muted small">login to comment</div>`}
