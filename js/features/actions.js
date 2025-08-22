@@ -3,6 +3,7 @@ import { parseProvider, buildEmbed } from './providers.js';
 import { loadPrefs, savePrefs, PREF_KEY, resetPrefsCache } from '../auth/prefs.js';
 import { SESSION_KEY, GUEST_KEY, setGuestMode, clearSession } from '../auth/session.js';
 import { renderFeed, renderPostHTML, renderCommentHTML } from './feed.js';
+import { notifyPostLike, notifyPostComment } from '../core/notify_helpers.js';
 import { containsBannedWords, looksLikeSpam } from './automod.js';
 import { openEditInline } from './posts.js';
 import { showUserProfile } from '../views/profile.js';
@@ -58,6 +59,10 @@ export async function onActionClick(e, state, DB, render) {
     if (!state.user) { toast(card || root, 'login to like', true); return; }
     const updated = await DB.toggleLike(postId, state.user.id);
     if (updated && card) {
+      // Notify post author if not self
+      const db = DB.getAll();
+      const post = db.posts.find(x => x.id === postId);
+      notifyPostLike(post, state.user);
       // Find the like button before updating
       const likeBtn = card.querySelector('[data-action="like"]');
       if (likeBtn) {
@@ -342,6 +347,8 @@ export async function onDelegatedSubmit(e, state, DB, render) {
     await DB.addComment(pid, c);
     input.value = '';
     const p = DB.getAll().posts.find(x => x.id === pid);
+    // Notify post author if not self
+    notifyPostComment(p, state.user);
     const cwrap = document.getElementById('comments-' + pid);
     cwrap.innerHTML = (p.comments || []).map(x => renderCommentHTML(x, pid, state, DB)).join('');
     liveSay('comment added');

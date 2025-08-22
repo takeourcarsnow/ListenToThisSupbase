@@ -5,6 +5,9 @@
 - [x] Let users add their contact information (Instagram, Facebook, X) in the About section
 - [x] When clicking on a user, show their other posts
 - [x] Move accent chooser (maybe in user About Me section)
+   x daily post limit
+
+
 
 ## 🚧 In Progress / To Do
 - [ ] Users with admin powers that can delete all posts
@@ -12,10 +15,6 @@
 clicking on edit about me brings up vertical slider for a blnk of an eye before the animation kicks in
 fix small typewriter breaking to new line mid-word
 make sure about me section slides back nicer, it kind of snaps back instantly now
-## 💡 Name Ideas
-- heardit
-- frenstunes 
-
 edit save to close with slide up
 tag cloud by color 
-x daily post limit
+when the time is done when i hover over it should say something like go post it now
