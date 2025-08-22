@@ -240,18 +240,19 @@ class SupabaseAdapter {
   getAll(){ return this.cache; }
 
   async ensureUser(name) {
-    // Try to get current auth user id
+    // Always use the current authenticated user's UID as id
     let userId = null;
     if (this.supabase && this.supabase.auth && this.supabase.auth.getUser) {
       const authUser = await this.supabase.auth.getUser();
       userId = authUser?.data?.user?.id || authUser?.user?.id;
     }
-    const existing = this.cache.users.find(u => (userId && u.id === userId) || u.name.toLowerCase() === name.toLowerCase());
+    if (!userId) throw new Error('No authenticated user');
+    const existing = this.cache.users.find(u => u.id === userId || u.name.toLowerCase() === name.toLowerCase());
     if (existing) return existing;
     const user = {
-      id: userId || (crypto.randomUUID ? crypto.randomUUID() : 'u_' + Math.random().toString(36).slice(2)),
+      id: userId,
       name: name.trim(),
-      about: '', // NEW
+      about: '',
       createdAt: Date.now()
     };
     const { error } = await this.supabase.from('users').insert({
@@ -264,7 +265,14 @@ class SupabaseAdapter {
   getUserById(id){ return this.cache.users.find(u=>u.id===id) || null; }
 
   async createPost(post){
-    const row = this.mapPostToRow(post);
+    // Always use the current authenticated user's UID as userId
+    let userId = null;
+    if (this.supabase && this.supabase.auth && this.supabase.auth.getUser) {
+      const authUser = await this.supabase.auth.getUser();
+      userId = authUser?.data?.user?.id || authUser?.user?.id;
+    }
+    if (!userId) throw new Error('No authenticated user');
+    const row = { ...this.mapPostToRow(post), user_id: userId };
     const { error } = await this.supabase.from('posts').insert(row);
     if(error) console.error('createPost error', error);
     await this.refresh();
@@ -319,6 +327,13 @@ class SupabaseAdapter {
   }
 
   async updateUser(id, patch){
+    // Always use the current authenticated user's UID for update
+    let userId = null;
+    if (this.supabase && this.supabase.auth && this.supabase.auth.getUser) {
+      const authUser = await this.supabase.auth.getUser();
+      userId = authUser?.data?.user?.id || authUser?.user?.id;
+    }
+    if (!userId) throw new Error('No authenticated user');
     const update = {};
     if (patch.name !== undefined) update.name = patch.name;
     if (patch.about !== undefined) update.about = patch.about;
@@ -329,11 +344,11 @@ class SupabaseAdapter {
     if (patch.bandcamp !== undefined) update.bandcamp = patch.bandcamp;
     if (patch.soundcloud !== undefined) update.soundcloud = patch.soundcloud;
     if (patch.youtube !== undefined) update.youtube = patch.youtube;
-    if (Object.keys(update).length === 0) return this.getUserById(id);
-    const { error } = await this.supabase.from('users').update(update).eq('id', id);
+    if (Object.keys(update).length === 0) return this.getUserById(userId);
+    const { error } = await this.supabase.from('users').update(update).eq('id', userId);
     if(error) console.error('updateUser error', error);
     await this.refresh();
-    return this.getUserById(id);
+    return this.getUserById(userId);
   }
 
   async replaceAll(data){
