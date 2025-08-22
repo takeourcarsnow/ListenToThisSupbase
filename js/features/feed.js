@@ -63,46 +63,48 @@ export function renderPostHTML(p, state, DB) {
   const commentsHTML = (p.comments || []).map(c => renderCommentHTML(c, p.id, state, DB)).join('');
 
   const authorAvatar = user && user.avatarUrl ? esc(user.avatarUrl) : '/assets/android-chrome-512x512.png';
-    return `
+  return `
   <article class="post" id="post-${p.id}" data-post="${p.id}" aria-label="${esc(p.title)}">
-    <div class="title">${esc(p.title)} ${p.artist ? `<span class="muted thin">by ${esc(p.artist)}</span>` : ''}</div>
-    <div class="small meta">
-      <a href="#" data-action="view-user" data-uid="${user ? esc(user.id) : ''}">
-        <img class="avatar avatar-sm" src="${authorAvatar}" alt="avatar" />
-      </a>
-      <span class="muted">by ${user ? `<a href=\"#\" data-action=\"view-user\" data-uid=\"${esc(user.id)}\">${esc(user.name)}</a>` : 'anon'}</span>
-      <span class="muted dot">·</span>
-      <span class="muted">${fmtTime(p.createdAt)}</span>
-      ${tgs ? `<span class="muted dot">·</span> ${tgs}` : ''}
+    <div class="post-header-twolines">
+      <div class="post-title-twolines">${esc(p.title)}${p.artist ? ` <span class="post-artist-twolines muted thin">by ${esc(p.artist)}</span>` : ''}</div>
+      <div class="small meta-twolines">
+        <a href="#" data-action="view-user" data-uid="${user ? esc(user.id) : ''}">
+          <img class="avatar avatar-sm" src="${authorAvatar}" alt="avatar" />
+        </a>
+        <span class="muted">by ${user ? `<a href=\"#\" data-action=\"view-user\" data-uid=\"${esc(user.id)}\">${esc(user.name)}</a>` : 'anon'}</span>
+        <span class="muted dot">·</span>
+        <span class="muted">${fmtTime(p.createdAt)}</span>
+        ${tgs ? `<span class="muted dot">·</span> <span class="post-tags-twolines">${tgs}</span>` : ''}
+      </div>
     </div>
-  ${p.body ? `<div class="sep"></div><div>${esc(p.body)}</div>` : ''}
-  <div class="actions hstack" style="margin-top:8px">
-    <button class="btn" data-action="toggle-player">[ play ]</button>
-    <button class="btn ${liked ? 'like-on' : ''}" data-action="like" aria-pressed="${liked}" title="like">[ ♥ ${likeCount} ]</button>
-    <button class="btn" data-action="comment" title="comments">[ comments ${commentsCount} ]</button>
-    <button class="btn btn-ghost" data-action="queue" title="add to queue">[ add to queue ]</button>
-    <button class="btn btn-ghost" data-action="share" data-perma="${esc(perma)}" title="share/copy link">[ share ]</button>
-    ${canEdit ? `
-      <button class="btn btn-ghost" data-action="edit" data-post="${p.id}">[ edit ]</button>
-      <button class="btn btn-ghost" data-action="delete">[ delete ]</button>
-    ` : ''}
-  </div>
-  <div class="player" id="player-${p.id}" aria-label="player"></div>
-  <div class="comment-box" id="cbox-${p.id}">
-    <div class="sep"></div>
-    <div id="comments-${p.id}">
-      ${commentsHTML}
+    ${p.body ? `<div class="sep"></div><div>${esc(p.body)}</div>` : ''}
+    <div class="actions hstack" style="margin-top:8px">
+      <button class="btn" data-action="toggle-player">[ play ]</button>
+      <button class="btn ${liked ? 'like-on' : ''}" data-action="like" aria-pressed="${liked}" title="like">[ ♥ ${likeCount} ]</button>
+      <button class="btn" data-action="comment" title="comments">[ comments ${commentsCount} ]</button>
+      <button class="btn btn-ghost" data-action="queue" title="add to queue">[ add to queue ]</button>
+      <button class="btn btn-ghost" data-action="share" data-perma="${esc(perma)}" title="share/copy link">[ share ]</button>
+      ${canEdit ? `
+        <button class="btn btn-ghost" data-action="edit" data-post="${p.id}">[ edit ]</button>
+        <button class="btn btn-ghost" data-action="delete">[ delete ]</button>
+      ` : ''}
     </div>
-    ${state.user ? `
-      <form class="hstack" data-action="comment-form" data-post="${p.id}">
-  <label class="sr-only" for="c-${p.id}">Write a comment</label>
-  <input class="field" id="c-${p.id}" placeholder="write a comment…" maxlength="500" aria-label="Write a comment" />
-        <button class="btn">[ send ]</button>
-      </form>
-    ` : `<div class="muted small">login to comment</div>`}
-  </div>
-</article>
-`;
+    <div class="player" id="player-${p.id}" aria-label="player"></div>
+    <div class="comment-box" id="cbox-${p.id}">
+      <div class="sep"></div>
+      <div id="comments-${p.id}">
+        ${commentsHTML}
+      </div>
+      ${state.user ? `
+        <form class="hstack" data-action="comment-form" data-post="${p.id}">
+          <label class="sr-only" for="c-${p.id}">Write a comment</label>
+          <input class="field" id="c-${p.id}" placeholder="write a comment…" maxlength="500" aria-label="Write a comment" />
+          <button class="btn">[ send ]</button>
+        </form>
+      ` : `<div class="muted small">login to comment</div>`}
+    </div>
+  </article>
+  `;
 }
 
 export function renderFeed(el, pager, state, DB, prefs) {

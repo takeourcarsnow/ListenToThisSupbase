@@ -1,3 +1,55 @@
+.post-header-twolines {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin-bottom: 2px;
+}
+.post-title-twolines {
+  font-weight: 700;
+  font-size: 1.13em;
+  margin-bottom: 0px;
+}
+.post-artist-twolines {
+  font-size: 1em;
+  margin-left: 4px;
+}
+.meta-twolines {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.post-tags-twolines {
+  display: inline;
+  font-size: 0.97em;
+  gap: 4px;
+}
+.post-header-inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+.post-title-inline {
+  font-weight: 700;
+  font-size: 1.13em;
+  margin-right: 4px;
+}
+.post-artist-inline {
+  font-size: 1em;
+  margin-right: 8px;
+}
+.meta-inline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.post-tags-inline {
+  display: inline;
+  font-size: 0.97em;
+  gap: 4px;
+}
 /* Unify topbar pill, search, and button sizing/alignment */
 .topbar .pill,
 .topbar #search,
@@ -399,14 +451,34 @@ input[type=number] {
   box-sizing: border-box;
   max-width: 100%;
 }
-.post .title { font-weight: 600; }
+.post .post-title {
+  font-weight: 700;
+  font-size: 1.18em;
+  margin-bottom: 2px;
+}
+.post .post-artist {
+  font-size: 1em;
+  margin-bottom: 6px;
+}
 .post:hover {
   border-color: var(--line2, #444);
   box-shadow: 0 2px 10px 0 rgba(0,0,0,0.10);
   background: var(--bg3);
 }
-.post .meta { display: flex; gap: 10px; flex-wrap: wrap; }
+.post .meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
 .post .meta .dot { opacity: .5; }
+.post .post-tags {
+  margin: 2px 0 8px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 0.97em;
+}
 .post.is-playing { outline: 2px dotted var(--acc); outline-offset: 2px; }
 
 /* Density toggles */
