@@ -6,6 +6,66 @@ import { enableTagCloudDragScroll } from '../features/tagcloud_scroll.js';
 import notifications from '../core/notifications.js';
 
 export function setupFeedPane({ root, left, state, DB, prefs, render }) {
+  // Show welcome/info popup for new users (like notifications)
+  const BANNER_KEY = 'tunedin.hideWelcomeBanner';
+  if (!localStorage.getItem(BANNER_KEY)) {
+    const popup = document.createElement('div');
+    popup.className = 'info-popup-banner';
+    popup.innerHTML = `
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;width:100%;gap:18px;">
+        <div style="display:flex;align-items:flex-start;gap:10px;">
+          <span style="font-size:1.5em;line-height:1.1;">🎉</span>
+          <span style="font-size:1.08em;line-height:1.5;">
+            <b>Welcome!</b> Check <b>[ help ]</b> for tips & <b>[ dev changelog ]</b> for project updates.
+          </span>
+        </div>
+        <button class="btn btn-ghost small" style="font-size:1.25em;opacity:0.7;padding:2px 10px 0 10px;line-height:1;" title="Dismiss" aria-label="Dismiss">✕</button>
+      </div>
+    `;
+    popup.style.textAlign = 'left';
+    Object.assign(popup.style, {
+      position: 'fixed',
+      bottom: '32px',
+      left: '0',
+      right: '0',
+      margin: '0 auto',
+      background: 'linear-gradient(90deg, #23272a 80%, #2d3136 100%)',
+      color: '#f3f3f3',
+      padding: '14px 28px 14px 22px',
+      borderRadius: '13px',
+      fontSize: '1em',
+      display: 'flex',
+      alignItems: 'center',
+      boxShadow: '0 8px 32px #0005',
+      maxWidth: '480px',
+      minWidth: '220px',
+      zIndex: 20000,
+      animation: 'fadein-popup-banner-bottom 0.7s',
+      cursor: 'default',
+    });
+    // Dismiss logic
+    const close = () => {
+      popup.style.animation = 'fadeout-popup-banner-bottom 0.4s';
+      setTimeout(() => {
+        popup.remove();
+        localStorage.setItem(BANNER_KEY, '1');
+      }, 350);
+    };
+    popup.querySelector('button').onclick = close;
+    // Auto-dismiss after 8 seconds if not closed
+    setTimeout(() => { if (document.body.contains(popup)) close(); }, 8000);
+    document.body.appendChild(popup);
+    // Add fadein/fadeout keyframes if not present
+    if (!document.getElementById('info-popup-banner-anim-bottom')) {
+      const style = document.createElement('style');
+      style.id = 'info-popup-banner-anim-bottom';
+      style.textContent = `
+        @keyframes fadein-popup-banner-bottom { from { opacity:0; transform:translateY(48px);} to { opacity:1; transform:none; } }
+        @keyframes fadeout-popup-banner-bottom { from { opacity:1; } to { opacity:0; transform:translateY(48px);} }
+      `;
+      document.head.appendChild(style);
+    }
+  }
   // Ensure help overlay can always be opened
   document.body.addEventListener('click', (e) => {
     const btn = e.target.closest('[data-action="show-help"]');
