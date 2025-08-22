@@ -245,8 +245,25 @@ export async function onActionClick(e, state, DB, render) {
     toast(card, 'added to queue');
   }
 
-  if (action === 'filter-tag') { const t = btn.dataset.tag; savePrefs({ filterTag: t, search: '' }); state.page = 1; render(); }
-  if (action === 'clear-tag') { savePrefs({ filterTag: null }); state.page = 1; render(); }
+  if (action === 'filter-tag') {
+    const t = btn.dataset.tag;
+    // Prevent default anchor or button scroll behavior
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+    savePrefs({ filterTag: t, search: '' });
+    state.page = 1;
+    render();
+    // Do not scroll the page
+    return;
+  }
+  if (action === 'clear-tag') {
+    // Prevent default anchor or button scroll behavior
+    if (e && typeof e.preventDefault === 'function') e.preventDefault();
+    savePrefs({ filterTag: null });
+    state.page = 1;
+    render();
+    // Do not scroll the page
+    return;
+  }
 
   if (action === 'q-prev') queuePrev(state, DB);
   if (action === 'q-next') queueNext(false, state, DB);
