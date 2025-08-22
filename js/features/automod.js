@@ -37,8 +37,8 @@ const BANNED_PATTERNS = [
   /credit\s*score/i,
   /casino/i,
   /betting/i,
-  /porn/i,
-  /x{2,}/i,
+  // /porn/i, // Disabled: too broad, causes false positives (e.g., 'profile picture')
+  // /x{2,}/i, // Disabled: too broad, causes false positives (e.g., 'about me')
   // Obvious spam patterns
   /http:\/\/(bit\.ly|tinyurl)/i,
   /buy\s*now/i,
@@ -46,13 +46,14 @@ const BANNED_PATTERNS = [
   /subscribe/i,
   /earn\s*\$/i,
   // Placeholder for more
-  /spamword1/i,
-  /offensiveword/i,
-  /badword/i
+  // /spamword1/i, // Placeholder, not used
+  // /offensiveword/i, // Placeholder, not used
+  // /badword/i // Placeholder, not used
 ];
 
 // Normalize text for better matching (remove spaces, leetspeak, etc.)
 function normalize(text) {
+  // Only normalize leetspeak, not all spaces, to avoid over-matching benign phrases
   return text
     .toLowerCase()
     .replace(/[0@]/g, 'o')
@@ -60,8 +61,8 @@ function normalize(text) {
     .replace(/[3]/g, 'e')
     .replace(/[4]/g, 'a')
     .replace(/[5]/g, 's')
-    .replace(/[7]/g, 't')
-    .replace(/\s+/g, '');
+    .replace(/[7]/g, 't');
+    // .replace(/\s+/g, ''); // Disabled: don't remove spaces, prevents false positives
 }
 
 // Returns true if content contains a banned word or pattern
