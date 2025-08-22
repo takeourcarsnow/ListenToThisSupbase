@@ -1,3 +1,40 @@
+/* Comment delete confirm popup */
+.comment-delete-confirm {
+  position: absolute;
+  background: #181c22;
+  color: #fff;
+  border: 1.5px solid var(--line2);
+  border-radius: 7px;
+  box-shadow: 0 4px 18px #000a;
+  padding: 8px 14px 7px 14px;
+  font-size: 0.98em;
+  min-width: 180px;
+  max-width: 96vw;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: fadein 0.18s;
+  transition: opacity 0.18s;
+}
+.comment-delete-confirm.fadeout {
+  animation: fadeout 0.18s;
+  opacity: 0;
+}
+.comment-delete-confirm .confirm-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.comment-delete-confirm .btn {
+  margin-left: 4px;
+  padding: 2px 8px;
+  font-size: 0.95em;
+}
+.comment-delete-confirm .btn-danger {
+  background: var(--danger);
+  color: #fff;
+  border: none;
+}
 /* Notification dot indicator */
 .notification-dot {
   display: inline-block;

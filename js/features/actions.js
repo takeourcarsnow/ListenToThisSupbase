@@ -164,13 +164,75 @@ export async function onActionClick(e, state, DB, render) {
     const com = (p.comments || []).find(c => c.id === cid);
     if (!com) return;
     if (com.userId !== state.user.id) { toast(card || root, 'you can only delete your comments', true); return; }
-    if (confirm('Delete this comment?')) {
+
+    // Remove any existing confirm popup
+    document.querySelectorAll('.comment-delete-confirm').forEach(el => el.remove());
+
+    // Create confirm popup
+    const confirmDiv = document.createElement('div');
+    confirmDiv.className = 'comment-delete-confirm fadein';
+    confirmDiv.innerHTML = `
+      <div class="confirm-inner">
+        <span>Delete this comment?</span>
+        <button class="btn small btn-danger confirm-yes" tabindex="0">OK</button>
+        <button class="btn small confirm-no" tabindex="0">Cancel</button>
+      </div>
+    `;
+    // Position near the button
+    const rect = btn.getBoundingClientRect();
+    confirmDiv.style.position = 'absolute';
+    confirmDiv.style.zIndex = 10010;
+    let left = rect.left + window.scrollX;
+    const minWidth = 180;
+    // Prevent offscreen right
+    if (left + minWidth > window.innerWidth - 8) {
+      left = window.innerWidth - minWidth - 8;
+    }
+    confirmDiv.style.left = left + 'px';
+    confirmDiv.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+
+    document.body.appendChild(confirmDiv);
+
+    // Remove popup helper (with fadeout)
+    function removeConfirm() {
+      confirmDiv.classList.remove('fadein');
+      confirmDiv.classList.add('fadeout');
+      setTimeout(() => confirmDiv.remove(), 180);
+    }
+
+    // Confirm
+    confirmDiv.querySelector('.confirm-yes').onclick = async () => {
+      removeConfirm();
       await DB.deleteComment(pid, cid);
       const updated = DB.getAll().posts.find(x => x.id === pid);
       const cwrap = document.getElementById('comments-' + pid);
       cwrap.innerHTML = (updated?.comments || []).map(x => renderCommentHTML(x, pid, state, DB)).join('');
       liveSay('comment deleted');
-    }
+    };
+    // Cancel
+    confirmDiv.querySelector('.confirm-no').onclick = removeConfirm;
+    // Keyboard accessibility
+    confirmDiv.onkeydown = (ev) => {
+      if (ev.key === 'Enter') {
+        confirmDiv.querySelector('.confirm-yes').click();
+      } else if (ev.key === 'Escape') {
+        removeConfirm();
+      }
+    };
+    // Focus first button
+    setTimeout(() => {
+      confirmDiv.querySelector('.confirm-yes').focus();
+    }, 10);
+    // Dismiss on outside click
+    setTimeout(() => {
+      function outside(ev) {
+        if (!confirmDiv.contains(ev.target)) {
+          removeConfirm();
+          document.removeEventListener('mousedown', outside);
+        }
+      }
+      document.addEventListener('mousedown', outside);
+    }, 0);
   }
 
   if (action === 'go-login') {
