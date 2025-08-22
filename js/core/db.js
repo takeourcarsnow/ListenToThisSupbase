@@ -48,13 +48,17 @@ class LocalAdapter {
 
   async ensureUser(name, email, password) {
     await this.init();
+    // Enforce required fields for local users
+    if (!email || !password || password.length < 6) {
+      throw new Error('Email and password (min 6 chars) are required.');
+    }
     let u = this.cache.users.find(x => x.name.toLowerCase() === name.toLowerCase() || (email && x.email === email));
     if (!u) {
       u = {
         id: crypto.randomUUID ? crypto.randomUUID() : 'u_' + Math.random().toString(36).slice(2),
         name: name.trim(),
-        email: email || '',
-        password: password || '',
+        email: email,
+        password: password,
         about: '',
         facebook: '',
         instagram: '',
@@ -71,8 +75,11 @@ class LocalAdapter {
 
   async loginUser(email, password) {
     await this.init();
+    if (!email || !password || password.length < 6) return null;
     const user = this.cache.users.find(u => u.email === email);
     if (!user) return null;
+    // Only allow login if user has a non-empty password
+    if (!user.password || user.password.length < 6) return null;
     return user.password === password ? user : null;
   }
   getUserById(id){ return (this.cache?.users || []).find(u=>u.id===id) || null; }
