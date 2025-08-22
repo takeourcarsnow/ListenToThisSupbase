@@ -65,23 +65,64 @@ export function renderHelpOverlay() {
   document.body.appendChild(overlay);
   // Attach delete account handler
   overlay.querySelector('[data-action="delete-account"]').onclick = async () => {
-    if (!confirm('Are you sure you want to permanently delete your account and all your posts? This cannot be undone.')) return;
-    const DB = (await import('./db.js')).default;
-    const { currentUser } = await import('../auth/auth.js');
-    const { clearSession } = await import('../auth/session.js');
-    let user = await currentUser(DB);
-    if (!user) { alert('No user logged in.'); return; }
-    const ok = await DB.deleteUser(user.id);
-    if (ok) {
-      // If using Supabase, also sign out
-      if (DB.isRemote && DB.supabase && DB.supabase.auth && DB.supabase.auth.signOut) {
-        try { await DB.supabase.auth.signOut(); } catch (e) { /* ignore */ }
+    // Create a modal overlay for confirmation
+    const modal = document.createElement('div');
+    modal.style.position = 'fixed';
+    modal.style.inset = '0';
+    modal.style.background = 'rgba(0,0,0,0.6)';
+    modal.style.zIndex = '10001';
+    modal.style.display = 'flex';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+    modal.innerHTML = `
+      <div class="box stack" style="max-width:340px; background:var(--bg,#111); padding:2em 1.5em; border-radius:10px; box-shadow:0 4px 32px #000a; align-items:center;">
+        <div class="muted" style="font-size:1.1em; margin-bottom:0.5em;">Type <b>delete</b> to confirm account deletion.</div>
+        <input id="deleteConfirmInput" class="field" style="width:100%; margin-bottom:1em;" placeholder="Type 'delete' to confirm" autocomplete="off" />
+        <div class="hstack" style="gap:1em; justify-content:center;">
+          <button class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+          <button class="btn btn-ghost" id="cancelDeleteBtn">Cancel</button>
+        </div>
+        <div class="muted small" id="deleteErrorMsg" style="color:#e66; margin-top:0.5em; display:none;"></div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    const input = modal.querySelector('#deleteConfirmInput');
+    const confirmBtn = modal.querySelector('#confirmDeleteBtn');
+    const cancelBtn = modal.querySelector('#cancelDeleteBtn');
+    const errorMsg = modal.querySelector('#deleteErrorMsg');
+    input.focus();
+    cancelBtn.onclick = () => { modal.remove(); };
+    confirmBtn.onclick = async () => {
+      if (input.value.trim().toLowerCase() !== 'delete') {
+        errorMsg.textContent = "You must type 'delete' to confirm.";
+        errorMsg.style.display = '';
+        input.focus();
+        return;
       }
-      clearSession();
-      alert('Your account and posts have been deleted.');
-      location.reload();
-    } else {
-      alert('Failed to delete account.');
-    }
+      confirmBtn.disabled = true;
+      errorMsg.style.display = 'none';
+      const DB = (await import('./db.js')).default;
+      const { currentUser } = await import('../auth/auth.js');
+      const { clearSession } = await import('../auth/session.js');
+      let user = await currentUser(DB);
+      if (!user) { alert('No user logged in.'); modal.remove(); return; }
+      const ok = await DB.deleteUser(user.id);
+      if (ok) {
+        // If using Supabase, also sign out
+        if (DB.isRemote && DB.supabase && DB.supabase.auth && DB.supabase.auth.signOut) {
+          try { await DB.supabase.auth.signOut(); } catch (e) { /* ignore */ }
+        }
+        clearSession();
+        alert('Your account and posts have been deleted.');
+        location.reload();
+      } else {
+        errorMsg.textContent = 'Failed to delete account.';
+        errorMsg.style.display = '';
+        confirmBtn.disabled = false;
+      }
+    };
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') confirmBtn.click();
+    });
   };
 }
