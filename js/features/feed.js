@@ -1,5 +1,6 @@
 import { esc, fmtTime, $ } from '../core/utils.js';
 import { openEditInline } from './posts.js';
+import { enableTagCloudDragScroll } from './tagcloud_scroll.js';
 
 function userName(id, state, DB) {
   const db = DB.getAll();
@@ -205,11 +206,9 @@ function setFeedGlobals(state, DB) {
   }
 
   // Always enable drag-to-scroll for each feed post's tag list
-  if (window.enableTagCloudDragScroll) {
-    document.querySelectorAll('.tag-cloud.post-tags-twolines').forEach(tc => {
-      window.enableTagCloudDragScroll(tc);
-    });
-  }
+  document.querySelectorAll('.tag-cloud.post-tags-twolines').forEach(tc => {
+    enableTagCloudDragScroll(tc);
+  });
 }
 
 export function renderTags(el, DB) {
