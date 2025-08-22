@@ -1,5 +1,5 @@
 // js/views/main_view_profile.js
-import { esc } from '../core/utils.js';
+import { esc, fmtTime } from '../core/utils.js';
 
 export function renderProfileBox(right, state, DB, render) {
   // Extract username from URL or return as-is if already a username
@@ -122,6 +122,106 @@ export function renderProfileBox(right, state, DB, render) {
   if (avatarFileInput && avatarFileName) {
     avatarFileInput.addEventListener('change', function() {
       avatarFileName.textContent = this.files && this.files.length > 0 ? this.files[0].name : '';
+    });
+  }
+  // Insert notification dot into profile panel
+  const profileTitle = box.querySelector('.muted.small');
+  if (profileTitle) {
+    const dot = document.createElement('span');
+    dot.className = 'notification-dot';
+    dot.style.display = 'none';
+    dot.style.position = 'static';
+    dot.style.marginLeft = '8px';
+    dot.style.verticalAlign = 'middle';
+    dot.style.background = '#f44336';
+    dot.style.border = '2px solid #222e3a';
+    dot.style.boxShadow = '0 0 2px #0008';
+    profileTitle.appendChild(dot);
+    // Subscribe to notifications
+    // Store all notifications ever received
+    let allNotifications = [];
+    import('../core/notifications.js').then(({ default: notifications }) => {
+      function updateDot(list) {
+        dot.style.display = 'inline-block';
+        if (list.length) {
+          dot.style.opacity = '1';
+          dot.title = 'Show notifications';
+        } else {
+          dot.style.opacity = '0.35';
+          dot.title = 'No notifications';
+        }
+        // Add new notifications to allNotifications
+        for (const n of list) {
+          if (!allNotifications.some(x => x.id === n.id)) allNotifications.push(n);
+        }
+      }
+      notifications.subscribe(updateDot);
+      updateDot(notifications.list);
+      dot.style.cursor = 'pointer';
+
+      // Notification popup panel
+      let popup = null;
+      function closePopup() {
+        if (popup) {
+          popup.remove();
+          popup = null;
+        }
+      }
+      dot.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (popup) {
+          closePopup();
+          return;
+        }
+        // Always show the popup, even if no notifications
+        popup = document.createElement('div');
+        popup.className = 'notification-popup-panel';
+        popup.style.position = 'absolute';
+        popup.style.top = '28px';
+        popup.style.left = '0';
+        popup.style.zIndex = '10000';
+        popup.style.background = '#232b36';
+        popup.style.color = '#fff';
+        popup.style.border = '1.5px solid #333a';
+        popup.style.borderRadius = '10px';
+        popup.style.boxShadow = '0 8px 32px #0008, 0 1.5px 0 #fff1 inset';
+        popup.style.padding = '14px 18px 10px 18px';
+        popup.style.minWidth = '220px';
+        popup.style.maxWidth = '320px';
+        popup.style.fontSize = '1em';
+        popup.style.display = 'flex';
+        popup.style.flexDirection = 'column';
+        popup.style.gap = '10px';
+        popup.innerHTML = `
+          <div style=\"font-weight:600;font-size:1.08em;margin-bottom:2px;letter-spacing:0.01em;\">Notifications</div>
+          <div class=\"notification-list\" style=\"max-height:180px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;\">
+            ${allNotifications.length ? allNotifications.map(n => {
+              let time = typeof n.id === 'number' ? fmtTime(n.id) : '';
+              if (time === 'just') time = 'just now';
+              return `<div style=\"background:${n.type==='error'?'#f44336':'#263245'};padding:8px 12px;border-radius:6px;box-shadow:0 1px 4px #0002;font-size:0.98em;display:flex;justify-content:space-between;align-items:center;gap:12px;\">
+                <span>${n.message}</span>
+                <span style=\"font-size:0.92em;opacity:0.7;white-space:nowrap;\">${time}</span>
+              </div>`;
+            }).join('') : '<span class=\"muted small\">No notifications yet.</span>'}
+          </div>
+          <button class=\"btn btn-ghost small\" style=\"align-self:flex-end;margin-top:4px;\" id=\"closeNotifPopupBtn\">close</button>
+        `;
+        // Position popup relative to dot
+        const rect = dot.getBoundingClientRect();
+        popup.style.position = 'fixed';
+        popup.style.top = (rect.bottom + 6) + 'px';
+        popup.style.left = (rect.left - 12) + 'px';
+        document.body.appendChild(popup);
+        // Close on button
+        popup.querySelector('#closeNotifPopupBtn').onclick = closePopup;
+        // Close on outside click
+        setTimeout(() => {
+          document.addEventListener('mousedown', outsideClick, { once: true });
+        }, 0);
+        function outsideClick(ev) {
+          if (popup && !popup.contains(ev.target) && ev.target !== dot) closePopup();
+        }
+      });
     });
   }
   right.appendChild(box);

@@ -3,6 +3,7 @@ import { $, debounce, esc } from '../core/utils.js';
 import { loadPrefs, savePrefs } from '../auth/prefs.js';
 import { renderFeed, renderTags, getFilteredPosts } from '../features/feed.js';
 import { enableTagCloudDragScroll } from '../features/tagcloud_scroll.js';
+import notifications from '../core/notifications.js';
 
 export function setupFeedPane({ root, left, state, DB, prefs, render }) {
   const db = DB.getAll();
@@ -27,14 +28,44 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
         <div class="user-action-buttons">
           ${
             me
-              ? `<button class="btn btn-ghost" data-action="view-user" data-uid="${esc(me.id)}">[ profile ]</button><button class="btn btn-ghost" data-action="logout" title="logout">[ logout ]</button>`
-              : `<button class="btn btn-ghost" id="goLoginBtn" title="login / register">[ login / register ]</button>`
+              ? `<button class="btn btn-ghost" data-action="view-user" data-uid="${esc(me.id)}" style="position:relative;">
+                  [ profile ]
+                </button><button class="btn btn-ghost" data-action="logout" title="logout">[ logout ]</button>`
+              : `<button class="btn btn-ghost" id="goLoginBtn" title="login / register" style="position:relative;">
+                  [ login / register ]
+                </button>`
           }
           <button class="btn btn-ghost" data-action="show-help" title="keyboard shortcuts">[ help ]</button>
         </div>
       </div>
     </div>
   `;
+  // Notification dot logic
+  // Notification dot logic (dynamically insert dot as child of user button)
+  const userBtn = top.querySelector('[data-action="view-user"], #goLoginBtn');
+  let dot = null;
+  if (userBtn) {
+    dot = document.createElement('span');
+    dot.className = 'notification-dot';
+    dot.style.display = 'none';
+    dot.style.top = '2px';
+    dot.style.right = '-14px';
+    dot.style.position = 'absolute';
+    userBtn.appendChild(dot);
+    userBtn.style.position = 'relative';
+    userBtn.addEventListener('click', () => {
+      notifications.clear();
+    });
+  }
+  function updateDot(list) {
+    if (dot) dot.style.display = list.length ? 'inline-block' : 'none';
+  }
+  notifications.subscribe(updateDot);
+  updateDot(notifications.list);
+  // DEBUG: Add a test notification with long timeout
+  window.addTestNotification = () => notifications.add('Test notification (long)', 'info', 60000);
+  // Uncomment to auto-add on load:
+  // notifications.add('Test notification (long)', 'info', 60000);
 
   // Slide-out user action buttons logic
   const userActionsContainer = top.querySelector('.user-actions-container');
