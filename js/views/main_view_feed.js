@@ -6,6 +6,13 @@ import { enableTagCloudDragScroll } from '../features/tagcloud_scroll.js';
 import notifications from '../core/notifications.js';
 
 export function setupFeedPane({ root, left, state, DB, prefs, render }) {
+  // Ensure help overlay can always be opened
+  document.body.addEventListener('click', (e) => {
+    const btn = e.target.closest('[data-action="show-help"]');
+    if (btn) {
+      import('../core/help.js').then(mod => mod.renderHelpOverlay());
+    }
+  });
   const db = DB.getAll();
   const me = state.user;
 
