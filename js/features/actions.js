@@ -143,10 +143,18 @@ export async function onActionClick(e, state, DB, render) {
       cbox.classList.add('fade-in');
       window.openCommentId = postId;
       if (state.user) {
-        // Focus input after animation
+        // Focus input after animation, but prevent scroll jump
         setTimeout(() => {
           const inp = cbox.querySelector('input.field');
-          if (inp) inp.focus();
+          if (inp) {
+            const prevScroll = window.scrollY;
+            inp.focus({ preventScroll: true });
+            // If the cbox is not fully visible, restore scroll
+            const rect = cbox.getBoundingClientRect();
+            if (rect.bottom > window.innerHeight) {
+              window.scrollTo({ top: prevScroll });
+            }
+          }
         }, 180);
       }
     }
