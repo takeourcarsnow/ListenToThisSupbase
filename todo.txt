@@ -10,6 +10,7 @@
 - [ ] Users with admin powers that can delete all posts
 - [ ] Generate Spotify playlists from posts, tags, or usernames
 clicking on edit brings up vertical slider for a blnk of an eye before the animation kicks in
+fix small typewriter breaking to new line mid-word
 
 ## 💡 Name Ideas
 - heardit

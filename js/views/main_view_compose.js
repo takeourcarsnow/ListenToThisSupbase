@@ -294,7 +294,25 @@ export function renderComposeBox(right, state, DB, render) {
   const f_tags = box.querySelector('#f_tags');
   const tagSuggestions = box.querySelector('#tagSuggestions');
   if (f_tags && tagSuggestions) {
-    function getPopularTags() {
+    // Helper to deduplicate tags in the input
+    function dedupeTagsInput() {
+      let val = f_tags.value;
+      // Split by space/comma, remove empty, lowercase, keep #
+      let tags = val.split(/[#\s,]+/g).map(t => t.trim().toLowerCase()).filter(Boolean);
+      // Remove duplicates, preserve order
+      let seen = new Set();
+      let deduped = [];
+      for (let t of tags) {
+        if (!seen.has(t)) {
+          seen.add(t);
+          deduped.push('#' + t);
+        }
+      }
+      // Join with space, add trailing space if input had it
+      let trailing = /[\s,]$/.test(val) ? ' ' : '';
+      f_tags.value = deduped.join(' ') + trailing;
+    }
+  function getPopularTags() {
       const db = DB.getAll();
       const m = new Map();
       db.posts.forEach(p => (p.tags || []).forEach(t => m.set(t, (m.get(t) || 0) + 1)));
@@ -305,7 +323,12 @@ export function renderComposeBox(right, state, DB, render) {
     }
     function renderTagSuggestions(filter = '') {
       const tags = getPopularTags();
-      const filtered = filter ? tags.filter(t => t.toLowerCase().includes(filter.toLowerCase())) : tags;
+      // Get tags already used in the input (ignore #, split by space/comma)
+      const usedTags = (f_tags.value || '').split(/[#\s,]+/g).map(t => t.trim().toLowerCase()).filter(Boolean);
+      // Filter out used tags
+      let filtered = tags.filter(t => !usedTags.includes(t.toLowerCase()));
+      // Further filter by input if needed
+      if (filter) filtered = filtered.filter(t => t.toLowerCase().includes(filter.toLowerCase()));
       if (filtered.length === 0) {
         tagSuggestions.innerHTML = '';
         tagSuggestions.style.display = 'none';
@@ -323,17 +346,31 @@ export function renderComposeBox(right, state, DB, render) {
         tagSuggestions.style.display = 'none';
       }
     }
-    f_tags.addEventListener('input', maybeShowSuggestions);
+    f_tags.addEventListener('input', () => {
+      dedupeTagsInput();
+      maybeShowSuggestions();
+    });
     f_tags.addEventListener('focus', maybeShowSuggestions);
     f_tags.addEventListener('blur', () => setTimeout(() => { tagSuggestions.style.display = 'none'; }, 100));
     tagSuggestions.addEventListener('mousedown', (e) => e.preventDefault());
     tagSuggestions.addEventListener('click', (e) => {
       if (e.target.classList.contains('tag-suggestion')) {
-        let current = f_tags.value.trim();
+        let current = f_tags.value;
         let tag = e.target.textContent.replace(/^#/, '');
-        let tags = current.split(/[, ]+/).map(t => t.trim()).filter(Boolean);
-        if (!tags.includes(tag)) tags.push(tag);
-        f_tags.value = tags.join(' ') + ' ';
+        // Find the last partial tag (after last space/comma)
+        let before = current.slice(0, f_tags.selectionStart).replace(/[#]*([^#\s,]*)$/, '');
+        let after = current.slice(f_tags.selectionStart);
+        // Remove any trailing spaces in before
+        before = before.replace(/[\s,]*$/, '');
+        // Compose new value: before + space + #tag + (space if after is empty or whitespace)
+        let newVal = before;
+        if (newVal && !/\s$/.test(newVal)) newVal += ' ';
+        newVal += '#' + tag;
+        // If after is not empty and not just whitespace, add a space
+        if (after && !/^\s*$/.test(after)) newVal += ' ';
+        // Add the after part if it exists and is not just whitespace
+        if (after && !/^\s*$/.test(after)) newVal += after;
+        f_tags.value = newVal.trim() + ' ';
         f_tags.dispatchEvent(new Event('input'));
         f_tags.focus();
       }
