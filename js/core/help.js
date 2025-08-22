@@ -12,6 +12,10 @@ export function renderHelpOverlay() {
           <b>👋 Welcome to <span style="color:var(--accent,#6cf)">TunedIn.space</span>!</b><br>
           <span class="muted">Share your favorite track—just one per day! Come back tomorrow to post again. (We won't judge. Much.)</span>
         </div>
+        <div class="hstack" style="justify-content:center; gap:12px; margin: 1em 0 0.5em 0;">
+          <button class="btn btn-ghost" data-action="show-leaderboard">[ leaderboards ]</button>
+          <button class="btn btn-ghost" data-action="show-changelog">[ dev changelog ]</button>
+        </div>
         <div>
           <b>Getting Started</b><br>
           <ul style="margin:0 0 0 1.2em; padding:0;">
@@ -64,6 +68,28 @@ export function renderHelpOverlay() {
   overlay.id = 'help';
   overlay.innerHTML = helpHTML;
   document.body.appendChild(overlay);
+  // Leaderboard button handler
+  overlay.querySelector('[data-action="show-leaderboard"]').onclick = () => {
+    if (window.showLeaderboard) window.showLeaderboard();
+    // Close help overlay so leaderboard is not hidden
+    if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+  };
+  // Changelog button handler
+  overlay.querySelector('[data-action="show-changelog"]').onclick = () => {
+    import('./changelog_modal.js').then(mod => {
+      mod.showChangelogModal();
+      // Inject changelog modal CSS if not present
+      if (!document.getElementById('changelog-modal-css')) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'css/changelog_modal.css';
+        link.id = 'changelog-modal-css';
+        document.head.appendChild(link);
+      }
+      // Close help overlay so changelog is not hidden
+      if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+    });
+  };
   // Attach delete account handler
   overlay.querySelector('[data-action="delete-account"]').onclick = async () => {
     // Create a modal overlay for confirmation

@@ -6,6 +6,14 @@ This file summarizes the major changes and improvements throughout the history o
 
 ## By Date
 
+### 2025-08-23
+- Added dev changelog modal and button to help menu
+- Moved leaderboard button into help menu
+- Fixed notification dot duplication in profile/feed
+- Improved overlay/modal stacking (help, changelog, leaderboard)
+- Refactored changelog modal logic to shared module
+- Bugfixes: help overlay interaction, modal z-index, and import cleanup
+
 ### 2025-08-22
 - Notification system redesign and multiple improvements (UI, logic, auto-hide, post activity alerts)
 - Authentication, login, and logout fixes

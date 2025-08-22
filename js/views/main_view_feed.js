@@ -43,65 +43,14 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
   // Notification dot logic
   // Notification dot logic (dynamically insert dot as child of user button)
   const userBtn = top.querySelector('[data-action="view-user"], #goLoginBtn');
-  let dot = null;
-  const NOTIF_SEEN_KEY = 'tunedin.notifications.lastSeen';
-  if (userBtn) {
-    dot = document.createElement('span');
-    dot.className = 'notification-dot';
-    dot.style.display = 'none';
-    dot.style.top = '2px';
-    dot.style.right = '-14px';
-    dot.style.position = 'absolute';
-    userBtn.appendChild(dot);
-    userBtn.style.position = 'relative';
-    // Mark notifications as seen when user opens notifications (profile/user button click)
-    userBtn.addEventListener('click', () => {
-      if (notifications.list.length) {
-        localStorage.setItem(NOTIF_SEEN_KEY, String(Math.max(...notifications.list.map(n => n.id))));
-        updateDot(notifications.list);
-      }
-    });
-  }
-  function updateDot(list) {
-    if (!dot) return;
-    if (!list.length) {
-      dot.style.display = 'none';
-      return;
-    }
-    dot.style.display = 'inline-block';
-    // Check if there are unseen notifications
-    const lastSeen = +(localStorage.getItem(NOTIF_SEEN_KEY) || 0);
-    const newest = Math.max(...list.map(n => n.id));
-    if (newest > lastSeen) {
-      dot.classList.add('notification-dot-blink');
-    } else {
-      dot.classList.remove('notification-dot-blink');
-    }
-  }
-  notifications.subscribe(updateDot);
-  updateDot(notifications.list);
-  // DEBUG: Add a test notification with long timeout
-  window.addTestNotification = () => notifications.add('Test notification (long)', 'info', 60000);
-  // Uncomment to auto-add on load:
-  // notifications.add('Test notification (long)', 'info', 60000);
+  // Notification dot removed from user button (already present in profile section)
 
   // Slide-out user action buttons logic
   const userActionsContainer = top.querySelector('.user-actions-container');
   const userPill = top.querySelector('.user-pill');
   const userActionButtons = top.querySelector('.user-action-buttons');
   if (userPill && userActionButtons) {
-    // Add leaderboard button to user menu
-    const leaderboardBtn = document.createElement('button');
-    leaderboardBtn.className = 'btn btn-ghost';
-    leaderboardBtn.textContent = '[ leaderboards ]';
-    leaderboardBtn.type = 'button';
-    leaderboardBtn.style.marginTop = '4px';
-    leaderboardBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      if (window.showLeaderboard) window.showLeaderboard();
-    });
-    userActionButtons.appendChild(leaderboardBtn);
+  // (Leaderboard and changelog buttons moved to help menu)
     // On touch devices, open on first tap (touchstart)
     if ('ontouchstart' in window) {
       userPill.addEventListener('touchstart', (e) => {
