@@ -47,7 +47,52 @@ export async function onActionClick(e, state, DB, render) {
     }
   }
 
-  if (action === 'edit' && postId) { openEditInline(postId, state, DB); return; }
+  if (action === 'edit' && postId) {
+    // Close any open comment box first
+    if (window.openCommentId) {
+      const lastCbox = document.getElementById('cbox-' + window.openCommentId);
+      if (lastCbox && lastCbox.classList.contains('active')) {
+        lastCbox.classList.remove('fade-in');
+        lastCbox.classList.add('fade-out');
+        setTimeout(() => {
+          lastCbox.classList.remove('active');
+          lastCbox.classList.remove('fade-out');
+        }, 180);
+      }
+      window.openCommentId = null;
+    }
+    // Close any other open edit form first
+    if (window.editingPostId && window.editingPostId !== postId) {
+      const lastCard = document.getElementById('post-' + window.editingPostId);
+      const lastEditBoxId = 'editbox-' + window.editingPostId;
+      const lastOpened = lastCard ? lastCard.querySelector('#' + lastEditBoxId) : null;
+      if (lastOpened) {
+        lastOpened.classList.remove('fade-in');
+        lastOpened.classList.add('fade-out');
+        setTimeout(() => {
+          if (lastOpened.parentNode) lastOpened.parentNode.removeChild(lastOpened);
+          if (window.editingPostId == lastEditBoxId.replace('editbox-', '')) window.editingPostId = null;
+        }, 180);
+      } else {
+        window.editingPostId = null;
+      }
+    }
+    const card = document.getElementById('post-' + postId);
+    const editBoxId = 'editbox-' + postId;
+    const opened = card ? card.querySelector('#' + editBoxId) : null;
+    if (opened) {
+      // If already open, close it
+      opened.classList.remove('fade-in');
+      opened.classList.add('fade-out');
+      setTimeout(() => {
+        if (opened.parentNode) opened.parentNode.removeChild(opened);
+        if (window.editingPostId == postId) window.editingPostId = null;
+      }, 180);
+    } else {
+      openEditInline(postId, state, DB);
+    }
+    return;
+  }
 
   if (action === 'delete' && postId) {
     const db = DB.getAll();
@@ -98,6 +143,35 @@ export async function onActionClick(e, state, DB, render) {
   }
 
   if (action === 'comment' && postId) {
+    // Close any open edit form first
+    if (window.editingPostId) {
+      const lastCard = document.getElementById('post-' + window.editingPostId);
+      const lastEditBoxId = 'editbox-' + window.editingPostId;
+      const lastOpened = lastCard ? lastCard.querySelector('#' + lastEditBoxId) : null;
+      if (lastOpened) {
+        lastOpened.classList.remove('fade-in');
+        lastOpened.classList.add('fade-out');
+        setTimeout(() => {
+          if (lastOpened.parentNode) lastOpened.parentNode.removeChild(lastOpened);
+          if (window.editingPostId == lastEditBoxId.replace('editbox-', '')) window.editingPostId = null;
+        }, 180);
+      } else {
+        window.editingPostId = null;
+      }
+    }
+    // Close any other open comment box first
+    if (window.openCommentId && window.openCommentId !== postId) {
+      const lastCbox = document.getElementById('cbox-' + window.openCommentId);
+      if (lastCbox && lastCbox.classList.contains('active')) {
+        lastCbox.classList.remove('fade-in');
+        lastCbox.classList.add('fade-out');
+        setTimeout(() => {
+          lastCbox.classList.remove('active');
+          lastCbox.classList.remove('fade-out');
+        }, 180);
+      }
+      window.openCommentId = null;
+    }
     const cbox = document.getElementById('cbox-' + postId);
     if (cbox.classList.contains('active')) {
       // Animate out
@@ -107,10 +181,12 @@ export async function onActionClick(e, state, DB, render) {
         cbox.classList.remove('active');
         cbox.classList.remove('fade-out');
       }, 180);
+      window.openCommentId = null;
     } else {
       cbox.classList.add('active');
       cbox.classList.remove('fade-out');
       cbox.classList.add('fade-in');
+      window.openCommentId = postId;
       if (state.user) {
         // Focus input after animation
         setTimeout(() => {
@@ -119,7 +195,7 @@ export async function onActionClick(e, state, DB, render) {
         }, 180);
       }
     }
-  return;
+    return;
   }
 
   if (action === 'delete-comment') {
