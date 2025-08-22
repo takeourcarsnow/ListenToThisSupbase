@@ -119,7 +119,20 @@ window.addEventListener('DOMContentLoaded', function() {
       banner.parentNode.insertBefore(info, banner.nextSibling);
     }
     let hover = false;
+    let lastType = '';
     let lastCountdown = '';
+    // Add fade animation style
+    if (!document.getElementById('post-limit-fade-style')) {
+      const style = document.createElement('style');
+      style.id = 'post-limit-fade-style';
+      style.textContent = `
+        #post-limit-info.fade {
+          transition: opacity 0.35s cubic-bezier(.4,0,.2,1);
+          opacity: 0.25;
+        }
+      `;
+      document.head.appendChild(style);
+    }
     function getCountdown() {
       if (!window.DB || !window.state || !window.state.user) return '';
       const db = window.DB.getAll ? window.DB.getAll() : { posts: [] };
@@ -135,17 +148,36 @@ window.addEventListener('DOMContentLoaded', function() {
       }
       return '';
     }
-    function updatePostLimitInfo() {
-      if (!window.DB || !window.state || !window.state.user) {
-        info.textContent = 'You can post once per day! Make it count!';
-        return;
-      }
-      const countdown = getCountdown();
-      if (hover && countdown) {
-        info.textContent = `Time left: ${countdown}`;
+    function setTextWithFade(newText, typeChanged) {
+      if (info.textContent === newText) return;
+      if (typeChanged) {
+        info.classList.add('fade');
+        setTimeout(() => {
+          info.textContent = newText;
+          info.classList.remove('fade');
+        }, 180);
       } else {
-        info.textContent = 'You can post once per day! Make it count!';
+        info.textContent = newText;
       }
+    }
+    function updatePostLimitInfo() {
+      let newText, type;
+      if (!window.DB || !window.state || !window.state.user) {
+        newText = 'You can post once per day! Make it count!';
+        type = 'info';
+      } else {
+        const countdown = getCountdown();
+        if (hover && countdown) {
+          newText = `Time left: ${countdown}`;
+          type = 'countdown';
+        } else {
+          newText = 'You can post once per day! Make it count!';
+          type = 'info';
+        }
+      }
+      const typeChanged = type !== lastType;
+      lastType = type;
+      setTextWithFade(newText, typeChanged);
     }
     info.addEventListener('mouseenter', () => { hover = true; updatePostLimitInfo(); });
     info.addEventListener('mouseleave', () => { hover = false; updatePostLimitInfo(); });
