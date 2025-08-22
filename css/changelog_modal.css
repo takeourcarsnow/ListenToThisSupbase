@@ -1,3 +1,6 @@
+.changelog-modal-header {
+  position: relative;
+}
 /* Minimal styles for the changelog modal */
 .changelog-modal-bg {
   position: fixed;
@@ -20,6 +23,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
 }
 .changelog-modal-header {
   padding: 16px 20px 10px 20px;
@@ -30,17 +34,25 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex: 0 0 auto;
 }
 .changelog-modal-close {
-  background: none;
-  border: none;
-  color: #aaa;
-  font-size: 1.3em;
-  cursor: pointer;
+  display: none;
+}
+
+@media (max-width: 480px) {
+  .changelog-modal-close {
+    left: 50%;
+    right: auto;
+    transform: translate(-50%, -50%);
+  }
 }
 .changelog-modal-content {
   padding: 18px 20px 20px 20px;
   overflow-y: auto;
   font-size: 0.98em;
   line-height: 1.6;
+  flex: 1 1 auto;
+  min-height: 0;
+  box-sizing: border-box;
 }

@@ -23,8 +23,8 @@ export function showChangelogModal() {
     document.body.style.overflow = '';
     modalBg.remove();
   }
-  modalBg.addEventListener('click', (e) => { if (e.target === modalBg) closeModal(); });
-  modal.querySelector('.changelog-modal-close').onclick = closeModal;
+  // Clicking or tapping anywhere in the modal background, modal, header, or content closes it
+  modalBg.addEventListener('click', () => closeModal());
   document.addEventListener('keydown', function escHandler(e) {
     if (e.key === 'Escape') { closeModal(); document.removeEventListener('keydown', escHandler); }
   });

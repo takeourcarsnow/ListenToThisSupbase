@@ -11,8 +11,7 @@ export function renderHelpOverlay() {
         <div style="text-align:center;">
           <b>👋 Welcome to <span style="color:var(--accent,#6cf)">TunedIn.space</span>!</b><br>
           <span class="muted">Share your favorite track—just one per day! Come back tomorrow to post again. (We won't judge. Much.)</span><br>
-          <span class="muted" style="display:block; margin-top:0.7em;">
-            <b>New here?</b> Check the <b>[ help ]</b> menu for tips, and see <b>[ dev changelog ]</b> for project updates!
+          <span class="muted" style="display:block; margin-top:0.5em;">
           </span>
         </div>
         <div class="hstack" style="justify-content:center; gap:12px; margin: 1em 0 0.5em 0;">
