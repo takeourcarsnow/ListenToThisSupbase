@@ -19,80 +19,30 @@ export async function onActionClick(e, state, DB, render) {
   const card = e.target.closest('.post');
   const postId = card ? card.dataset.post : null;
 
-  if (action === 'toggle-player' && postId) {
-    const pl = document.getElementById('player-' + postId);
-    const active = pl.classList.contains('active');
-    if (active) {
-      pl.classList.remove('active');
-      try { pl._cleanup && pl._cleanup(); } catch {}
-      pl.innerHTML = '';
-      card.classList.remove('is-playing');
-    } else {
-      // Close any other active players
-      document.querySelectorAll('.player.active').forEach(otherPl => {
-        if (otherPl !== pl) {
-          otherPl.classList.remove('active');
-          try { otherPl._cleanup && otherPl._cleanup(); } catch {}
-          otherPl.innerHTML = '';
-          const otherCard = otherPl.closest('.post');
-          if (otherCard) otherCard.classList.remove('is-playing');
+  if (action === 'like' && postId) {
+    if (!state.user) { toast(card || root, 'login to like', true); return; }
+    const updated = await DB.toggleLike(postId, state.user.id);
+    if (updated && card) {
+      // Find the like button before updating
+      const likeBtn = card.querySelector('[data-action="like"]');
+      if (likeBtn) {
+        likeBtn.classList.remove('like-animate');
+        // Force reflow to restart animation
+        void likeBtn.offsetWidth;
+        likeBtn.classList.add('like-animate');
+        if ((updated.likes || []).includes(state.user.id)) {
+          likeBtn.classList.add('like-on');
+          likeBtn.setAttribute('aria-pressed', 'true');
+        } else {
+          likeBtn.classList.remove('like-on');
+          likeBtn.setAttribute('aria-pressed', 'false');
         }
-      });
-      pl.classList.add('active');
-      const db = DB.getAll();
-      const p = db.posts.find(x => x.id === postId);
-      buildEmbed(p, pl, { autoplay: true, onEnded: () => queueNext(true, state, DB) });
-      markNowPlaying(postId, state, DB);
-      if (loadPrefs().autoScroll) card.scrollIntoView({ block: 'center' });
-    }
-  }
-
-  if (action === 'edit' && postId) {
-    // Close any open comment box first
-    if (window.openCommentId) {
-      const lastCbox = document.getElementById('cbox-' + window.openCommentId);
-      if (lastCbox && lastCbox.classList.contains('active')) {
-        lastCbox.classList.remove('fade-in');
-        lastCbox.classList.add('fade-out');
-        setTimeout(() => {
-          lastCbox.classList.remove('active');
-          lastCbox.classList.remove('fade-out');
-        }, 180);
+        likeBtn.innerHTML = `[ ♥ ${(updated.likes ? updated.likes.length : 0)} ]`;
       }
-      window.openCommentId = null;
-    }
-    // Close any other open edit form first
-    if (window.editingPostId && window.editingPostId !== postId) {
-      const lastCard = document.getElementById('post-' + window.editingPostId);
-      const lastEditBoxId = 'editbox-' + window.editingPostId;
-      const lastOpened = lastCard ? lastCard.querySelector('#' + lastEditBoxId) : null;
-      if (lastOpened) {
-        lastOpened.classList.remove('fade-in');
-        lastOpened.classList.add('fade-out');
-        setTimeout(() => {
-          if (lastOpened.parentNode) lastOpened.parentNode.removeChild(lastOpened);
-          if (window.editingPostId == lastEditBoxId.replace('editbox-', '')) window.editingPostId = null;
-        }, 180);
-      } else {
-        window.editingPostId = null;
-      }
-    }
-    const card = document.getElementById('post-' + postId);
-    const editBoxId = 'editbox-' + postId;
-    const opened = card ? card.querySelector('#' + editBoxId) : null;
-    if (opened) {
-      // If already open, close it
-      opened.classList.remove('fade-in');
-      opened.classList.add('fade-out');
-      setTimeout(() => {
-        if (opened.parentNode) opened.parentNode.removeChild(opened);
-        if (window.editingPostId == postId) window.editingPostId = null;
-      }, 180);
-    } else {
-      openEditInline(postId, state, DB);
     }
     return;
   }
+// ...existing code...
 
   if (action === 'delete' && postId) {
     const db = DB.getAll();
@@ -106,41 +56,6 @@ export async function onActionClick(e, state, DB, render) {
     return;
   }
 
-  if (action === 'like' && postId) {
-    if (!state.user) { toast(card || root, 'login to like', true); return; }
-    const updated = await DB.toggleLike(postId, state.user.id);
-    if (updated && card) {
-      // Find the like button before replacing the card
-      const likeBtn = card.querySelector('[data-action="like"]');
-      if (likeBtn) {
-        likeBtn.classList.remove('like-animate');
-        // Force reflow to restart animation
-        void likeBtn.offsetWidth;
-        likeBtn.classList.add('like-animate');
-      }
-      // If player is active, only update like button/count, not the whole card
-      const playerActive = card.querySelector('.player.active');
-      if (playerActive) {
-        // Update like button state and count
-        if (likeBtn) {
-          if ((updated.likes || []).includes(state.user.id)) {
-            likeBtn.classList.add('like-on');
-            likeBtn.setAttribute('aria-pressed', 'true');
-          } else {
-            likeBtn.classList.remove('like-on');
-            likeBtn.setAttribute('aria-pressed', 'false');
-          }
-          likeBtn.innerHTML = `[ ♥ ${(updated.likes ? updated.likes.length : 0)} ]`;
-        }
-      } else {
-        // Replace the card after a short delay to allow animation
-        setTimeout(() => {
-          const newCard = document.getElementById('post-' + postId);
-          if (newCard) newCard.outerHTML = renderPostHTML(updated, state, DB);
-        }, 320);
-      }
-    }
-  }
 
   if (action === 'comment' && postId) {
     // Close any open edit form first
