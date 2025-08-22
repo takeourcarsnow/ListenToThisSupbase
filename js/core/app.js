@@ -103,4 +103,56 @@ window.addEventListener('DOMContentLoaded', function() {
   renderMainContainers();
   renderHelpOverlay();
   document.body.classList.add('header-logo-ready');
+
+  // Add post limit info below ASCII header after header is rendered
+  setTimeout(() => {
+    const banner = document.getElementById('ascii-banner');
+    if (!banner) return;
+    let info = document.getElementById('post-limit-info');
+    if (!info) {
+      info = document.createElement('div');
+      info.id = 'post-limit-info';
+      info.style.textAlign = 'center';
+      info.style.fontSize = '0.98em';
+      info.style.margin = '-8px 0 8px 0';
+      info.style.color = '#888';
+      banner.parentNode.insertBefore(info, banner.nextSibling);
+    }
+    let hover = false;
+    let lastCountdown = '';
+    function getCountdown() {
+      if (!window.DB || !window.state || !window.state.user) return '';
+      const db = window.DB.getAll ? window.DB.getAll() : { posts: [] };
+      const me = window.state.user;
+      const now = Date.now();
+      const lastPost = (db.posts || []).filter(p => p.userId === me.id).sort((a, b) => b.createdAt - a.createdAt)[0];
+      if (lastPost && now - lastPost.createdAt < 24 * 60 * 60 * 1000) {
+        const timeLeft = 24 * 60 * 60 * 1000 - (now - lastPost.createdAt);
+        const hours = Math.floor(timeLeft / (60 * 60 * 1000));
+        const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
+        const seconds = Math.floor((timeLeft % (60 * 1000)) / 1000);
+        return `${hours}h ${minutes}m ${seconds}s`;
+      }
+      return '';
+    }
+    function updatePostLimitInfo() {
+      if (!window.DB || !window.state || !window.state.user) {
+        info.textContent = 'You can post once per day! Make it count!';
+        return;
+      }
+      const countdown = getCountdown();
+      if (hover && countdown) {
+        info.textContent = `Time left: ${countdown}`;
+      } else {
+        info.textContent = 'You can post once per day! Make it count!';
+      }
+    }
+    info.addEventListener('mouseenter', () => { hover = true; updatePostLimitInfo(); });
+    info.addEventListener('mouseleave', () => { hover = false; updatePostLimitInfo(); });
+    // Expose state and DB for this logic if not already
+    if (!window.state) window.state = state;
+    if (!window.DB) window.DB = DB;
+    updatePostLimitInfo();
+    setInterval(updatePostLimitInfo, 1000);
+  }, 0);
 });
