@@ -13,6 +13,7 @@ This file summarizes the major changes and improvements throughout the history o
 - Improved overlay/modal stacking (help, changelog, leaderboard)
 - Refactored changelog modal logic to shared module
 - Bugfixes: help overlay interaction, modal z-index, and import cleanup
+- Changelog modal fixes: removed extra scrollbar, removed close button and made modal close on tap/click anywhere (desktop/mobile)
 
 ### 2025-08-22
 - Notification system redesign and multiple improvements (UI, logic, auto-hide, post activity alerts)
