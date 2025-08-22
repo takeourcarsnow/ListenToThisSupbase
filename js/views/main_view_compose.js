@@ -27,13 +27,22 @@ export function renderComposeBox(right, state, DB, render) {
       let prompt;
       do { prompt = getComposePrompt(); } while (prompt === lastPrompt && PROMPTS.length > 1);
       lastPrompt = prompt;
-      promptDiv.classList.remove('fadein');
-      promptDiv.classList.add('fadeout');
-      setTimeout(() => {
-        promptDiv.textContent = prompt;
-        promptDiv.classList.remove('fadeout');
-        promptDiv.classList.add('fadein');
-      }, 250);
+      // Typewriter effect
+      let i = 0;
+      promptDiv.textContent = '';
+      promptDiv.classList.remove('fadein', 'fadeout');
+      function typeWriter() {
+        if (i < prompt.length) {
+          promptDiv.textContent += prompt.charAt(i);
+          i++;
+          // Simulate human typing: random delay, longer on spaces/punctuation
+          let delay = 28 + Math.random() * 40;
+          if (/[.,!?]/.test(prompt.charAt(i-1))) delay += 80 + Math.random() * 60;
+          if (prompt.charAt(i-1) === ' ') delay += 30;
+          setTimeout(typeWriter, delay);
+        }
+      }
+      typeWriter();
     }
     setPrompt();
     setInterval(setPrompt, 10000);
@@ -43,7 +52,7 @@ export function renderComposeBox(right, state, DB, render) {
   const box = document.createElement('div');
   box.className = 'box';
   box.innerHTML = `
-    <div class="muted small" id="composePrompt" style="margin-bottom:18px;"></div>
+    <div class="muted small typewriter" id="composePrompt" style="margin-bottom:18px;"></div>
     <form id="postForm" class="stack" autocomplete="off">
       <input class="field" id="f_url" placeholder="Link (YouTube / Spotify / Bandcamp, etc)" required/>
   <div class="muted small" id="autofillMsg" style="margin-bottom:2px; display:none;">&#8593; Auto-fills artist & title.</div>
@@ -77,20 +86,59 @@ export function renderComposeBox(right, state, DB, render) {
     box.querySelector('#f_tags'),
     box.querySelector('#f_body')
   ];
+  let promptTimeouts = [];
+  function clearPromptTimeouts() {
+    promptTimeouts.forEach(t => clearTimeout(t));
+    promptTimeouts = [];
+  }
   function setPrompt() {
+    clearPromptTimeouts();
     let prompt;
     do { prompt = getComposePrompt(); } while (prompt === lastPrompt && PROMPTS.length > 1);
     lastPrompt = prompt;
-    promptDiv.classList.remove('fadein');
-    promptDiv.classList.add('fadeout');
-    setTimeout(() => {
-      promptDiv.textContent = prompt;
-      promptDiv.classList.remove('fadeout');
-      promptDiv.classList.add('fadein');
-    }, 250);
+    // Typewriter + backspace effect
+    let i = 0;
+    promptDiv.textContent = '';
+    promptDiv.classList.remove('fadein', 'fadeout');
+    if (!promptDiv.classList.contains('typewriter')) promptDiv.classList.add('typewriter');
+    function typeWriter() {
+      if (i < prompt.length) {
+        promptDiv.textContent += prompt.charAt(i);
+        i++;
+        // More human-like: variable speed, longer pauses, random short pauses
+        let delay = 16 + Math.random() * 32;
+        if (/[.,!?]/.test(prompt.charAt(i-1))) delay += 90 + Math.random() * 60;
+        if (prompt.charAt(i-1) === ' ') delay += 18 + Math.random() * 10;
+        // Occasionally pause for a bit longer (simulate thinking)
+        if (Math.random() < 0.07) delay += 80 + Math.random() * 120;
+        promptTimeouts.push(setTimeout(typeWriter, delay));
+      } else {
+        // After finished, wait longer, then backspace
+        promptTimeouts.push(setTimeout(() => {
+          let del = prompt.length;
+          let stopAt = 0;
+          if (prompt.startsWith('> ')) stopAt = 2;
+          function backspace() {
+            if (del > stopAt) {
+              promptDiv.textContent = promptDiv.textContent.slice(0, -1);
+              del--;
+              let delay = 13 + Math.random() * 22;
+              if (promptDiv.textContent.endsWith(' ')) delay += 12;
+              // Occasionally pause while erasing
+              if (Math.random() < 0.05) delay += 60 + Math.random() * 80;
+              promptTimeouts.push(setTimeout(backspace, delay));
+            } else {
+              // Wait, then start new prompt
+              promptTimeouts.push(setTimeout(setPrompt, 900));
+            }
+          }
+          backspace();
+        }, 2600 + Math.random() * 700));
+      }
+    }
+    typeWriter();
   }
   setPrompt();
-  setInterval(setPrompt, 10000);
   // Show autofill message only when user is interacting with the composer
   const autofillMsg = box.querySelector('#autofillMsg');
   composerFields.forEach(field => {

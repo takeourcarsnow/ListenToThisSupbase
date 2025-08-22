@@ -19,23 +19,76 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
   const top = document.createElement('div');
   top.className = 'topbar';
   top.innerHTML = `
-    <div class="toolbar hstack" style="justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap;">
-      <div class="hstack" style="gap:12px; align-items:center;">
-        <span class="pill" title="total posts">posts: ${postCount}</span>
-      </div>
-      <div style="flex:1; display:flex; justify-content:center; align-items:center; min-width:240px;">
-        <input class="field" id="search" type="search" placeholder="search title/artist/tags..." style="width:100%; max-width:320px;" value="${esc(prefs.search)}" aria-label="search"/>
-      </div>
-      <div class="hstack" style="gap:12px; align-items:center;">
-        ${
-          me
-            ? `<span class="pill" title="current user">user: <a href="#" data-action="view-user" data-uid="${esc(me.id)}">${esc(me.name)}</a></span><button class="btn btn-ghost" data-action="logout" title="logout">[ logout ]</button>`
-            : `<span class="pill" title="current user">user: guest</span><button class="btn btn-ghost" id="goLoginBtn" title="login / register">[ login / register ]</button>`
-        }
-        <button class="btn btn-ghost" data-action="show-help" title="keyboard shortcuts">[ help ]</button>
+    <div class="toolbar topbar-toolbar">
+      <div class="user-actions-container">
+        <div class="user-pill" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">
+          <span class="pill" title="current user">> user: ${me ? esc(me.name) : 'guest'}</span>
+        </div>
+        <div class="user-action-buttons">
+          ${
+            me
+              ? `<button class="btn btn-ghost" data-action="view-user" data-uid="${esc(me.id)}">[ profile ]</button><button class="btn btn-ghost" data-action="logout" title="logout">[ logout ]</button>`
+              : `<button class="btn btn-ghost" id="goLoginBtn" title="login / register">[ login / register ]</button>`
+          }
+          <button class="btn btn-ghost" data-action="show-help" title="keyboard shortcuts">[ help ]</button>
+        </div>
       </div>
     </div>
   `;
+
+  // Slide-out user action buttons logic
+  const userActionsContainer = top.querySelector('.user-actions-container');
+  const userPill = top.querySelector('.user-pill');
+  const userActionButtons = top.querySelector('.user-action-buttons');
+  if (userPill && userActionButtons) {
+    // On touch devices, open on first tap (touchstart)
+    if ('ontouchstart' in window) {
+      userPill.addEventListener('touchstart', (e) => {
+        if (!userActionsContainer.classList.contains('open')) {
+          userActionsContainer.classList.add('open');
+          userPill.setAttribute('aria-expanded', 'true');
+          e.preventDefault();
+        }
+      });
+      // Also allow closing on tap if already open
+      userPill.addEventListener('click', () => {
+        if (userActionsContainer.classList.contains('open')) {
+          userActionsContainer.classList.remove('open');
+          userPill.setAttribute('aria-expanded', 'false');
+        }
+      });
+    } else {
+      userPill.addEventListener('click', () => {
+        userActionsContainer.classList.toggle('open');
+        userPill.setAttribute('aria-expanded', userActionsContainer.classList.contains('open'));
+      });
+    }
+    userPill.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        userActionsContainer.classList.toggle('open');
+        userPill.setAttribute('aria-expanded', userActionsContainer.classList.contains('open'));
+      }
+    });
+    // Enable hover open/close for desktop (non-touch) only
+    if (!('ontouchstart' in window)) {
+      userActionsContainer.addEventListener('mouseenter', () => {
+        userActionsContainer.classList.add('open');
+        userPill.setAttribute('aria-expanded', 'true');
+      });
+      userActionsContainer.addEventListener('mouseleave', () => {
+        userActionsContainer.classList.remove('open');
+        userPill.setAttribute('aria-expanded', 'false');
+      });
+    }
+    // Optional: close on outside click
+    document.addEventListener('click', (e) => {
+      if (!userActionsContainer.contains(e.target)) {
+        userActionsContainer.classList.remove('open');
+        userPill.setAttribute('aria-expanded', 'false');
+      }
+    });
+  }
 
   // Dock
   const prefsNow = loadPrefs();
@@ -93,6 +146,9 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
   const feedBox = document.createElement('div');
   feedBox.className = 'box';
   feedBox.innerHTML = `
+    <div class="feed-search-bar" style="margin-bottom:12px;">
+      <input class="field" id="search" type="search" placeholder="search title/artist/tags..." value="${esc(prefs.search)}" aria-label="search"/>
+    </div>
     <div class="hstack feed-header-bar" style="justify-content:space-between; flex-wrap:wrap; align-items:center; margin-bottom:8px;">
       <div class="hstack" style="gap:10px; align-items:center;">
         <span class="muted">&gt; feed</span>
@@ -104,6 +160,7 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
             : ''
         }
         ${prefs.filterTag ? `<span class="pill">tag: #${esc(prefs.filterTag)} <a href="#" data-action="clear-tag" title="clear tag">✕</a></span>` : ''}
+  <span title="total posts">posts: ${postCount}</span>
       </div>
       <div class="hstack" style="gap:12px; align-items:center;">
         <button class="btn btn-ghost" data-action="play-all">[ ${playAllLabel} ]</button>
@@ -147,8 +204,8 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
   renderTags($('#tags'), DB);
   enableTagCloudDragScroll();
 
-  // Search
-  const searchInput = top.querySelector('#search');
+  // Search (now in feedBox)
+  const searchInput = feedBox.querySelector('#search');
   if (searchInput) {
     searchInput.addEventListener('input', debounce((e) => {
       savePrefs({ search: e.target.value });
