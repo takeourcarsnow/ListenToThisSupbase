@@ -3,7 +3,7 @@ export function renderHelpOverlay() {
   const helpHTML = `
   <div class="sheet">
       <div class="hstack" style="justify-content:space-between; align-items:center">
-        <div class="muted small">Welcome / Help</div>
+        <div class="muted small">> help</div>
         <button class="btn btn-ghost small" data-close-help>[ close ]</button>
       </div>
       <div class="sep"></div>

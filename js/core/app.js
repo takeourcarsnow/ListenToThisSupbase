@@ -116,7 +116,10 @@ window.addEventListener('DOMContentLoaded', function() {
       info.style.fontSize = '0.98em';
       info.style.margin = '-8px 0 8px 0';
       info.style.color = '#888';
+      info.style.display = 'none'; // Hide by default
       banner.parentNode.insertBefore(info, banner.nextSibling);
+    } else {
+      info.style.display = 'none'; // Hide if already exists
     }
     let hover = false;
     let lastType = '';
