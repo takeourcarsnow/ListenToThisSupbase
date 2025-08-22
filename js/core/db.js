@@ -1,5 +1,36 @@
 
 import { safeClone } from './utils.js';
+
+// Expanded list of common disposable email domains (update as needed)
+// Source: https://github.com/disposable/disposable-email-domains (partial)
+const DISPOSABLE_EMAIL_DOMAINS = [
+  'mailinator.com', '10minutemail.com', 'guerrillamail.com', 'tempmail.com',
+  'yopmail.com', 'trashmail.com', 'getnada.com', 'dispostable.com', 'maildrop.cc',
+  'fakeinbox.com', 'mintemail.com', 'mytemp.email', 'throwawaymail.com',
+  'sharklasers.com', 'spamgourmet.com', 'mailnesia.com', 'temp-mail.org',
+  'emailondeck.com', 'moakt.com', 'mailcatch.com', 'mailnull.com',
+  '33mail.com', 'mailtemp.net', 'tempail.com', 'tempmail.net', 'tempmailaddress.com',
+  'tempmailbox.com', 'tempmails.net', 'trashmail.de', 'maildrop.cc', 'disposablemail.com',
+  'spambog.com', 'spambog.de', 'spambog.ru', 'spambog.xyz', 'spambog.pl',
+  'spambog.com', 'spambog.de', 'spambog.ru', 'spambog.xyz', 'spambog.pl',
+  'spam4.me', 'spamex.com', 'spaml.com', 'spammail.de', 'spammail.net',
+  'spammail.org', 'spamobox.com', 'spamspot.com', 'spamwc.com',
+  // ...add more as needed
+];
+
+// Checks if the email domain or any of its parent domains is in the blocklist
+function isDisposableEmail(email) {
+  if (!email || typeof email !== 'string') return false;
+  const domain = email.split('@')[1]?.toLowerCase();
+  if (!domain) return false;
+  // Check direct match and parent domains (subdomain blocking)
+  const parts = domain.split('.');
+  for (let i = 0; i < parts.length - 1; i++) {
+    const checkDomain = parts.slice(i).join('.');
+    if (DISPOSABLE_EMAIL_DOMAINS.includes(checkDomain)) return true;
+  }
+  return false;
+}
 // bcrypt is loaded globally from CDN in index.html
 
 import { SUPABASE_URL, SUPABASE_ANON_KEY, USE_SUPABASE } from './config.js';
@@ -54,11 +85,14 @@ class LocalAdapter {
     if (!email || !password || password.length < 6) {
       throw new Error('Email and password (min 6 chars) are required.');
     }
+    if (isDisposableEmail(email)) {
+      throw new Error('Disposable (temporary) email addresses are not allowed.');
+    }
     let u = this.cache.users.find(x => x.name.toLowerCase() === name.toLowerCase() || (email && x.email === email));
     if (!u) {
       // Hash the password before storing
-  const salt = window.bcrypt.genSaltSync(10);
-  const hash = window.bcrypt.hashSync(password, salt);
+      const salt = window.bcrypt.genSaltSync(10);
+      const hash = window.bcrypt.hashSync(password, salt);
       u = {
         id: crypto.randomUUID ? crypto.randomUUID() : 'u_' + Math.random().toString(36).slice(2),
         name: name.trim(),

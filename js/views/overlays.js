@@ -1,3 +1,26 @@
+// Leaderboard overlay logic
+export function openLeaderboardOverlay() {
+  const overlay = document.getElementById('leaderboard-overlay');
+  if (overlay) overlay.style.display = '';
+}
+
+export function closeLeaderboardOverlay() {
+  const overlay = document.getElementById('leaderboard-overlay');
+  if (overlay) overlay.style.display = 'none';
+  document.dispatchEvent(new CustomEvent('leaderboardOverlayClosed'));
+}
+
+export function bindLeaderboardOverlay() {
+  const overlay = document.getElementById('leaderboard-overlay');
+  if (overlay) {
+    overlay.onclick = function (e) {
+      if (e.target === overlay) closeLeaderboardOverlay();
+    };
+  }
+  document.addEventListener('click', (e) => {
+    if (e.target.matches('[data-close-leaderboard]')) closeLeaderboardOverlay();
+  });
+}
 let helpClickBound = false;
 
 export function openHelpOverlay() {

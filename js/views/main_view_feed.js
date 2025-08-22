@@ -41,6 +41,18 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
   const userPill = top.querySelector('.user-pill');
   const userActionButtons = top.querySelector('.user-action-buttons');
   if (userPill && userActionButtons) {
+    // Add leaderboard button to user menu
+    const leaderboardBtn = document.createElement('button');
+    leaderboardBtn.className = 'btn btn-ghost';
+    leaderboardBtn.textContent = '[ leaderboards ]';
+    leaderboardBtn.type = 'button';
+    leaderboardBtn.style.marginTop = '4px';
+    leaderboardBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (window.showLeaderboard) window.showLeaderboard();
+    });
+    userActionButtons.appendChild(leaderboardBtn);
     // On touch devices, open on first tap (touchstart)
     if ('ontouchstart' in window) {
       userPill.addEventListener('touchstart', (e) => {

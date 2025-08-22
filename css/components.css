@@ -1,3 +1,49 @@
+/* Overlay for leaderboard */
+#leaderboard-overlay.overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+#leaderboard-overlay .overlay-inner {
+  background: #181c22;
+  border-radius: 12px;
+  padding: 32px 32px 24px 32px;
+  min-width: 320px;
+  max-width: 90vw;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 32px rgba(0,0,0,0.25);
+  color: #fff;
+  position: relative;
+}
+#leaderboard-overlay .btn {
+  margin-bottom: 12px;
+}
+.leaderboard-box {
+  margin: 18px 0;
+  padding: 18px 20px;
+  background: #181c22;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  color: #fff;
+}
+.leaderboard-box h2 {
+  margin: 0 0 10px 0;
+  font-size: 1.2em;
+  color: #ffd700;
+}
+.leaderboard-box ol {
+  margin: 0 0 18px 18px;
+  padding: 0;
+}
+.leaderboard-box li {
+  margin-bottom: 6px;
+  font-size: 1em;
+}
 #aboutBox #aboutSocials {
   display: flex;
   flex-wrap: nowrap;
