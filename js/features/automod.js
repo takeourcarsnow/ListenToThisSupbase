@@ -77,14 +77,12 @@ export function looksLikeSpam(text) {
   if (!text) return false;
   // Too many links
   const linkCount = (text.match(/https?:\/\//g) || []).length;
-  if (linkCount > 2) return true;
-  // Repeated characters or words
-  if (/([a-zA-Z])\1{5,}/.test(text)) return true; // e.g., aaaaaa
-  if (/(\b\w+\b)(?:.*\1){3,}/i.test(text)) return true; // repeated word
+  if (linkCount > 4) return true; // allow up to 4 links
+  // Repeated characters or words checks disabled to avoid false positives for normal sentences
   // Excessive non-ASCII or symbols
-  if ((text.match(/[^\x00-\x7F]/g) || []).length > 10) return true;
-  // Excessive length
-  if (text.length > 500) return true;
+  if ((text.match(/[^\x00-\x7F]/g) || []).length > 20) return true;
+  // Excessive length (more generous)
+  if (text.length > 1200) return true;
   return false;
 }
 
