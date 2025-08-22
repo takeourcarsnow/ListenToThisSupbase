@@ -17,3 +17,4 @@ make sure about me section slides back nicer, it kind of snaps back instantly no
 - frenstunes 
 
 edit save to close with slide up
+tag cloud by color 
