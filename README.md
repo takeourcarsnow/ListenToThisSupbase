@@ -13,11 +13,13 @@ Your new favorite place to overshare your music taste. (We won't judge. Much.)
 - Tag your posts (#vibes, #throwback, #2020) so fellow music nerds can find them.
 - Hit **[ play all ]** to turn the feed into your personal radio station.
 
+
 ### How to Post
 
 - Give us a title, an artist, and a legit music link. (No Rickrolls. Or... maybe just one.)
 - Tags = discoverability. Don’t be shy.
 - Optional: Tell us why this track slaps. Or just type "banger." We get it.
+- **You can post once every 24 hours. Plan your pick and come back tomorrow to share again!**
 
 ### Listening & Queue
 
@@ -33,6 +35,7 @@ Your new favorite place to overshare your music taste. (We won't judge. Much.)
 - Click tags to filter the feed. Use [ clear tag ] to see everything again.
 - Everything is keyboard accessible, so you can flex your shortcut skills.
 - Be kind, have fun, and remember: one person’s guilty pleasure is another’s anthem.
+
 
 
 # tunedIn.space — Minimal Music Threads Webapp
@@ -60,8 +63,10 @@ Your new favorite place to overshare your music taste. (We won't judge. Much.)
 
 ---
 
+
 ## Features
 
+- **24-Hour Post Limit:** You can post once every 24 hours—come back daily to share your next favorite track!
 - **User Authentication:** Register/login with email/password (Supabase or local).
 - **Music Posts:** Share music links (YouTube, Spotify, Bandcamp, SoundCloud, direct audio).
 - **Tags & Search:** Tag posts, filter/search by tags, title, artist, or body.

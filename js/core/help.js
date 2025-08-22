@@ -10,7 +10,7 @@ export function renderHelpOverlay() {
       <div class="small stack" style="gap:1.5em">
         <div style="text-align:center;">
           <b>👋 Welcome to <span style="color:var(--accent,#6cf)">tunedIn.space</span>!</b><br>
-          <span class="muted">Your new favorite place to overshare your music taste. (We won't judge. Much.)</span>
+          <span class="muted">Share your favorite track—just one per day! Come back tomorrow to post again. (We won't judge. Much.)</span>
         </div>
         <div>
           <b>Getting Started</b><br>
@@ -28,6 +28,7 @@ export function renderHelpOverlay() {
             <li>Give us a title, an artist, and a legit music link. (No Rickrolls. Or... maybe just one.)</li>
             <li>Tags = discoverability. Don’t be shy.</li>
             <li>Optional: Tell us why this track slaps. Or just type "banger." We get it.</li>
+            <li><b>Note:</b> You can post once every 24 hours. Plan your pick and come back tomorrow for more!</li>
           </ul>
         </div>
         <div>
