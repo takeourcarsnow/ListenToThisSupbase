@@ -81,7 +81,7 @@ export function showUserProfile(userId, DB) {
                 }
                 return Object.entries(socials).filter(([k,v])=>v).map(([k,v]) => {
                   const user = extractUser(v, k);
-                  return `<a href=\"${esc(v)}\" target=\"_blank\" rel=\"noopener\" class=\"social-link\" title=\"${k}\">${icons[k]} <span class='muted small'>${esc(user)}</span></a>`;
+                  return `<a href=\"${esc(v)}\" target=\"_blank\" rel=\"noopener\" class=\"social-link\" title=\"${k}\"><span style='display:inline-flex;align-items:center;white-space:nowrap'>${icons[k]} <span class='muted small'>${esc(user)}</span></span></a>`;
                 }).join(' ') || '<span class=\"muted small\">no social links</span>';
               })()}
             </div>

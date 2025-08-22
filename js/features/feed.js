@@ -77,7 +77,7 @@ export function renderPostHTML(p, state, DB) {
         <span class="muted">${userBy}${user ? `<a href=\"#\" data-action=\"view-user\" data-uid=\"${esc(user.id)}\">${esc(user.name)}</a>` : 'anon'}</span>
     <span class="muted sep-slash">/</span>
   <span class="muted" title="${(() => { const d = new Date(p.createdAt); let m = d.getMinutes(); m = m < 15 ? 0 : m < 45 ? 30 : 0; if (m === 0 && d.getMinutes() >= 45) d.setHours(d.getHours() + 1); d.setMinutes(m, 0, 0); return d.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); })()}">${fmtTime(p.createdAt)}</span>
-    ${tgs ? `<span class="muted sep-slash">/</span> <span class="post-tags-twolines">${tgs}</span>` : ''}
+  ${tgs ? `<span class="muted sep-slash">/</span> <div class="tag-cloud post-tags-twolines">${tgs}</div>` : ''}
       </div>
     </div>
     ${p.body ? `<div class="sep"></div><div>${esc(p.body)}</div>` : ''}
@@ -202,6 +202,13 @@ function setFeedGlobals(state, DB) {
       setTimeout(() => node.classList.remove('highlight'), 1500);
     }
     history.replaceState(null, '', location.pathname);
+  }
+
+  // Always enable drag-to-scroll for each feed post's tag list
+  if (window.enableTagCloudDragScroll) {
+    document.querySelectorAll('.tag-cloud.post-tags-twolines').forEach(tc => {
+      window.enableTagCloudDragScroll(tc);
+    });
   }
 }
 

@@ -1,3 +1,21 @@
+#aboutBox #aboutSocials {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  gap: 8px;
+  width: 100%;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+#aboutBox #aboutSocials::-webkit-scrollbar {
+  display: none;
+}
+#aboutBox #aboutSocials > * {
+  white-space: nowrap !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  overflow: visible !important;
+}
 /* Fix: Prevent global input/button style from breaking topbar buttons */
 .topbar .btn, .topbar .pill {
   width: auto !important;
@@ -29,10 +47,15 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   color: var(--fg3, #888);
   font-size: 0.98em;
   margin-top: 1px;
+  width: 100%;
+}
+.meta-twolines > *:not(.post-tags-twolines) {
+  flex-shrink: 0;
+  min-width: max-content;
 }
 .meta-twolines .avatar-sm {
   width: 20px;
@@ -46,9 +69,12 @@
   margin-left: 2px;
   overflow-x: auto;
   max-width: 100%;
+  min-width: 0;
   white-space: nowrap;
   scrollbar-width: none;
   -ms-overflow-style: none;
+  align-items: center;
+  flex-shrink: 1;
 }
 .post-tags-twolines::-webkit-scrollbar {
   display: none;
@@ -336,17 +362,43 @@ input[type=number] {
     flex-direction: column;
     align-items: stretch;
     gap: 0;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    left: 0;
+    position: relative;
   }
   .user-action-buttons {
     flex-direction: column;
-    gap: 8px;
+    gap: 14px;
     transform: translateY(-12px) scale(0.95);
     max-height: 0;
     overflow: hidden;
     opacity: 0;
     pointer-events: none;
     display: flex;
+    width: 100vw !important;
+    max-width: 100vw !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    left: 0;
+    position: relative;
     transition: max-height 0.32s cubic-bezier(0.4,0.2,0.2,1), opacity 0.32s cubic-bezier(0.4,0.2,0.2,1), transform 0.32s cubic-bezier(0.4,0.2,0.2,1);
+  }
+  .user-action-buttons .btn,
+  .user-action-buttons .btn-ghost {
+    width: 100vw !important;
+    min-width: 0 !important;
+    max-width: 100vw !important;
+    font-size: 1.1em;
+    padding: 14px 0 !important;
+    border-radius: 8px !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+    display: block !important;
+    left: 0;
+    position: relative;
   }
   .user-actions-container.open .user-action-buttons {
     transform: translateY(0) scale(1);
@@ -716,17 +768,18 @@ input[type=number] {
   gap: 0.5rem;
   padding: 0.5rem 0;
   align-items: center;
-  max-width: 700px;
-  width: 100%;
-  margin-left: auto;
-  margin-right: auto;
   box-sizing: border-box;
   white-space: nowrap;
   -ms-overflow-style: none;
   scrollbar-width: none;
-  /* Allow tag cloud to overflow horizontally for scrolling */
   max-width: 100vw !important;
   overflow-x: auto !important;
+}
+.tag-cloud.post-tags-twolines {
+  padding: 0;
+  gap: 4px;
+  margin-left: 2px;
+  max-width: 100%;
 }
 
 .tag-cloud, .tag-cloud * {

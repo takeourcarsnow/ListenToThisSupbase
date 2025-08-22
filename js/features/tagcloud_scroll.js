@@ -1,7 +1,11 @@
 // Enable mouse drag-to-scroll for .tag-cloud on desktop
-export function enableTagCloudDragScroll() {
-  const tagCloud = document.querySelector('.tag-cloud');
+export function enableTagCloudDragScroll(tagCloud) {
+  if (!tagCloud) tagCloud = document.querySelector('.tag-cloud');
   if (!tagCloud) return;
+// Attach to window for global use
+if (typeof window !== 'undefined') {
+  window.enableTagCloudDragScroll = enableTagCloudDragScroll;
+}
   let isDown = false;
   let startX;
   let scrollLeft;
