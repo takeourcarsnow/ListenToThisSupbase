@@ -1,27 +1,21 @@
+
 import DB from './db.js';
 import { $ } from './utils.js';
 import { loadPrefs, PREF_KEY } from '../auth/prefs.js';
 import { SESSION_KEY, GUEST_KEY, isGuestMode } from '../auth/session.js';
-import { currentUser } from '../auth/auth.js';
 import { bindHelpOverlay } from '../views/overlays.js';
 import { renderMain } from '../views/main_view.js';
 import { renderLogin } from '../views/login_view.js';
 import { onActionClick, onDelegatedSubmit } from '../features/actions.js';
 import { onKey } from '../auth/keyboard.js';
 import { seedDemo } from '../features/seed.js';
-
-const state = {
-  user: null,
-  queue: [],
-  qIndex: 0,
-  pageSize: 30,
-  page: 1,
-  forceLogin: false
-};
+import { state } from './app_state.js';
 
 async function renderApp() {
   if (DB.refresh) await DB.refresh();
-  state.user = await currentUser(DB);
+  // Keep state.user in sync
+  const { refreshUser } = await import('./app_state.js');
+  await refreshUser();
   const prefs = loadPrefs();
 
   const root = $('#app');
