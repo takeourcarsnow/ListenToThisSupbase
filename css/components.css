@@ -2,27 +2,51 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  margin-bottom: 2px;
+  margin-bottom: 1px;
 }
 .post-title-twolines {
-  font-weight: 700;
-  font-size: 1.13em;
+  font-weight: 800;
+  font-size: 1.22em;
   margin-bottom: 0px;
+  letter-spacing: 0.01em;
 }
 .post-artist-twolines {
   font-size: 1em;
-  margin-left: 4px;
+  margin-left: 6px;
+  color: var(--fg2, #b0b0b0);
+  font-style: italic;
 }
 .meta-twolines {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+  color: var(--fg3, #888);
+  font-size: 0.98em;
+  margin-top: 1px;
+}
+.meta-twolines .avatar-sm {
+  width: 20px;
+  height: 20px;
 }
 .post-tags-twolines {
-  display: inline;
-  font-size: 0.97em;
+  display: inline-flex;
   gap: 4px;
+  font-size: 0.97em;
+  margin-left: 2px;
+}
+.post-tags-twolines .tag {
+  background: none;
+  border-radius: 1em;
+  padding: 0.13em 0.6em;
+  font-family: 'Fira Mono', monospace;
+  font-size: 0.93em;
+  font-weight: 500;
+  box-shadow: none;
+  transition: text-decoration 0.2s;
+}
+.post-tags-twolines .tag:hover {
+  text-decoration: underline;
 }
 .post-header-inline {
   display: flex;

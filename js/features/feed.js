@@ -63,18 +63,21 @@ export function renderPostHTML(p, state, DB) {
   const commentsHTML = (p.comments || []).map(c => renderCommentHTML(c, p.id, state, DB)).join('');
 
   const authorAvatar = user && user.avatarUrl ? esc(user.avatarUrl) : '/assets/android-chrome-512x512.png';
+  // Only show 'by' before artist or username, not both
+  const artistHTML = p.artist ? `<span class="post-artist-twolines muted thin">by ${esc(p.artist)}</span>` : '';
+  const userBy = p.artist ? '' : 'by ';
   return `
   <article class="post" id="post-${p.id}" data-post="${p.id}" aria-label="${esc(p.title)}">
     <div class="post-header-twolines">
-      <div class="post-title-twolines">${esc(p.title)}${p.artist ? ` <span class="post-artist-twolines muted thin">by ${esc(p.artist)}</span>` : ''}</div>
+      <div class="post-title-twolines">${esc(p.title)}${artistHTML}</div>
       <div class="small meta-twolines">
         <a href="#" data-action="view-user" data-uid="${user ? esc(user.id) : ''}">
           <img class="avatar avatar-sm" src="${authorAvatar}" alt="avatar" />
         </a>
-        <span class="muted">by ${user ? `<a href=\"#\" data-action=\"view-user\" data-uid=\"${esc(user.id)}\">${esc(user.name)}</a>` : 'anon'}</span>
-        <span class="muted dot">·</span>
-        <span class="muted">${fmtTime(p.createdAt)}</span>
-        ${tgs ? `<span class="muted dot">·</span> <span class="post-tags-twolines">${tgs}</span>` : ''}
+        <span class="muted">${userBy}${user ? `<a href=\"#\" data-action=\"view-user\" data-uid=\"${esc(user.id)}\">${esc(user.name)}</a>` : 'anon'}</span>
+    <span class="muted sep-slash">/</span>
+  <span class="muted" title="${(() => { const d = new Date(p.createdAt); let m = d.getMinutes(); m = m < 15 ? 0 : m < 45 ? 30 : 0; if (m === 0 && d.getMinutes() >= 45) d.setHours(d.getHours() + 1); d.setMinutes(m, 0, 0); return d.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); })()}">${fmtTime(p.createdAt)}</span>
+    ${tgs ? `<span class="muted sep-slash">/</span> <span class="post-tags-twolines">${tgs}</span>` : ''}
       </div>
     </div>
     ${p.body ? `<div class="sep"></div><div>${esc(p.body)}</div>` : ''}
