@@ -15,6 +15,13 @@ export const PROMPT_FIRST = '> what was the first song you loved?';
 export const PROMPT_LAST = '> what was the last song you added to your playlist?';
 export const PROMPT_MORNING = '> what song gets you going in the morning?';
 export const PROMPT_NIGHT = '> what do you listen to late at night?';
+export const PROMPT_FAVORITE_LYRICS = '> share a song with your favorite lyrics!';
+export const PROMPT_UNDERRATED = '> what’s the most underrated track you know?';
+export const PROMPT_DANCE = '> which song makes you want to dance?';
+export const PROMPT_CHILL = '> what’s your go-to chillout song?';
+export const PROMPT_INSPIRE = '> which song inspires you the most?';
+export const PROMPT_TRAVEL = '> what’s your favorite song for traveling?';
+export const PROMPT_FRIEND = '> what song would you recommend to a friend?';
 export const PROMPTS = [
 	PROMPT_STUCK,
 	PROMPT_SHARE,
@@ -31,4 +38,11 @@ export const PROMPTS = [
 	PROMPT_LAST,
 	PROMPT_MORNING,
 	PROMPT_NIGHT
+	,PROMPT_FAVORITE_LYRICS
+	,PROMPT_UNDERRATED
+	,PROMPT_DANCE
+	,PROMPT_CHILL
+	,PROMPT_INSPIRE
+	,PROMPT_TRAVEL
+	,PROMPT_FRIEND
 ];
