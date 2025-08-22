@@ -1,3 +1,38 @@
+/* Hide vertical scrollbar on login page */
+body.login-page, .login {
+  overflow: hidden !important;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+body.login-page::-webkit-scrollbar, .login::-webkit-scrollbar {
+  display: none !important;
+}
+/* Prevent horizontal scrollbars on login/register page elements */
+.login .btn,
+.login button,
+.login .field,
+.login input,
+.login form,
+.login .auth-shell {
+  overflow-x: visible !important;
+  max-width: 100% !important;
+  box-sizing: border-box;
+}
+
+/* Hide scrollbars for login page elements (cross-browser) */
+.login .btn,
+.login button,
+.login .field,
+.login input {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.login .btn::-webkit-scrollbar,
+.login button::-webkit-scrollbar,
+.login .field::-webkit-scrollbar,
+.login input::-webkit-scrollbar {
+  display: none !important;
+}
 /* Header logo animation: fade in only after DOM is ready */
 .header-logo-anim {
   opacity: 0;
@@ -111,8 +146,9 @@ body.login-page .login {
 }
 .login form.stack .field,
 .login form.stack .btn {
-  width: 100%;
-  max-width: 260px;
+  width: 80%;
+  max-width: 170px;
+  min-width: 100px;
   box-sizing: border-box;
   margin-left: auto !important;
   margin-right: auto !important;
@@ -131,9 +167,9 @@ body.login-page .login {
 .login form input.field:-webkit-autofill:focus,
 .login form input.field:-webkit-autofill:hover,
 .login form input.field:-internal-autofill-selected {
-  background: #232837 !important;
-  -webkit-box-shadow: 0 0 0 1000px #232837 inset !important;
-  box-shadow: 0 0 0 1000px #232837 inset !important;
+  background: transparent !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
   color: var(--fg) !important;
   -webkit-text-fill-color: var(--fg) !important;
   border-color: var(--line) !important;
