@@ -1,3 +1,8 @@
+// Simple email format validation
+export function isValidEmailFormat(email) {
+  // Basic regex for demonstration; adjust as needed for stricter validation
+  return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
+}
 export const $ = (sel, root=document) => root.querySelector(sel);
 export function $$(a, b){
   if(!b) return Array.from(document.querySelectorAll(a));

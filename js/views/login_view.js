@@ -126,32 +126,52 @@ export function renderLogin(root, DB, render) {
     const email = $('#regEmail').value.trim();
     const pass = $('#regPass').value;
     if (!name || !email || !pass) return;
-    $('#regMsg').textContent = 'Registering...';
-    try {
-      let u;
-      if (DB.isRemote && DB.supabase) {
-        const { data, error } = await DB.supabase.auth.signUp({ email, password: pass, options: { data: { name } } });
-        if (error) throw error;
-        // Supabase: always require email confirmation before login
-        $('#regMsg').innerHTML = 'Registration successful!<br>Please check your email and confirm your account before logging in.';
-        $('#registerForm').reset();
-        // Optionally, hide the form or disable it
-        $('#registerForm').style.display = 'none';
-        // Show login form after a short delay
-        setTimeout(() => {
-          showLoginForm();
-          $('#loginMsg').innerHTML = 'A confirmation email has been sent to your address.<br><b>Please confirm your email before logging in.</b>';
-        }, 3500);
+    // Email format and disposable domain validation
+    import('../core/utils.js').then(utils => {
+      if (!utils.isValidEmailFormat(email)) {
+        $('#regMsg').textContent = 'Please enter a valid email address.';
         return;
-      } else {
-        u = await DB.ensureUser(name, email, pass);
-        setSession({ userId: u.id });
-        setGuestMode(false);
-        await DB.refresh();
-        wrappedRender();
       }
-    } catch (err) {
-      $('#regMsg').textContent = 'Registration failed: ' + (err.message || err);
+      // isDisposableEmail is defined in db.js, so import it from there
+      import('../core/db.js').then(dbmod => {
+        if (dbmod.isDisposableEmail && dbmod.isDisposableEmail(email)) {
+          $('#regMsg').textContent = 'Disposable (temporary) email addresses are not allowed.';
+          return;
+        }
+        proceed();
+      });
+    });
+
+    function proceed() {
+      $('#regMsg').textContent = 'Registering...';
+      (async () => {
+        try {
+          let u;
+          if (DB.isRemote && DB.supabase) {
+            const { data, error } = await DB.supabase.auth.signUp({ email, password: pass, options: { data: { name } } });
+            if (error) throw error;
+            // Supabase: always require email confirmation before login
+            $('#regMsg').innerHTML = 'Registration successful!<br>Please check your email and confirm your account before logging in.';
+            $('#registerForm').reset();
+            // Optionally, hide the form or disable it
+            $('#registerForm').style.display = 'none';
+            // Show login form after a short delay
+            setTimeout(() => {
+              showLoginForm();
+              $('#loginMsg').innerHTML = 'A confirmation email has been sent to your address.<br><b>Please confirm your email before logging in.</b>';
+            }, 3500);
+            return;
+          } else {
+            u = await DB.ensureUser(name, email, pass);
+            setSession({ userId: u.id });
+            setGuestMode(false);
+            await DB.refresh();
+            wrappedRender();
+          }
+        } catch (err) {
+          $('#regMsg').textContent = 'Registration failed: ' + (err.message || err);
+        }
+      })();
     }
   });
 
