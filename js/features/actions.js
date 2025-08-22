@@ -282,8 +282,24 @@ export async function onActionClick(e, state, DB, render) {
   }
 
   if (action === 'logout') {
+    // Clear all session and user data
     clearSession();
     setGuestMode(false);
+    // Clear all localStorage and sessionStorage
+    try {
+      localStorage.clear();
+      sessionStorage.clear();
+    } catch {}
+    // Remove all cookies (best effort)
+    if (document.cookie && document.cookie.length > 0) {
+      document.cookie.split(';').forEach(function(c) {
+        const eqPos = c.indexOf('=');
+        const name = eqPos > -1 ? c.substr(0, eqPos) : c;
+        document.cookie = name + '=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+      });
+    }
+    // Reset prefs cache if available
+    if (typeof resetPrefsCache === 'function') resetPrefsCache();
     render();
   }
 }
