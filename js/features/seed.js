@@ -11,7 +11,7 @@ export async function seedDemo(DB, state, render) {
     throw e;
   }
   if (!state.user) {
-    localStorage.setItem('tunedIn.space/session@v1', JSON.stringify({ userId: me.id }));
+  localStorage.setItem('TunedIn.space/session@v1', JSON.stringify({ userId: me.id }));
     state.user = me;
   }
 

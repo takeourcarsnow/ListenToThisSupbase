@@ -179,7 +179,7 @@ export async function onActionClick(e, state, DB, render) {
     const perma = btn.dataset.perma || (location.pathname + '#post-' + postId);
     const db = DB.getAll();
     const p = postId ? db.posts.find(x => x.id === postId) : null;
-    const title = p ? `${p.title}${p.artist ? ' — ' + p.artist : ''}` : 'tunedIn.space';
+  const title = p ? `${p.title}${p.artist ? ' — ' + p.artist : ''}` : 'TunedIn.space';
     if (navigator.share) {
       navigator.share({ title, url: perma }).catch(() => copyText(perma));
     } else {
@@ -232,9 +232,9 @@ export async function onActionClick(e, state, DB, render) {
       alert('Reset all is only for local mode. For Supabase, use Import to replace remote data.');
       return;
     }
-    if (confirm('Reset all tunedIn.space data (posts, users, prefs)? This cannot be undone.')) {
-      localStorage.removeItem('tunedIn.space/db@v2');
-      localStorage.removeItem('tunedIn.space/v1');
+  if (confirm('Reset all TunedIn.space data (posts, users, prefs)? This cannot be undone.')) {
+  localStorage.removeItem('TunedIn.space/db@v2');
+  localStorage.removeItem('TunedIn.space/v1');
       localStorage.removeItem(PREF_KEY);
       localStorage.removeItem(SESSION_KEY);
       localStorage.removeItem(GUEST_KEY);

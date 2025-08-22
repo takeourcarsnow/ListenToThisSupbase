@@ -18,7 +18,7 @@ export function renderLogin(root, DB, render) {
     <div class="auth-shell">
   <img src="/assets/logo.png" alt="Logo" class="login-logo-anim" style="display:block; margin:0 auto; width:64px; height:64px; object-fit:contain;" />
       <div class="small muted">┌─ login or register to</div>
-      <div class="logo">tunedIn.space</div>
+  <div class="logo">TunedIn.space</div>
       <div class="small muted">└──────────────────────</div>
 
       <div class="title">

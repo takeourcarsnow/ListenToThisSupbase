@@ -1,5 +1,5 @@
-export const SESSION_KEY = 'tunedIn.space/session@v1';
-export const GUEST_KEY = 'tunedIn.space/guest@v1';
+export const SESSION_KEY = 'TunedIn.space/session@v1';
+export const GUEST_KEY = 'TunedIn.space/guest@v1';
 
 // Use sessionStorage for session data (cleared on tab close, less persistent)
 export function getSession() {

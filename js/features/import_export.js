@@ -39,6 +39,6 @@ export async function storageInfo(DB) {
       };
     }
   } catch {}
-  const raw = (localStorage.getItem('tunedIn.space/db@v2') || '') + (localStorage.getItem('tunedIn.space/prefs@v2') || '');
+  const raw = (localStorage.getItem('TunedIn.space/db@v2') || '') + (localStorage.getItem('TunedIn.space/prefs@v2') || '');
   return { text: 'Storage approx: ' + approxSize(raw) + ' · Local-only.', percent: null };
 }

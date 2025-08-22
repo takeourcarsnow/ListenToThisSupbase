@@ -1,6 +1,6 @@
 import { applyAccent, applyDensity } from '../core/utils.js';
 
-export const PREF_KEY = 'tunedIn.space/prefs@v2';
+export const PREF_KEY = 'TunedIn.space/prefs@v2';
 
 export const defaultPrefs = {
   autoScroll: true,

@@ -1,5 +1,5 @@
 
-# TODO List for tunedIn.space
+# TODO List for TunedIn.space
 
 ## ✅ Completed
 - [x] Let users add their contact information (Instagram, Facebook, X) in the About section

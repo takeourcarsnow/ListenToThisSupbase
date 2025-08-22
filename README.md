@@ -1,7 +1,7 @@
 
 ## Help
 
-**👋 Welcome to tunedIn.space!**
+**👋 Welcome to TunedIn.space!**
 
 Your new favorite place to overshare your music taste. (We won't judge. Much.)
 
@@ -38,9 +38,9 @@ Your new favorite place to overshare your music taste. (We won't judge. Much.)
 
 
 
-# tunedIn.space — Minimal Music Threads Webapp
+# TunedIn.space — Minimal Music Threads Webapp
 
-**tunedIn.space** is a modern, minimal web app for sharing and discussing music. Features include user authentication, music threads with tags, likes, comments, and a built-in playlist/queue. The app rocks a "monospace vibes" look and supports two modes:
+**TunedIn.space** is a modern, minimal web app for sharing and discussing music. Features include user authentication, music threads with tags, likes, comments, and a built-in playlist/queue. The app rocks a "monospace vibes" look and supports two modes:
 - **Local mode:** All data is stored in the browser's LocalStorage.
 - **Supabase mode:** Data is synced with a Supabase backend (cloud database).
 
