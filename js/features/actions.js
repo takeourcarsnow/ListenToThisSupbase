@@ -19,6 +19,41 @@ export async function onActionClick(e, state, DB, render) {
   const card = e.target.closest('.post');
   const postId = card ? card.dataset.post : null;
 
+  if (action === 'toggle-player' && postId) {
+    const pl = document.getElementById('player-' + postId);
+    const active = pl.classList.contains('active');
+    if (active) {
+      pl.classList.remove('active');
+      try { pl._cleanup && pl._cleanup(); } catch {}
+      pl.innerHTML = '';
+      card.classList.remove('is-playing');
+    } else {
+      // Close any other active players
+      document.querySelectorAll('.player.active').forEach(otherPl => {
+        if (otherPl !== pl) {
+          otherPl.classList.remove('active');
+          try { otherPl._cleanup && otherPl._cleanup(); } catch {}
+          otherPl.innerHTML = '';
+          const otherCard = otherPl.closest('.post');
+          if (otherCard) otherCard.classList.remove('is-playing');
+        }
+      });
+      pl.classList.add('active');
+      const db = DB.getAll();
+      const p = db.posts.find(x => x.id === postId);
+      if (!p || (!p.url && !(p.provider && p.provider.id))) {
+        toast(card || root, 'Could not load post for playback', true);
+        return;
+      }
+      console.log('Attempting to build embed:', { post: p, playerDiv: pl });
+      buildEmbed(p, pl, { autoplay: true, onEnded: () => queueNext(true, state, DB) });
+      console.log('Embed built. Player div innerHTML:', pl.innerHTML);
+      markNowPlaying(postId, state, DB);
+      if (loadPrefs().autoScroll) card.scrollIntoView({ block: 'center' });
+    }
+    return;
+  }
+
   if (action === 'like' && postId) {
     if (!state.user) { toast(card || root, 'login to like', true); return; }
     const updated = await DB.toggleLike(postId, state.user.id);

@@ -174,7 +174,20 @@ if (!window._editBtnHandlerAttached) {
     const btn = e.target.closest('button[data-action="edit"][data-post]');
     if (btn) {
       const postId = btn.getAttribute('data-post');
-      openEditInline(postId, window._lastFeedState, window._lastFeedDB);
+      const card = document.getElementById('post-' + postId);
+      const editBoxId = 'editbox-' + postId;
+      const opened = card ? card.querySelector('#' + editBoxId) : null;
+      if (opened) {
+        // If already open, close it
+        opened.classList.remove('fade-in');
+        opened.classList.add('fade-out');
+        setTimeout(() => {
+          if (opened.parentNode) opened.parentNode.removeChild(opened);
+          if (window.editingPostId == postId) window.editingPostId = null;
+        }, 180);
+      } else {
+        openEditInline(postId, window._lastFeedState, window._lastFeedDB);
+      }
       e.preventDefault();
     }
   });
