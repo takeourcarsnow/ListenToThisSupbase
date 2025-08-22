@@ -10,18 +10,71 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
   const BANNER_KEY = 'tunedin.hideWelcomeBanner';
   if (!localStorage.getItem(BANNER_KEY)) {
     const popup = document.createElement('div');
-    popup.className = 'info-popup-banner';
+    popup.className = 'info-popup-banner popup-onboarding';
     popup.innerHTML = `
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;width:100%;gap:18px;">
-        <div style="display:flex;align-items:flex-start;gap:10px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:18px;">
+        <div style="display:flex;align-items:center;gap:10px;text-align:center;">
           <span style="font-size:1.5em;line-height:1.1;">🎉</span>
-          <span style="font-size:1.08em;line-height:1.5;">
-            <b>Welcome!</b> Check <b>[ help ]</b> for tips & <b>[ dev changelog ]</b> for project updates.
+          <span style="font-size:1.08em;line-height:1.5;text-align:center;display:block;">
+            <b>Welcome!</b> Check 
+            <a href="#" class="popup-link popup-nowrap" data-popup-action="help" style="color:#6cf;text-decoration:underline;cursor:pointer;white-space:nowrap;"><b>[ help ]</b></a>
+            for tips & 
+            <a href="#" class="popup-link popup-changelog-link popup-nowrap" data-popup-action="changelog" style="color:#6cf;text-decoration:underline;cursor:pointer;white-space:nowrap;"><b>[ dev changelog ]</b></a>
+            for project updates.
           </span>
         </div>
         <button class="btn btn-ghost small" style="font-size:1.25em;opacity:0.7;padding:2px 10px 0 10px;line-height:1;" title="Dismiss" aria-label="Dismiss">✕</button>
       </div>
     `;
+    // Dismiss logic (only one declaration)
+    const close = () => {
+      popup.style.animation = 'fadeout-popup-banner-bottom 0.4s';
+      setTimeout(() => {
+        popup.remove();
+        localStorage.setItem(BANNER_KEY, '1');
+      }, 350);
+    };
+    // Make [ help ] and [ dev changelog ] clickable
+    popup.querySelector('[data-popup-action="help"]').onclick = (e) => {
+      e.preventDefault();
+      // Simulate a click on the user menu help button for identical behavior
+      const userMenuHelpBtn = document.querySelector('[data-action="show-help"]');
+      if (userMenuHelpBtn) userMenuHelpBtn.click();
+      close();
+    };
+    popup.querySelector('[data-popup-action="changelog"]').onclick = (e) => {
+      e.preventDefault();
+      import('../core/changelog_modal.js').then(mod => {
+        // Show the modal
+        if (mod && typeof mod.showChangelogModal === 'function') {
+          mod.showChangelogModal();
+        } else if (window.showChangelogModal) {
+          window.showChangelogModal();
+        }
+        // Inject changelog modal CSS if not present
+        if (!document.getElementById('changelog-modal-css')) {
+          const link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = 'css/changelog_modal.css';
+          link.id = 'changelog-modal-css';
+          document.head.appendChild(link);
+        }
+        // Close any open overlays (help, etc.)
+        document.querySelectorAll('.overlay').forEach(el => el.remove());
+      }).catch(err => {
+        if (window.showChangelogModal) window.showChangelogModal();
+        else console.error('Failed to load changelog modal:', err);
+        if (!document.getElementById('changelog-modal-css')) {
+          const link = document.createElement('link');
+          link.rel = 'stylesheet';
+          link.href = 'css/changelog_modal.css';
+          link.id = 'changelog-modal-css';
+          document.head.appendChild(link);
+        }
+        document.querySelectorAll('.overlay').forEach(el => el.remove());
+      });
+      close();
+    };
     popup.style.textAlign = 'left';
     Object.assign(popup.style, {
       position: 'fixed',
@@ -43,14 +96,7 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
       animation: 'fadein-popup-banner-bottom 0.7s',
       cursor: 'default',
     });
-    // Dismiss logic
-    const close = () => {
-      popup.style.animation = 'fadeout-popup-banner-bottom 0.4s';
-      setTimeout(() => {
-        popup.remove();
-        localStorage.setItem(BANNER_KEY, '1');
-      }, 350);
-    };
+  // (removed duplicate close function)
     popup.querySelector('button').onclick = close;
     // Auto-dismiss after 8 seconds if not closed
     setTimeout(() => { if (document.body.contains(popup)) close(); }, 8000);

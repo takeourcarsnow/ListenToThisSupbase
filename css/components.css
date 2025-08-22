@@ -1,3 +1,7 @@
+/* Only prevent the popup links from breaking, not the whole line */
+.popup-onboarding .popup-nowrap {
+  white-space: nowrap !important;
+}
 /* Comment delete confirm popup */
 .comment-delete-confirm {
   position: absolute;
