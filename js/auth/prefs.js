@@ -7,7 +7,7 @@ export const defaultPrefs = {
   sort: 'new', // new | likes | comments
   search: '',
   filterTag: null,
-  accent: '#8ab4ff',
+  accent: '#ff6b6b',
   density: 'cozy',
   shuffle: false,
   repeat: 'off' // off | all | one
