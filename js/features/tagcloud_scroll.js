@@ -6,6 +6,7 @@ export function enableTagCloudDragScroll() {
   let startX;
   let scrollLeft;
 
+  // Mouse events
   tagCloud.addEventListener('mousedown', (e) => {
     if (e.button !== 0) return; // Only left mouse button
     isDown = true;
@@ -21,6 +22,26 @@ export function enableTagCloudDragScroll() {
     tagCloud.scrollLeft = scrollLeft - walk;
   });
   document.addEventListener('mouseup', () => {
+    isDown = false;
+    tagCloud.classList.remove('dragging');
+  });
+
+  // Touch events
+  tagCloud.addEventListener('touchstart', (e) => {
+    if (e.touches.length !== 1) return;
+    isDown = true;
+    tagCloud.classList.add('dragging');
+    startX = e.touches[0].pageX - tagCloud.offsetLeft;
+    scrollLeft = tagCloud.scrollLeft;
+  }, { passive: false });
+  tagCloud.addEventListener('touchmove', (e) => {
+    if (!isDown || e.touches.length !== 1) return;
+    const x = e.touches[0].pageX - tagCloud.offsetLeft;
+    const walk = (x - startX) * 1.2;
+    tagCloud.scrollLeft = scrollLeft - walk;
+    e.preventDefault();
+  }, { passive: false });
+  tagCloud.addEventListener('touchend', () => {
     isDown = false;
     tagCloud.classList.remove('dragging');
   });

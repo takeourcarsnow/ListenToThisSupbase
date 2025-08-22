@@ -1,3 +1,12 @@
+/* Fix: Prevent global input/button style from breaking topbar buttons */
+.topbar .btn, .topbar .pill {
+  width: auto !important;
+  max-width: none !important;
+  padding: 5px 14px !important;
+  font-size: 1rem !important;
+  overflow: visible !important;
+  resize: none !important;
+}
 .post-header-twolines {
   display: flex;
   flex-direction: column;
@@ -30,10 +39,19 @@
   height: 20px;
 }
 .post-tags-twolines {
-  display: inline-flex;
+  display: flex;
+  flex-wrap: nowrap;
   gap: 4px;
   font-size: 0.97em;
   margin-left: 2px;
+  overflow-x: auto;
+  max-width: 100%;
+  white-space: nowrap;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.post-tags-twolines::-webkit-scrollbar {
+  display: none;
 }
 .post-tags-twolines .tag {
   background: none;
