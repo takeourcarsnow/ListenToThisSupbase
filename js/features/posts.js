@@ -58,7 +58,14 @@ export async function onCreatePost(e, state, DB, render) {
   }
 
   // Automoderation check (title, artist, body, tags)
-  const tagsArr = tags.split(/[#,\s]+/g).map(t => t.trim().toLowerCase()).filter(Boolean).slice(0, 12);
+  let tagsArr = tags.split(/[#,\s]+/g).map(t => t.trim().toLowerCase()).filter(Boolean).slice(0, 12);
+  // Deduplicate tags, preserve order
+  let seenTags = new Set();
+  tagsArr = tagsArr.filter(t => {
+    if (seenTags.has(t)) return false;
+    seenTags.add(t);
+    return true;
+  });
   if (
     containsBannedWords(title) ||
     containsBannedWords(artist) ||

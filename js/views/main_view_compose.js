@@ -320,7 +320,7 @@ export function renderComposeBox(right, state, DB, render) {
   const f_tags = box.querySelector('#f_tags');
   const tagSuggestions = box.querySelector('#tagSuggestions');
   if (f_tags && tagSuggestions) {
-    // Helper to deduplicate tags in the input
+    // Helper to deduplicate tags in the input (now only on blur)
     function dedupeTagsInput() {
       let val = f_tags.value;
       // Split by space/comma, remove empty, lowercase, keep #
@@ -373,11 +373,14 @@ export function renderComposeBox(right, state, DB, render) {
       }
     }
     f_tags.addEventListener('input', () => {
-      dedupeTagsInput();
-      maybeShowSuggestions();
+  maybeShowSuggestions();
     });
     f_tags.addEventListener('focus', maybeShowSuggestions);
     f_tags.addEventListener('blur', () => setTimeout(() => { tagSuggestions.style.display = 'none'; }, 100));
+    f_tags.addEventListener('blur', () => {
+      dedupeTagsInput();
+      setTimeout(() => { tagSuggestions.style.display = 'none'; }, 100);
+    });
     tagSuggestions.addEventListener('mousedown', (e) => e.preventDefault());
     tagSuggestions.addEventListener('click', (e) => {
       if (e.target.classList.contains('tag-suggestion')) {
