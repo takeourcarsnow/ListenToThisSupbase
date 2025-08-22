@@ -145,6 +145,17 @@ export async function onCreatePost(e, state, DB, render) {
 
 export function openEditInline(postId, state, DB, opts = {}) {
   window.editingPostId = postId;
+  // Close comment panel if open for this post
+  const cbox = document.getElementById('cbox-' + postId);
+  if (cbox && cbox.classList.contains('active')) {
+    cbox.classList.remove('fade-in');
+    cbox.classList.add('fade-out');
+    setTimeout(() => {
+      cbox.classList.remove('active');
+      cbox.classList.remove('fade-out');
+      if (window.openCommentId == postId) window.openCommentId = null;
+    }, 180);
+  }
   const db = DB.getAll();
   const p = db.posts.find(x => x.id === postId);
   if (!p) return;

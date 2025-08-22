@@ -942,17 +942,11 @@ iframe[loading=lazy] { contain: content; }
 
 /* Comments */
 .comment-box {
-  min-height: 70px;
+  display: none;
   margin-top: 6px;
-  transition: opacity 0.22s cubic-bezier(.4,0,.2,1), visibility 0.22s;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
 }
 .comment-box.active {
-  opacity: 1;
-  visibility: visible;
-  pointer-events: auto;
+  display: block;
 }
 .comment { padding: 4px 0; border-top: 1px dashed var(--line); }
 
