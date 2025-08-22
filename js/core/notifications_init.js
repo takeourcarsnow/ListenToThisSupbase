@@ -19,8 +19,9 @@ function setStoredActivity(userId, data) {
   localStorage.setItem(getUserPostActivityKey(userId), JSON.stringify(data));
 }
 
-function checkForNewPostActivity() {
+async function checkForNewPostActivity() {
   if (!state.user) return;
+  if (DB.refresh) await DB.refresh();
   const db = DB.getAll();
   const myPosts = db.posts.filter(p => p.userId === state.user.id);
   const stored = getStoredActivity(state.user.id);
