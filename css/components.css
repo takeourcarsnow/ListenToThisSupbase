@@ -800,7 +800,7 @@ iframe[loading=lazy] { contain: content; }
   color: var(--fg);
   transition: box-shadow 0.2s, background 0.2s;
 }
-@media (max-width: 600px), (max-height: 600px) {
+@media (max-width: 600px) {
   .overlay .sheet {
     max-width: 98vw;
     width: 100vw;
