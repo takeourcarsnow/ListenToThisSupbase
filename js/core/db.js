@@ -1,4 +1,6 @@
+
 import { safeClone } from './utils.js';
+// bcrypt is loaded globally from CDN in index.html
 
 import { SUPABASE_URL, SUPABASE_ANON_KEY, USE_SUPABASE } from './config.js';
 
@@ -54,11 +56,14 @@ class LocalAdapter {
     }
     let u = this.cache.users.find(x => x.name.toLowerCase() === name.toLowerCase() || (email && x.email === email));
     if (!u) {
+      // Hash the password before storing
+  const salt = window.bcrypt.genSaltSync(10);
+  const hash = window.bcrypt.hashSync(password, salt);
       u = {
         id: crypto.randomUUID ? crypto.randomUUID() : 'u_' + Math.random().toString(36).slice(2),
         name: name.trim(),
         email: email,
-        password: password,
+        password: hash, // store hash
         about: '',
         facebook: '',
         instagram: '',
@@ -78,9 +83,11 @@ class LocalAdapter {
     if (!email || !password || password.length < 6) return null;
     const user = this.cache.users.find(u => u.email === email);
     if (!user) return null;
-    // Only allow login if user has a non-empty password
+    // Only allow login if user has a non-empty password hash
     if (!user.password || user.password.length < 6) return null;
-    return user.password === password ? user : null;
+    // Compare password with hash
+  const isMatch = window.bcrypt.compareSync(password, user.password);
+    return isMatch ? user : null;
   }
   getUserById(id){ return (this.cache?.users || []).find(u=>u.id===id) || null; }
 
