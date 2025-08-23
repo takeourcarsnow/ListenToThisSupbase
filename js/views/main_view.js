@@ -101,15 +101,12 @@ export async function renderMain(root, state, DB, render) {
       <div class="tab-indicator"></div>
       <button data-tab="feed" class="active" aria-label="Feed" role="tab" aria-selected="true" tabindex="0">
         <span>🏠</span>
-        <span class="tab-label">Feed</span>
       </button>
       <button data-tab="compose" aria-label="Compose" role="tab" aria-selected="false" tabindex="-1">
         <span>✍️</span>
-        <span class="tab-label">Compose</span>
       </button>
       <button data-tab="profile" aria-label="Profile" role="tab" aria-selected="false" tabindex="-1">
         <span>👤</span>
-        <span class="tab-label">Profile</span>
       </button>
     `;
     document.body.appendChild(tabBar);

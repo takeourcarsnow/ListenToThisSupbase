@@ -1,7 +1,7 @@
 // Help overlay module: injects the help overlay HTML into the page
 export function renderHelpOverlay() {
   const helpHTML = `
-  <div class="sheet">
+  <div class="sheet box">
       <div class="hstack" style="justify-content:space-between; align-items:center">
         <div class="muted small">> help</div>
         <button class="btn btn-ghost small" data-close-help>[ close ]</button>

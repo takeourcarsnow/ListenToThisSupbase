@@ -16,7 +16,7 @@ if (typeof window !== 'undefined') {
   overlay.style.background = 'rgba(0,0,0,0.4)';
   overlay.style.zIndex = '10000';
   overlay.innerHTML = `
-    <div class="box" style="max-width:520px; margin:10vh auto; background:var(--bg,#111);">
+    <div class="box" style="max-width:520px; margin:10vh auto;">
       <div class="hstack" style="justify-content:space-between; align-items:center">
         <div class="muted small">> user profile</div>
         <button class="btn btn-ghost" data-close-profile="1">[ close ]</button>

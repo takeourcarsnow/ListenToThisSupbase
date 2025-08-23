@@ -40,49 +40,52 @@ export function updateDock(showIfHidden, state, DB) {
     // Set now playing text
     const now = document.getElementById('nowPlaying');
     if (now) now.textContent = p ? `now: ${p.title}${p.artist ? ' — ' + p.artist : ''}` : '';
-    // Set queue info with extra details
+    // Set queue info with extra details, queue info last
     const queueInfo = document.querySelector('.queue-info');
     if (queueInfo) {
       let info = '';
-      if (len > 1) {
-        info = `queue ${len ? (state.qIndex + 1) : 0}/${len}`;
-      }
+      let userStr = '';
+      let agoStr = '';
+      let provStr = '';
       if (p) {
-        let userStr = '';
         if (user) {
           userStr = `by <a href="#" class="dock-user-link" data-user-id="${user.id}">${user.name}</a>`;
         }
-        let agoStr = ago ? `, ${ago}` : '';
-        let provStr = provider ? `, source: ${provider}` : '';
-        info += ` <span class="muted small">${userStr}${agoStr}${provStr}</span>`;
+        agoStr = ago ? `, ${ago}` : '';
+        if (provider === 'audio') {
+          provStr = ', source: user upload';
+        } else if (provider) {
+          provStr = `, source: ${provider}`;
+        } else {
+          provStr = '';
+        }
+      }
+      if (p && (userStr || agoStr || provStr)) {
+        info += `<span class="muted small">${userStr}${agoStr}${provStr}</span> `;
+      }
+      if (len > 1) {
+    info += `<span class="muted small">, queue ${len ? (state.qIndex + 1) : 0}/${len}</span>`;
       }
       // Add click handler for username link in dock
-      const dockUserLink = document.querySelector('.dock-user-link');
-      if (dockUserLink) {
-        dockUserLink.onclick = (e) => {
-          e.preventDefault();
-          const userId = dockUserLink.getAttribute('data-user-id');
-          // Simulate a click on the username in the feed post that is currently playing
-          const id = getActiveQueueId(state);
-          if (id) {
-            // Find the feed post element
-            const postElem = document.getElementById('post-' + id);
-            if (postElem) {
-              // Try to find a username link inside the post
-              const userLink = postElem.querySelector('.user-link, .post-user, [data-action="view-user"]');
-              if (userLink) {
-                userLink.click();
-                return;
-              }
+      // Use event delegation for dock username click
+      if (dock && !dock._userProfileHandler) {
+        dock.addEventListener('click', function(e) {
+          const link = e.target.closest('.dock-user-link');
+          if (link) {
+            e.preventDefault();
+            const userId = link.getAttribute('data-user-id');
+            if (window.showUserProfile && typeof window.showUserProfile === 'function') {
+              window.showUserProfile(userId, DB);
+            } else {
+              import('../views/profile.js').then(mod => {
+                if (mod && typeof mod.showUserProfile === 'function') {
+                  mod.showUserProfile(userId, DB);
+                }
+              });
             }
           }
-          // Fallback: open modal directly
-          import('../views/profile.js').then(mod => {
-            if (mod && typeof mod.showUserProfile === 'function') {
-              mod.showUserProfile(userId, DB);
-            }
-          });
-        };
+        });
+        dock._userProfileHandler = true;
       }
       queueInfo.innerHTML = info;
     }
