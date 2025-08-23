@@ -251,19 +251,11 @@ export function renderTags(el, DB) {
   }
   top = top.slice(0, 80);
   if (top.length === 0) { el.innerHTML = '<span class="muted small">no tags yet</span>'; return; }
-  // Find min and max counts for scaling
-  const counts = top.map(([_, c]) => c);
-  const min = Math.min(...counts);
-  const max = Math.max(...counts);
-  function freqClass(count) {
-    if (max === min) return 'tag--freq-3';
-    const level = Math.ceil(((count - min) / (max - min)) * 4) + 1; // 1-5
-    return level >= 5 ? 'tag--freq-max' : `tag--freq-${level}`;
-  }
+  // Render all tags with the same class, no frequency-based sizing
   const tagCloudDiv = document.createElement('div');
   tagCloudDiv.className = 'tag-cloud';
   tagCloudDiv.innerHTML = top.map(([t, c]) =>
-    `<span class="tag ${freqClass(c)}" data-action="filter-tag" data-tag="${esc(t)}"><span class="tag-label">#${esc(t)}</span></span>`
+    `<span class="tag" data-action="filter-tag" data-tag="${esc(t)}"><span class="tag-label">#${esc(t)}</span></span>`
   ).join(' ');
   el.appendChild(tagCloudDiv);
   // Enable drag-to-scroll for the main tag cloud (desktop)
