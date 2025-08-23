@@ -5,23 +5,17 @@ This changelog is auto-generated from the commit history. Only meaningful change
 
 ---
 
+
 ## [2025-08-23]
-### UI/UX Improvements
-- Major overhaul of tabbed UI for mobile: improved colors, minimalism, spacing, and accessibility
-- Increased logo spacing and header animation cycles in guest mode
-- Enhanced tag cloud: tap support on phone, frequency sort toggle, unified selection (only on click/tap, not drag)
-- Tag sort selector now uses the main accent color
-- Improved header: timer, random words, animation, and fixes for phone display and logo visibility
-- Notification system redesign: UI, logic, dot indicator, and mobile tap fixes
-- Profile tab on phone now shows register message for guests
-- More responsive tweaks for mobile, including dot tweaks, mobile CSS, and menu improvements
-- Overlay/modal and menu stacking, layout, and interaction fixes
-- Banner size and scrolling tweaks; prevention of left-scrolling banner
-- Removed leaderboard from UI; redesigned leaderboard with simplified style, profile pictures, clickable usernames/avatars, improved mobile/responsive support, and fixed opening issues
-- Added confirmation popups for deleting comments, posts, and duplicate post links
+### General Improvements
+- Major UI/UX overhaul for mobile and desktop (tabbed navigation, header, tag cloud, notification system)
+- Improved accessibility and visual consistency across devices
+- Leaderboard redesign and profile tab updates for guests
+- Enhanced tag sorting, selection logic, and accent color usage
+- Added confirmation popups for deleting comments, posts, and duplicates
 - Improved last.fm formatting and social links integration
 - Login now persists across browser restarts
-- Other UI/UX tweaks and bugfixes
+- Bug fixes, performance tweaks, and other minor feature updates
 
 ## [2025-08-22]
 ### Features & Improvements
