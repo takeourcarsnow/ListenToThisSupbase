@@ -53,9 +53,15 @@ export function renderComposeBox(right, state, DB, render) {
   box.className = 'box';
   box.innerHTML = `
     <div class="muted small typewriter" id="composePrompt" style="margin-bottom:18px;"></div>
-    <form id="postForm" class="stack" autocomplete="off">
-      <input class="field" id="f_url" placeholder="Link (YouTube / Spotify / Bandcamp, etc)" required/>
-  <div class="muted small" id="autofillMsg" style="margin-bottom:2px; display:none;">&#8593; Should autofill artist information if we're lucky.</div>
+    <form id="postForm" class="stack" autocomplete="off" enctype="multipart/form-data">
+      <input class="field" id="f_url" placeholder="Link (YouTube / Spotify / Bandcamp, etc)" />
+      <div class="muted small" id="autofillMsg" style="margin-bottom:2px; display:none;">&#8593; Should autofill artist information if we're lucky.</div>
+      <div class="muted small" style="margin-bottom:4px;">or upload audio file:</div>
+      <div class="custom-file-input-wrapper">
+        <input class="custom-file-input" type="file" id="f_audio" accept="audio/mp3,audio/mpeg,audio/ogg,audio/wav,audio/x-wav,audio/m4a" />
+        <label for="f_audio" class="custom-file-label">Choose Audio File</label>
+        <span class="muted small" id="audioFileName"></span>
+      </div>
       <input class="field" id="f_artist" placeholder="Artist" maxlength="120" style="margin-top:8px;" />
       <input class="field" id="f_title" placeholder="Title (song or album)" required maxlength="120" />
       <input class="field" id="f_tags" placeholder="#Tags go here"/>
@@ -77,6 +83,19 @@ export function renderComposeBox(right, state, DB, render) {
       <div id="postCooldown" class="muted small" style="text-align:center;margin-top:8px;"></div>
     </form>
   `;
+  // Audio file input: show file name when selected
+  const audioInput = box.querySelector('#f_audio');
+  const audioFileName = box.querySelector('#audioFileName');
+  if (audioInput && audioFileName) {
+    const urlInput = box.querySelector('#f_url');
+    audioInput.addEventListener('change', function() {
+      const hasFile = this.files && this.files.length > 0;
+      audioFileName.textContent = hasFile ? this.files[0].name : '';
+      if (urlInput) {
+        urlInput.style.display = hasFile ? 'none' : '';
+      }
+    });
+  }
   // Cooldown logic: disable post button and show timer if user posted in last 24h
   function updateCooldown() {
     const db = DB.getAll();

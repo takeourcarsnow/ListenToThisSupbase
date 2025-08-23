@@ -1,12 +1,16 @@
 # Changelog
 
-## [2025-08-23] (Unreleased)
-### UI/UX & Header Improvements
-- Guest header messages now cycle randomly and start at a random message on each load, matching the logged-in experience.
-- Guest header messages are now stored in `constants.js` for easier editing and consistency.
-- Improved guest message style and variety for a more welcoming, on-brand experience.
-- Header animation and cycling logic improved for both guests and logged-in users.
-- Various header and mobile UI tweaks for consistency and accessibility.
+
+## [2025-08-24] (Unreleased)
+### UI/UX & Post Composer Improvements
+- Double-click to like now only works on the main feed area, not in comments or edit fields (prevents accidental likes).
+- Audio file upload button in the post composer is now minimalistic and modern.
+- When a file is chosen for upload, the URL field is hidden for a cleaner experience.
+- If the file input is cleared, the URL field reappears.
+- Post composer file input and label are now accessible and visually improved.
+- Tag highlighting in the feed is more consistent and visually clear.
+- Improved provider detection for direct audio uploads (Supabase public audio URLs).
+- Minor bug fixes and code cleanup in post creation and edit logic.
 
 ## [2025-08-23]
 ### General Improvements

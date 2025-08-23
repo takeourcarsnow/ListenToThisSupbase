@@ -50,7 +50,16 @@ export async function onCreatePost(e, state, DB, render) {
       return;
     }
   }
-  if (!title || !url) return;
+
+  // Audio file upload support
+  const audioInput = document.getElementById('f_audio');
+  const audioFile = audioInput && audioInput.files && audioInput.files[0];
+
+  // Allow either URL or file, but at least one must be present
+  if (!title || (!url && !audioFile)) {
+    if (errorDiv) errorDiv.textContent = 'Please provide a link or upload an audio file.';
+    return;
+  }
 
   if (!tags) {
     if (errorDiv) errorDiv.textContent = 'Please enter at least one tag.';
@@ -61,8 +70,37 @@ export async function onCreatePost(e, state, DB, render) {
     return;
   }
 
+  // If audio file is provided, upload to Supabase Storage (audio bucket)
+  if (audioFile) {
+    try {
+      const { supabase } = await import('../core/supabase_client.js');
+      const fileExt = audioFile.name.split('.').pop();
+      const filePath = `audio/${me.id}_${Date.now()}.${fileExt}`;
+      // Show uploading message
+      if (errorDiv) errorDiv.textContent = 'Uploading audio...';
+      const uploadRes = await supabase.storage.from('audio').upload(filePath, audioFile, { upsert: true });
+      if (uploadRes.error) {
+        if (errorDiv) errorDiv.textContent = 'Audio upload failed: ' + uploadRes.error.message;
+        return;
+      }
+      const publicUrlRes = supabase.storage.from('audio').getPublicUrl(filePath);
+      if (publicUrlRes.error) {
+        if (errorDiv) errorDiv.textContent = 'Audio URL error: ' + publicUrlRes.error.message;
+        return;
+      }
+      url = publicUrlRes.data?.publicUrl || '';
+      if (!url) {
+        if (errorDiv) errorDiv.textContent = 'Could not get public URL for audio.';
+        return;
+      }
+    } catch (err) {
+      if (errorDiv) errorDiv.textContent = 'Audio upload failed (unexpected error)';
+      return;
+    }
+  }
+
   // Automoderation check (title, artist, body, tags)
-  let tagsArr = tags.split(/[#,\s]+/g).map(t => t.trim().toLowerCase()).filter(Boolean).slice(0, 12);
+  let tagsArr = tags.split(/[#,]+/g).map(t => t.trim().toLowerCase()).filter(Boolean).slice(0, 12);
   // Deduplicate tags, preserve order
   let seenTags = new Set();
   tagsArr = tagsArr.filter(t => {
@@ -222,6 +260,8 @@ export async function onCreatePost(e, state, DB, render) {
   document.getElementById('f_url').value = '';
   document.getElementById('f_tags').value = '';
   document.getElementById('f_body').value = '';
+  if (document.getElementById('f_audio')) document.getElementById('f_audio').value = '';
+  if (document.getElementById('audioFileName')) document.getElementById('audioFileName').textContent = '';
   if (errorDiv) errorDiv.textContent = '';
   const preview = document.getElementById('preview');
   preview.classList.remove('active'); preview.innerHTML = '';
@@ -274,21 +314,24 @@ export function openEditInline(postId, state, DB, opts = {}) {
   edit.className = 'box' + (opts.noAnimation ? '' : ' fade-in');
   edit.id = editBoxId;
   edit.style.marginTop = '8px';
-  edit.innerHTML = `
-    <div class="muted small">edit post</div>
-    <form class="stack" data-action="edit-form" data-post="${p.id}">
-    <input class="field" name="title" value="${esc(p.title)}" required maxlength="120" placeholder="Title (song or album)"/>
-    <input class="field" name="artist" value="${esc(p.artist || '')}" placeholder="Artist"/>
-    <input class="field" name="url" value="${esc(p.url)}" required readonly placeholder="Link (YouTube / Spotify / Bandcamp, etc)"/>
-    <input class="field" name="tags" value="${esc((p.tags || []).join(' '))}" placeholder="#Tags go here"/>
-  <textarea class="field" name="body" rows="4" maxlength="200" oninput="this.nextElementSibling.textContent = this.value.length + '/200';" placeholder="Share something about this track, a memory, or the vibe it gives you.">${esc(p.body || '')}</textarea>
-  <div class="muted small" style="text-align:right">${(p.body||'').length}/200</div>
-      <div class="hstack">
-        <button class="btn" type="submit">[ save ]</button>
-        <button class="btn btn-ghost" type="button" data-action="toggle-player">[ preview ]</button>
-      </div>
-    </form>
-  `;
+  // Hide direct URL for Supabase audio uploads
+  const isSupabaseAudio = typeof p.url === 'string' && /\/storage\/v1\/object\/public\/audio\//.test(p.url);
+    edit.innerHTML = `
+      <div class="muted small">edit post</div>
+      <form class="stack" data-action="edit-form" data-post="${p.id}">
+      <input class="field" name="title" value="${esc(p.title)}" required maxlength="120" placeholder="Title (song or album)"/>
+      <input class="field" name="artist" value="${esc(p.artist || '')}" placeholder="Artist"/>
+      <input class="field" name="url" value="${esc(p.url)}" required readonly style="background:#222;opacity:0.7;cursor:not-allowed;" tabindex="-1" aria-readonly="true" placeholder="Link (YouTube / Spotify / Bandcamp, etc)"/>
+      <div class="muted small" style="margin-bottom:8px;">[ link editing is disabled for all posts ]</div>
+      <input class="field" name="tags" value="${esc((p.tags || []).join(' '))}" placeholder="#Tags go here"/>
+    <textarea class="field" name="body" rows="4" maxlength="200" oninput="this.nextElementSibling.textContent = this.value.length + '/200';" placeholder="Share something about this track, a memory, or the vibe it gives you.">${esc(p.body || '')}</textarea>
+    <div class="muted small" style="text-align:right">${(p.body||'').length}/200</div>
+        <div class="hstack">
+          <button class="btn" type="submit">[ save ]</button>
+          <button class="btn btn-ghost" type="button" data-action="toggle-player">[ preview ]</button>
+        </div>
+      </form>
+    `;
   card.appendChild(edit);
 
   // Save draft on every input

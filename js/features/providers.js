@@ -14,8 +14,11 @@ export function parseProvider(url) {
   const l = u.toLowerCase();
   const parsed = safeURL(u);
 
-  // Direct audio
-  if (/\.(mp3|ogg|wav|m4a)(?:$|\?)/i.test(l)) return { provider: 'audio', id: u };
+  // Direct audio (file extension or Supabase Storage public audio URL)
+  if (/\.(mp3|ogg|wav|m4a)(?:$|\?)/i.test(l)
+    || /\/storage\/v1\/object\/public\/audio\//.test(l)) {
+    return { provider: 'audio', id: u };
+  }
 
   // YouTube and Shorts
   if (parsed && /(^|\.)youtube\.com$|(^|\.)m\.youtube\.com$|(^|\.)music\.youtube\.com$|(^|\.)youtu\.be$/.test(parsed.hostname)) {

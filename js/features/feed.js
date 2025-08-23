@@ -54,8 +54,10 @@ export function renderPostHTML(p, state, DB) {
   const user = db.users.find(u => u.id === p.userId);
   const me = state.user;
   const liked = me ? (p.likes || []).includes(me.id) : false;
+  // Highlight selected tag
+  const selectedTag = state && state.prefs && state.prefs.filterTag;
   const tgs = (p.tags || []).map(t =>
-    `<a href="#" class="tag small" data-action="filter-tag" data-tag="${esc(t)}">#${esc(t)}</a>`
+    `<a href="#" class="tag small${selectedTag && t === selectedTag ? ' tag-selected' : ''}" data-action="filter-tag" data-tag="${esc(t)}">#${esc(t)}</a>`
   ).join(' ');
   const perma = `${location.origin ? (location.origin + location.pathname) : location.pathname}#post-${p.id}`;
   const canEdit = !!(me && p.userId === me.id);
@@ -124,6 +126,8 @@ export function renderFeed(el, pager, state, DB, prefs) {
     }
   });
 
+  // Attach prefs to state for tag highlighting
+  state = { ...state, prefs };
   let posts = getFilteredPosts(DB, prefs);
   // User filter support (from prefs or global)
   const userId = prefs._userFilterId || window.filterPostsByUserId;

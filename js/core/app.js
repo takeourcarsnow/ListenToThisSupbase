@@ -66,6 +66,17 @@ function bindGlobalHandlers() {
   document.addEventListener('dblclick', (e) => {
     const card = e.target.closest('.post');
     if (!card) return;
+    // Ignore double-clicks inside comment, edit, or input areas
+    if (
+      e.target.closest('.comment') ||
+      e.target.closest('.comment-box') ||
+      e.target.closest('form[data-action="edit-form"]') ||
+      e.target.closest('form[data-action="comment-form"]') ||
+      e.target.closest('textarea') ||
+      e.target.closest('input')
+    ) {
+      return;
+    }
     // Prevent text selection on double click
     if (window.getSelection) {
       const sel = window.getSelection();
