@@ -8,8 +8,6 @@ import { setupFeedPane } from './main_view_feed.js';
 import { renderProfileBox } from './main_view_profile.js';
 import { renderComposeBox } from './main_view_compose.js';
 import { setupAutoRefresh, setupVisibilityRefresh } from './main_view_refresh.js';
-import { renderLeaderboard } from './leaderboard.js';
-import { openLeaderboardOverlay, bindLeaderboardOverlay } from './overlays.js';
 
 export async function renderMain(root, state, DB, render) {
   const prefs = loadPrefs();
@@ -30,25 +28,6 @@ export async function renderMain(root, state, DB, render) {
   grid.appendChild(right);
   root.appendChild(grid);
 
-  // Leaderboard overlay logic
-  window.showLeaderboard = function() {
-    const overlay = document.getElementById('leaderboard-overlay');
-    if (!overlay) return;
-    overlay.innerHTML = '';
-    const inner = document.createElement('div');
-    inner.className = 'overlay-inner';
-    renderLeaderboard(inner, DB);
-    // Add close button
-    const closeBtn = document.createElement('button');
-    closeBtn.className = 'btn btn-ghost';
-    closeBtn.textContent = '[ close ]';
-    closeBtn.setAttribute('data-close-leaderboard', '1');
-    closeBtn.style.float = 'right';
-    inner.prepend(closeBtn);
-    overlay.appendChild(inner);
-    openLeaderboardOverlay();
-  };
-  bindLeaderboardOverlay();
 
   // Left side: topbar + dock + tags + feed
   setupFeedPane({ root, left, state, DB, prefs, render });

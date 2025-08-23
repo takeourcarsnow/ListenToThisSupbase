@@ -15,7 +15,6 @@ export function renderHelpOverlay() {
           </span>
         </div>
         <div class="hstack" style="justify-content:center; gap:12px; margin: 1em 0 0.5em 0;">
-          <button class="btn btn-ghost" data-action="show-leaderboard">[ leaderboards ]</button>
           <button class="btn btn-ghost" data-action="show-changelog">[ dev changelog ]</button>
         </div>
         <div>
@@ -70,12 +69,7 @@ export function renderHelpOverlay() {
   overlay.id = 'help';
   overlay.innerHTML = helpHTML;
   document.body.appendChild(overlay);
-  // Leaderboard button handler
-  overlay.querySelector('[data-action="show-leaderboard"]').onclick = () => {
-    if (window.showLeaderboard) window.showLeaderboard();
-    // Close help overlay so leaderboard is not hidden
-    if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
-  };
+  // (Leaderboard button removed)
   // Changelog button handler
   overlay.querySelector('[data-action="show-changelog"]').onclick = () => {
     import('./changelog_modal.js').then(mod => {
