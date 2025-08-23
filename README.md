@@ -85,6 +85,7 @@ Your new favorite place to overshare your music taste. (We won't judge. Much.)
 ---
 
 
+
 ## File Structure
 
 - `index.html` — Main HTML entry point, includes help overlay and app shell.
@@ -92,11 +93,12 @@ Your new favorite place to overshare your music taste. (We won't judge. Much.)
 
 ### JavaScript Modules
 
+
 **js/core/**
 	- `app.js` — App entry point; initializes app, manages global state, delegates to modules.
 	- `config.js` — Supabase config (URL, anon key, toggle).
 	- `constants.js` — App-wide constants.
-	- `db.js` — Data layer: handles local and Supabase storage, CRUD for users/posts.
+	- `db.js` — Data layer: handles local and Supabase storage, CRUD for users/posts. See code comments for architecture and adapter interface.
 	- `supabase_client.js` — Supabase client setup.
 	- `utils.js` — Utility functions (DOM helpers, debounce, formatting, etc.).
 
@@ -191,5 +193,6 @@ Your new favorite place to overshare your music taste. (We won't judge. Much.)
 - Enhance moderation, notifications, or analytics.
 - Improve security for production use.
 - Add mobile PWA support.
+- For backend/data layer changes, see `js/core/db.js` for architecture, adapter interface, and extension points.
 
 ---
