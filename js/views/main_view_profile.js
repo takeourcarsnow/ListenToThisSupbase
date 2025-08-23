@@ -44,6 +44,7 @@
             e.stopPropagation();
             e.preventDefault();
           }
+          console.log('[notif-dot] handleDotActivate', e ? e.type : 'no event');
           if (popup) {
             closePopup();
             return;
@@ -69,6 +70,8 @@
           popup.style.display = 'flex';
           popup.style.flexDirection = 'column';
           popup.style.gap = '10px';
+          // Debug border for mobile
+          popup.style.outline = '2px solid red';
           // Render notifications list
           popup.innerHTML = `
             <div style="font-weight:600;font-size:1.08em;margin-bottom:2px;letter-spacing:0.01em;">Notifications</div>
@@ -87,10 +90,11 @@
           document.body.appendChild(popup);
           // Close on button
           popup.querySelector('#closeNotifPopupBtn').onclick = closePopup;
-          // Close on outside click
+          // Close on outside click (delay to avoid immediate close on touch)
           setTimeout(() => {
             document.addEventListener('mousedown', outsideClick, { once: true });
-          }, 0);
+            document.addEventListener('touchstart', outsideClick, { once: true });
+          }, 200);
           function outsideClick(ev) {
             if (popup && !popup.contains(ev.target) && ev.target !== mobileDot) closePopup();
           }
