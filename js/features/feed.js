@@ -266,6 +266,10 @@ export function renderTags(el, DB) {
     `<span class="tag ${freqClass(c)}" data-action="filter-tag" data-tag="${esc(t)}"><span class="tag-label">#${esc(t)}</span></span>`
   ).join(' ');
   el.appendChild(tagCloudDiv);
+  // Enable drag-to-scroll for the main tag cloud (desktop)
+  if (typeof enableTagCloudDragScroll === 'function') {
+    enableTagCloudDragScroll(tagCloudDiv);
+  }
   // Minimal sort UI below
     const sortUI = document.createElement('div');
     sortUI.className = 'tag-sort-ui';
