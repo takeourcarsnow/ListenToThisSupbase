@@ -1,6 +1,10 @@
 import { esc } from '../core/utils.js';
 
 export function showUserProfile(userId, DB) {
+// Make sure showUserProfile is available globally for dynamic import and direct calls
+if (typeof window !== 'undefined') {
+  window.showUserProfile = showUserProfile;
+}
   const db = DB.getAll();
   const u = db.users.find(x => x.id === userId);
   const userPosts = db.posts.filter(p => p.userId === userId);

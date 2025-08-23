@@ -1,5 +1,6 @@
 import { loadPrefs } from '../auth/prefs.js';
-import { $ } from '../core/utils.js';
+import { $, fmtTime } from '../core/utils.js';
+import { parseProvider } from '../features/providers.js';
 
 export function getActiveQueueId(state) {
   return state.queue[state.qIndex] || null;
@@ -22,14 +23,65 @@ export function updateDock(showIfHidden, state, DB) {
   if (len > 0 || showIfHidden) {
     dock.style.display = 'block';
     const id = getActiveQueueId(state);
+    const db = DB.getAll();
+    let p = null;
+    let user = null;
+    let ago = '';
+    let provider = '';
     if (id) {
-      const db = DB.getAll();
-      const p = db.posts.find(x => x.id === id);
-      const now = document.getElementById('nowPlaying');
-      if (now) now.textContent = p ? `now: ${p.title}${p.artist ? ' — ' + p.artist : ''}` : '';
-    } else {
-      const now = document.getElementById('nowPlaying');
-      if (now) now.textContent = '';
+      p = db.posts.find(x => x.id === id);
+      if (p) {
+        user = db.users && db.users.find(u => u.id === p.userId);
+        ago = fmtTime(p.createdAt);
+        const prov = parseProvider(p.url || '');
+        provider = prov && prov.provider ? prov.provider : '';
+      }
+    }
+    // Set now playing text
+    const now = document.getElementById('nowPlaying');
+    if (now) now.textContent = p ? `now: ${p.title}${p.artist ? ' — ' + p.artist : ''}` : '';
+    // Set queue info with extra details
+    const queueInfo = document.querySelector('.queue-info');
+    if (queueInfo) {
+      let info = `queue ${len ? (state.qIndex + 1) : 0}/${len}`;
+      if (p) {
+        let userStr = '';
+        if (user) {
+          userStr = `by <a href="#" class="dock-user-link" data-user-id="${user.id}">${user.name}</a>`;
+        }
+        let agoStr = ago ? `, ${ago}` : '';
+        let provStr = provider ? `, source: ${provider}` : '';
+        info += ` <span class="muted small">${userStr}${agoStr}${provStr}</span>`;
+      }
+  // Add click handler for username link in dock
+  const dockUserLink = document.querySelector('.dock-user-link');
+  if (dockUserLink) {
+    dockUserLink.onclick = (e) => {
+      e.preventDefault();
+      const userId = dockUserLink.getAttribute('data-user-id');
+      // Simulate a click on the username in the feed post that is currently playing
+      const id = getActiveQueueId(state);
+      if (id) {
+        // Find the feed post element
+        const postElem = document.getElementById('post-' + id);
+        if (postElem) {
+          // Try to find a username link inside the post
+          const userLink = postElem.querySelector('.user-link, .post-user, [data-action="view-user"]');
+          if (userLink) {
+            userLink.click();
+            return;
+          }
+        }
+      }
+      // Fallback: open modal directly
+      import('../views/profile.js').then(mod => {
+        if (mod && typeof mod.showUserProfile === 'function') {
+          mod.showUserProfile(userId, DB);
+        }
+      });
+    };
+  }
+      queueInfo.innerHTML = info;
     }
   } else {
     dock.style.display = 'none';
