@@ -2,6 +2,12 @@
 export function enableTagCloudDragScroll(tagCloud) {
   if (!tagCloud) tagCloud = document.querySelector('.tag-cloud');
   if (!tagCloud) return;
+  // Restore scroll position if saved
+  if (typeof window !== 'undefined' && typeof window._tagCloudScrollLeft === 'number') {
+    tagCloud.scrollLeft = window._tagCloudScrollLeft;
+    // Only restore once
+    delete window._tagCloudScrollLeft;
+  }
 // Attach to window for global use
 if (typeof window !== 'undefined') {
   window.enableTagCloudDragScroll = enableTagCloudDragScroll;
@@ -86,6 +92,11 @@ if (typeof window !== 'undefined') {
         tagEl = el.closest('.tag');
       }
       if (tagEl === downTag) {
+        // Save scroll position
+        // Save scroll position globally so it can be restored on next init
+        if (typeof window !== 'undefined') {
+          window._tagCloudScrollLeft = tagCloud.scrollLeft;
+        }
         if (typeof window.onActionClick === 'function') {
           const evt = new Event('click', { bubbles: true, cancelable: true });
           Object.defineProperty(evt, 'target', { value: tagEl, enumerable: true });
@@ -95,7 +106,9 @@ if (typeof window !== 'undefined') {
         }
         // Force re-render after tag tap (mobile fix)
         if (typeof window.renderApp === 'function') {
-          setTimeout(() => window.renderApp(), 0);
+          setTimeout(() => {
+            window.renderApp();
+          }, 0);
         }
       }
     }

@@ -260,6 +260,35 @@ export function renderTags(el, DB, prefs) {
     `<span class="tag${selectedTag === t ? ' tag-selected' : ''}" data-action="filter-tag" data-tag="${esc(t)}"${selectedTag === t ? ' style="background:var(--acc,#8ab4ff);color:#111;font-weight:600;border-radius:6px;outline:2px solid var(--acc,#8ab4ff);outline-offset:0;z-index:2;"' : ''}><span class="tag-label">#${esc(t)}</span></span>`
   ).join(' ');
   el.appendChild(tagCloudDiv);
+  // Restore scrollLeft if present, else center selected tag only if user is at start, using rAF for timing
+  if (typeof window !== 'undefined' && typeof window._tagCloudScrollLeft === 'number') {
+    let tries = 0;
+    const maxTries = 8;
+    function rafScrollRestore() {
+      tagCloudDiv.scrollLeft = window._tagCloudScrollLeft;
+      tries++;
+      if (tries < maxTries) {
+        requestAnimationFrame(rafScrollRestore);
+      } else {
+        delete window._tagCloudScrollLeft;
+      }
+    }
+    requestAnimationFrame(rafScrollRestore);
+  } else if (selectedTag) {
+    // Center the selected tag after render if user is at start and no previous scroll position, only once
+    requestAnimationFrame(() => {
+      const tagEl = tagCloudDiv.querySelector('.tag-selected');
+      if (tagEl && tagCloudDiv.scrollLeft < 5) {
+        const tagRect = tagEl.getBoundingClientRect();
+        const cloudRect = tagCloudDiv.getBoundingClientRect();
+        // Only center if tag is not fully visible
+        if (tagRect.left < cloudRect.left || tagRect.right > cloudRect.right) {
+          const offset = tagEl.offsetLeft + tagRect.width / 2 - cloudRect.width / 2;
+          tagCloudDiv.scrollLeft = offset;
+        }
+      }
+    });
+  }
   // Enable drag-to-scroll for the main tag cloud (desktop)
   if (typeof enableTagCloudDragScroll === 'function') {
     enableTagCloudDragScroll(tagCloudDiv);
