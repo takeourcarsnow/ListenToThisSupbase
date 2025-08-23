@@ -1,4 +1,9 @@
 @media (max-width: 600px) {
+  .ascii-banner {
+    margin-bottom: 0 !important;
+  }
+}
+@media (max-width: 600px) {
   body {
     padding-top: 30px !important;
   }
@@ -85,6 +90,11 @@ body.show-header header[role="banner"] {
   align-items: center;
   margin-bottom: var(--space-3);
   margin-top: var(--space-3);
+@media (max-width: 600px) {
+  .header-modern {
+    margin-bottom: 0 !important;
+  }
+}
 }
 .header-bar {
   width: 100%;
