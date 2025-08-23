@@ -98,10 +98,59 @@ export function renderComposeBox(right, state, DB, render) {
       isCooldown = true;
       countdown = `${hours}h ${minutes}m ${seconds}s`;
       if (postBtn) postBtn.disabled = true;
-  if (cooldownDiv) cooldownDiv.textContent = `You can post again in ${hours}h ${minutes}m ${seconds}s.`;
+      // Compose wait messages (same as header, max 42 chars)
+      const waitMessages = [
+        'Hang tight—your daily post is recharging.',
+        'Almost there! New post window opens soon.',
+        'Rate limit on. Discover new tracks!',
+        'Patience, DJ! You can post again soon.',
+        'Enjoy the feed while you wait.',
+        'You’re recharging—back with a tune soon.'
+      ];
+      if (!window._composeWaitMsgIndex) window._composeWaitMsgIndex = 0;
+      if (!window._composeWaitMsgTimer) {
+        window._composeWaitMsgTimer = setInterval(() => {
+          window._composeWaitMsgIndex = (window._composeWaitMsgIndex + 1) % waitMessages.length;
+          updateCooldown();
+        }, 4000);
+      }
+      // Fade in/out effect for wait message, only when changed
+      const waitMsg = waitMessages[window._composeWaitMsgIndex];
+      let waitTypeDiv = document.getElementById('waitTypeMsg');
+      if (!waitTypeDiv) {
+        waitTypeDiv = document.createElement('div');
+        waitTypeDiv.id = 'waitTypeMsg';
+        waitTypeDiv.style.marginTop = '2px';
+        waitTypeDiv.style.color = '#888';
+        waitTypeDiv.style.fontSize = '0.98em';
+        waitTypeDiv.style.transition = 'opacity 0.45s cubic-bezier(.4,0,.2,1)';
+        cooldownDiv.innerHTML = `<div>You can post again in ${hours}h ${minutes}m ${seconds}s.</div>`;
+        cooldownDiv.appendChild(waitTypeDiv);
+        waitTypeDiv.style.opacity = '1';
+        waitTypeDiv.textContent = waitMsg;
+        waitTypeDiv._lastMsg = waitMsg;
+      } else {
+        cooldownDiv.innerHTML = `<div>You can post again in ${hours}h ${minutes}m ${seconds}s.</div>`;
+        cooldownDiv.appendChild(waitTypeDiv);
+        if (waitTypeDiv._lastMsg !== waitMsg) {
+          waitTypeDiv.style.opacity = '0';
+          setTimeout(() => {
+            waitTypeDiv.textContent = waitMsg;
+            waitTypeDiv.style.opacity = '1';
+            waitTypeDiv._lastMsg = waitMsg;
+          }, 250);
+        }
+      }
+      if (window._waitTypewriterTimeouts) window._waitTypewriterTimeouts.forEach(clearTimeout);
+      window._waitTypewriterTimeouts = [];
     } else {
       if (postBtn) postBtn.disabled = false;
       if (cooldownDiv) cooldownDiv.textContent = 'Share a track when you feel like it (1 per day)';
+      if (window._composeWaitMsgTimer) {
+        clearInterval(window._composeWaitMsgTimer);
+        window._composeWaitMsgTimer = null;
+        window._composeWaitMsgIndex = 0;
+      }
     }
     // Expose cooldown state globally for header
     window.composeCooldown = { isCooldown, countdown };
