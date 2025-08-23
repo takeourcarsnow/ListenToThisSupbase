@@ -126,6 +126,15 @@
 import { esc, fmtTime } from '../core/utils.js';
 
 export function renderProfileBox(right, state, DB, render) {
+  // Show login/register message for guests
+  if (!state.user) {
+    right.innerHTML = `<div class="box" style="text-align:center;padding:2.5em 1em;font-size:1.1em;line-height:1.6;">
+      <div class="muted small">&gt; profile</div>
+      <div style="margin:1.5em 0 0.5em 0;">You need to <b>log in</b> or <b>register</b> to view your profile.</div>
+    <button class="btn" data-action="go-login" style="margin-top:1.2em;">[ login / register ]</button>
+    </div>`;
+    return;
+  }
   // Extract username from URL or return as-is if already a username
   function getSocialUsername(val, type) {
     if (!val) return '';
