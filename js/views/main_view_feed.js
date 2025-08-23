@@ -304,11 +304,19 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
   left.appendChild(dock);
   left.appendChild(feedBox);
 
+  // Always reload prefs and re-render feed/tags for correct tag highlight (mobile/desktop)
+  function doRender() {
+    const latestPrefs = loadPrefs();
+    state.page = 1;
+    renderFeed($('#feed'), $('#pager'), state, DB, latestPrefs);
+    renderTags($('#tags'), DB, latestPrefs);
+    enableTagCloudDragScroll();
+  }
   // Global user filter event (once)
   if (!window._userFilterHandlerAttached) {
     window.addEventListener('filter-user-posts', (e) => {
       window.filterPostsByUserId = e.detail.userId;
-      render();
+      doRender();
     });
     window._userFilterHandlerAttached = true;
   }
@@ -317,16 +325,13 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
   feedBox.addEventListener('click', (e) => {
     if (e.target && e.target.dataset && e.target.dataset.action === 'clear-user-filter') {
       window.filterPostsByUserId = null;
-      render();
+      doRender();
       e.preventDefault();
     }
   });
 
   // Initial feed + tags render
-  state.page = 1;
-  renderFeed($('#feed'), $('#pager'), state, DB, prefs);
-  renderTags($('#tags'), DB);
-  enableTagCloudDragScroll();
+  doRender();
 
   // Search (now in feedBox)
   const searchInput = feedBox.querySelector('#search');

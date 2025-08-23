@@ -224,7 +224,7 @@ function setFeedGlobals(state, DB) {
   });
 }
 
-export function renderTags(el, DB) {
+export function renderTags(el, DB, prefs) {
   const db = DB.getAll();
   const m = new Map();
   db.posts.forEach(p => (p.tags || []).forEach(t => m.set(t, (m.get(t) || 0) + 1)));
@@ -234,7 +234,7 @@ export function renderTags(el, DB) {
   function setSortMode(mode) {
     sortMode = mode;
     window.localStorage.setItem('tagSortMode', mode);
-    renderTags(el, DB);
+    renderTags(el, DB, prefs);
   }
   // Remove old sort UI if present
   const oldSortUI = el.querySelector('.tag-sort-ui');
@@ -254,8 +254,10 @@ export function renderTags(el, DB) {
   // Render all tags with the same class, no frequency-based sizing
   const tagCloudDiv = document.createElement('div');
   tagCloudDiv.className = 'tag-cloud';
+  // Highlight the selected tag in the tag cloud
+  const selectedTag = prefs && prefs.filterTag;
   tagCloudDiv.innerHTML = top.map(([t, c]) =>
-    `<span class="tag" data-action="filter-tag" data-tag="${esc(t)}"><span class="tag-label">#${esc(t)}</span></span>`
+    `<span class="tag${selectedTag === t ? ' tag-selected' : ''}" data-action="filter-tag" data-tag="${esc(t)}"${selectedTag === t ? ' style="background:var(--acc,#8ab4ff);color:#111;font-weight:600;border-radius:6px;outline:2px solid var(--acc,#8ab4ff);outline-offset:0;z-index:2;"' : ''}><span class="tag-label">#${esc(t)}</span></span>`
   ).join(' ');
   el.appendChild(tagCloudDiv);
   // Enable drag-to-scroll for the main tag cloud (desktop)

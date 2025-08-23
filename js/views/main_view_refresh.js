@@ -15,8 +15,9 @@ async function smartRefresh(state, DB) {
   if (!feedEl || !pagerEl || !tagsEl) return; // Not on main view
 
   if (!activePlayer) {
-    renderFeed(feedEl, pagerEl, state, DB, loadPrefs());
-    renderTags(tagsEl, DB);
+  const prefs = loadPrefs();
+  renderFeed(feedEl, pagerEl, state, DB, prefs);
+  renderTags(tagsEl, DB, prefs);
     return;
   }
 
@@ -55,7 +56,7 @@ async function smartRefresh(state, DB) {
   } else {
     pagerEl.innerHTML = `<div class="small muted">${posts.length} loaded</div>`;
   }
-  renderTags(tagsEl, DB);
+  renderTags(tagsEl, DB, prefs);
 }
 
 export function setupAutoRefresh(state, DB) {

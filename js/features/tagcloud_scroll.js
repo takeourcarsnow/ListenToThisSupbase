@@ -93,6 +93,10 @@ if (typeof window !== 'undefined') {
         } else {
           tagEl.click();
         }
+        // Force re-render after tag tap (mobile fix)
+        if (typeof window.renderApp === 'function') {
+          setTimeout(() => window.renderApp(), 0);
+        }
       }
     }
     isDown = false;
