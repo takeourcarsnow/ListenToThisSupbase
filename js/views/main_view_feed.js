@@ -6,6 +6,91 @@ import { enableTagCloudDragScroll } from '../features/tagcloud_scroll.js';
 import notifications from '../core/notifications.js';
 
 export function setupFeedPane({ root, left, state, DB, prefs, render }) {
+  // --- Mobile notification dot popup logic ---
+  const mobileDot = top.querySelector('#mobile-notification-dot');
+  if (mobileDot) {
+    let allNotifications = [];
+    function updateDot(list) {
+      mobileDot.style.display = 'inline-block';
+      if (list.length) {
+        mobileDot.style.opacity = '1';
+        mobileDot.title = 'Show notifications';
+      } else {
+        mobileDot.style.opacity = '0.35';
+        mobileDot.title = 'No notifications';
+      }
+      for (const n of list) {
+        if (!allNotifications.some(x => x.id === n.id)) allNotifications.push(n);
+      }
+    }
+    notifications.subscribe(updateDot);
+    updateDot(notifications.list);
+    let popup = null;
+    function closePopup() {
+      if (popup) {
+        popup.remove();
+        popup = null;
+      }
+    }
+    function handleDotActivate(e) {
+      if (e) {
+        if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return;
+        e.stopPropagation();
+        e.preventDefault();
+      }
+      if (popup) {
+        closePopup();
+        return;
+      }
+      popup = document.createElement('div');
+      popup.className = 'notification-popup-panel';
+      popup.style.position = 'fixed';
+      const rect = mobileDot.getBoundingClientRect();
+      popup.style.top = (rect.bottom + 6) + 'px';
+      popup.style.left = (rect.left - 12) + 'px';
+      popup.style.zIndex = '10000';
+      popup.style.background = '#232b36';
+      popup.style.color = '#fff';
+      popup.style.border = '1.5px solid #333a';
+      popup.style.borderRadius = '10px';
+      popup.style.boxShadow = '0 8px 32px #0008, 0 1.5px 0 #fff1 inset';
+      popup.style.padding = '14px 18px 10px 18px';
+      popup.style.minWidth = '220px';
+      popup.style.maxWidth = '320px';
+      popup.style.fontSize = '1em';
+      popup.style.display = 'flex';
+      popup.style.flexDirection = 'column';
+      popup.style.gap = '10px';
+      popup.innerHTML = `
+        <div style="font-weight:600;font-size:1.08em;margin-bottom:2px;letter-spacing:0.01em;">Notifications</div>
+        <div class="notification-list" style="max-height:180px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;">
+          ${allNotifications.length ? allNotifications.map(n => {
+            let time = typeof n.id === 'number' ? (typeof window.fmtTime === 'function' ? window.fmtTime(n.id) : '') : '';
+            if (time === 'just') time = 'just now';
+            return `<div style=\"background:${n.type==='error'?'#f44336':'#263245'};padding:8px 12px;border-radius:6px;box-shadow:0 1px 4px #0002;font-size:0.98em;display:flex;justify-content:space-between;align-items:center;gap:12px;\">
+              <span>${n.message}</span>
+              <span style=\"font-size:0.92em;opacity:0.7;white-space:nowrap;\">${time}</span>
+            </div>`;
+          }).join('') : '<span class=\"muted small\">No notifications yet.</span>'}
+        </div>
+        <button class=\"btn btn-ghost small\" style=\"align-self:flex-end;margin-top:4px;\" id=\"closeNotifPopupBtn\">close</button>
+      `;
+      document.body.appendChild(popup);
+      // Close on button
+      popup.querySelector('#closeNotifPopupBtn').onclick = closePopup;
+      // Close on outside click
+      setTimeout(() => {
+        document.addEventListener('mousedown', outsideClick, { once: true });
+        document.addEventListener('touchstart', outsideClick, { once: true });
+      }, 200);
+      function outsideClick(ev) {
+        if (popup && !popup.contains(ev.target) && ev.target !== mobileDot) closePopup();
+      }
+    }
+    mobileDot.addEventListener('click', handleDotActivate);
+    mobileDot.addEventListener('touchstart', handleDotActivate);
+    mobileDot.addEventListener('keydown', handleDotActivate);
+  }
   // Show welcome/info popup for new users (like notifications)
   const BANNER_KEY = 'tunedin.hideWelcomeBanner';
   if (!localStorage.getItem(BANNER_KEY)) {
