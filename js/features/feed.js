@@ -239,22 +239,10 @@ export function renderTags(el, DB) {
   // Remove old sort UI if present
   const oldSortUI = el.querySelector('.tag-sort-ui');
   if (oldSortUI) oldSortUI.remove();
-  // Add new sort UI
-  const sortUI = document.createElement('div');
-  sortUI.className = 'tag-sort-ui';
-  sortUI.style.display = 'flex';
-  sortUI.style.gap = '8px';
-  sortUI.style.marginBottom = '6px';
-  sortUI.innerHTML = `
-    <button class="btn btn-ghost small" data-sort="freq" ${sortMode==='freq'?'disabled':''}>Sort by frequency</button>
-    <button class="btn btn-ghost small" data-sort="abc" ${sortMode==='abc'?'disabled':''}>Sort A-Z</button>
-  `;
-  sortUI.addEventListener('click', e => {
-    const btn = e.target.closest('button[data-sort]');
-    if (btn) setSortMode(btn.getAttribute('data-sort'));
-  });
-  el.prepend(sortUI);
-
+  // Remove old tag cloud if present
+  const oldCloud = el.querySelector('.tag-cloud');
+  if (oldCloud) oldCloud.remove();
+  // Tag cloud
   let top = Array.from(m.entries());
   if (sortMode === 'freq') {
     top = top.sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
@@ -267,19 +255,75 @@ export function renderTags(el, DB) {
   const counts = top.map(([_, c]) => c);
   const min = Math.min(...counts);
   const max = Math.max(...counts);
-  // Assign frequency classes (1-5, or max)
   function freqClass(count) {
     if (max === min) return 'tag--freq-3';
     const level = Math.ceil(((count - min) / (max - min)) * 4) + 1; // 1-5
     return level >= 5 ? 'tag--freq-max' : `tag--freq-${level}`;
   }
-  // Remove old tag cloud if present
-  const oldCloud = el.querySelector('.tag-cloud');
-  if (oldCloud) oldCloud.remove();
   const tagCloudDiv = document.createElement('div');
   tagCloudDiv.className = 'tag-cloud';
   tagCloudDiv.innerHTML = top.map(([t, c]) =>
     `<span class="tag ${freqClass(c)}" data-action="filter-tag" data-tag="${esc(t)}"><span class="tag-label">#${esc(t)}</span></span>`
   ).join(' ');
   el.appendChild(tagCloudDiv);
+  // Minimal sort UI below
+    const sortUI = document.createElement('div');
+    sortUI.className = 'tag-sort-ui';
+    sortUI.style.display = 'inline-flex';
+    sortUI.style.gap = '10px';
+    sortUI.style.marginTop = '6px';
+    sortUI.style.fontSize = '0.93em';
+    sortUI.innerHTML = `
+      <a href="#" data-sort="freq" class="tag-sort-link${sortMode==='freq'?' active':''}">freq</a>
+      <span style="color:#444;opacity:0.5;">|</span>
+      <a href="#" data-sort="az" class="tag-sort-link${sortMode==='az'?' active':''}" tabindex="0">A-Z</a>
+      <style>
+        .tag-sort-link {
+          color: #aaa;
+          text-decoration: none;
+          border: none;
+          background: none;
+          padding: 0 2px;
+          cursor: pointer;
+          position: relative;
+          transition: color 0.18s;
+          font-weight: 500;
+          appearance: none;
+          -webkit-appearance: none;
+          -moz-appearance: none;
+          outline: none;
+          box-shadow: none;
+          overflow: visible;
+        }
+        .tag-sort-link.active {
+          color: #ffe082;
+        }
+        .tag-sort-link::after {
+          content: '';
+          display: block;
+          position: absolute;
+          left: 0; right: 0; bottom: -2px;
+          height: 2px;
+          background: #ffe082;
+          opacity: 0;
+          transform: scaleX(0.5);
+          transition: opacity 0.18s, transform 0.18s;
+        }
+        .tag-sort-link:hover::after, .tag-sort-link:focus::after, .tag-sort-link.active::after {
+          opacity: 1;
+          transform: scaleX(1);
+        }
+        .tag-sort-link:hover, .tag-sort-link:focus {
+          color: #ffe082;
+        }
+      </style>
+    `;
+  sortUI.addEventListener('click', e => {
+    const link = e.target.closest('a[data-sort]');
+    if (link) {
+      e.preventDefault();
+      setSortMode(link.getAttribute('data-sort'));
+    }
+  });
+  el.appendChild(sortUI);
 }

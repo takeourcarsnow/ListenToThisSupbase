@@ -1,3 +1,31 @@
+/* Hide any pseudo-element arrows on tag sort links (fix for unwanted up/down arrows) */
+.tag-sort-link::before,
+.tag-sort-link::after {
+  display: none !important;
+}
+/* Hide all spin buttons globally (fix for unwanted spinner artifacts) */
+*::-webkit-inner-spin-button,
+*::-webkit-outer-spin-button {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  margin: 0 !important;
+  display: none !important;
+}
+/* Hide any number input spinner arrows or overlays in tag sort UI (fix for unwanted spin buttons) */
+.tag-sort-ui *::-webkit-inner-spin-button,
+.tag-sort-ui *::-webkit-outer-spin-button {
+  -webkit-appearance: none !important;
+  appearance: none !important;
+  margin: 0 !important;
+  display: none !important;
+}
+.tag-sort-ui *::-moz-inner-spin-button,
+.tag-sort-ui *::-moz-outer-spin-button {
+  -moz-appearance: none !important;
+  appearance: none !important;
+  margin: 0 !important;
+  display: none !important;
+}
 @media (max-width: 600px) {
   /* Center posts and add horizontal padding for narrow screens */
   .post {
