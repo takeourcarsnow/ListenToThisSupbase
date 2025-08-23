@@ -19,6 +19,10 @@ This file summarizes the major changes and improvements throughout the history o
 - Mobile menu improvements and bugfixes
 - Prevented left-scrolling banner
 - General UI/UX tweaks, bugfixes, and code cleanup
+- Added custom confirmation popup for deleting posts (matches comment delete style)
+- Added custom confirmation popup for duplicate post links (matches comment/post delete style)
+- Improved consistency and UI for all confirmation dialogs
+- Header timer and random words improvements
 
 ### 2025-08-22
 - Notification system redesign and multiple improvements (UI, logic, auto-hide, post activity alerts)
