@@ -7,100 +7,108 @@
         setTimeout(setupMobileDotLogic, 100); // Wait for dot to exist
         return;
       }
-      // Make dot accessible and focusable
-      mobileDot.setAttribute('tabindex', '0');
-      mobileDot.setAttribute('role', 'button');
-      mobileDot.setAttribute('aria-label', 'Show notifications');
-      // Notification logic (subscribe, update, popup)
-      let allNotifications = [];
-      import('../core/notifications.js').then(({ default: notifications }) => {
-        function updateDot(list) {
-          mobileDot.style.display = 'inline-block';
-          if (list.length) {
-            mobileDot.style.opacity = '1';
-            mobileDot.title = 'Show notifications';
-          } else {
-            mobileDot.style.opacity = '0.35';
-            mobileDot.title = 'No notifications';
-          }
-          for (const n of list) {
-            if (!allNotifications.some(x => x.id === n.id)) allNotifications.push(n);
-          }
+      // Import state to check user
+      import('../core/app_state.js').then(({ state }) => {
+        if (!state.user) {
+          // Hide the dot for guests
+          mobileDot.style.display = 'none';
+          return;
         }
-        notifications.subscribe(updateDot);
-        updateDot(notifications.list);
+        // Make dot accessible and focusable
+        mobileDot.setAttribute('tabindex', '0');
+        mobileDot.setAttribute('role', 'button');
+        mobileDot.setAttribute('aria-label', 'Show notifications');
+        // Notification logic (subscribe, update, popup)
+        let allNotifications = [];
+        import('../core/notifications.js').then(({ default: notifications }) => {
+          function updateDot(list) {
+            mobileDot.style.display = 'inline-block';
+            if (list.length) {
+              mobileDot.style.opacity = '1';
+              mobileDot.title = 'Show notifications';
+            } else {
+              mobileDot.style.opacity = '0.35';
+              mobileDot.title = 'No notifications';
+            }
+            for (const n of list) {
+              if (!allNotifications.some(x => x.id === n.id)) allNotifications.push(n);
+            }
+          }
+          notifications.subscribe(updateDot);
+          updateDot(notifications.list);
 
-        // Notification popup panel (copied from profile dot logic)
-        let popup = null;
-        function closePopup() {
-          if (popup) {
-            popup.remove();
-            popup = null;
+          // Notification popup panel (copied from profile dot logic)
+          let popup = null;
+          function closePopup() {
+            if (popup) {
+              popup.remove();
+              popup = null;
+            }
           }
-        }
-        function handleDotActivate(e) {
-          if (e) {
-            if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return;
-            e.stopPropagation();
-            e.preventDefault();
+          function handleDotActivate(e) {
+            if (e) {
+              if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return;
+              e.stopPropagation();
+              e.preventDefault();
+            }
+            console.log('[notif-dot] handleDotActivate', e ? e.type : 'no event');
+            if (popup) {
+              closePopup();
+              return;
+            }
+            // Always show the popup, even if no notifications
+            popup = document.createElement('div');
+            popup.className = 'notification-popup-panel';
+            // Copy styles from profile dot popup
+            popup.style.position = 'fixed';
+            const rect = mobileDot.getBoundingClientRect();
+            popup.style.top = (rect.bottom + 6) + 'px';
+            popup.style.left = (rect.left - 12) + 'px';
+            popup.style.zIndex = '10000';
+            popup.style.background = '#232b36';
+            popup.style.color = '#fff';
+            popup.style.border = '1.5px solid #333a';
+            popup.style.borderRadius = '10px';
+            popup.style.boxShadow = '0 8px 32px #0008, 0 1.5px 0 #fff1 inset';
+            popup.style.padding = '14px 18px 10px 18px';
+            popup.style.minWidth = '220px';
+            popup.style.maxWidth = '320px';
+            popup.style.fontSize = '1em';
+            popup.style.display = 'flex';
+            popup.style.flexDirection = 'column';
+            popup.style.gap = '10px';
+            // ...existing code...
+            // Render notifications list
+            popup.innerHTML = `
+              <div style="font-weight:600;font-size:1.08em;margin-bottom:2px;letter-spacing:0.01em;">Notifications</div>
+              <div class="notification-list" style="max-height:180px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;">
+                ${allNotifications.length ? allNotifications.map(n => {
+                  let time = typeof n.id === 'number' ? (typeof fmtTime === 'function' ? fmtTime(n.id) : '') : '';
+                  if (time === 'just') time = 'just now';
+                  return `<div style=\"background:${n.type==='error'?'#f44336':'#263245'};padding:8px 12px;border-radius:6px;box-shadow:0 1px 4px #0002;font-size:0.98em;display:flex;justify-content:space-between;align-items:center;gap:12px;\">
+                    <span>${n.message}</span>
+                    <span style=\"font-size:0.92em;opacity:0.7;white-space:nowrap;\">${time}</span>
+                  </div>`;
+                }).join('') : '<span class=\"muted small\">No notifications yet.</span>'}
+              </div>
+              <button class="btn btn-ghost small" style="align-self:flex-end;margin-top:4px;" id="closeNotifPopupBtn">close</button>
+            `;
+            document.body.appendChild(popup);
+            // Close on button
+            popup.querySelector('#closeNotifPopupBtn').onclick = closePopup;
+            // Close on outside click (delay to avoid immediate close on touch)
+            setTimeout(() => {
+              document.addEventListener('mousedown', outsideClick, { once: true });
+              document.addEventListener('touchstart', outsideClick, { once: true });
+            }, 200);
+            function outsideClick(ev) {
+              if (popup && !popup.contains(ev.target) && ev.target !== mobileDot) closePopup();
+            }
           }
-          console.log('[notif-dot] handleDotActivate', e ? e.type : 'no event');
-          if (popup) {
-            closePopup();
-            return;
-          }
-          // Always show the popup, even if no notifications
-          popup = document.createElement('div');
-          popup.className = 'notification-popup-panel';
-          // Copy styles from profile dot popup
-          popup.style.position = 'fixed';
-          const rect = mobileDot.getBoundingClientRect();
-          popup.style.top = (rect.bottom + 6) + 'px';
-          popup.style.left = (rect.left - 12) + 'px';
-          popup.style.zIndex = '10000';
-          popup.style.background = '#232b36';
-          popup.style.color = '#fff';
-          popup.style.border = '1.5px solid #333a';
-          popup.style.borderRadius = '10px';
-          popup.style.boxShadow = '0 8px 32px #0008, 0 1.5px 0 #fff1 inset';
-          popup.style.padding = '14px 18px 10px 18px';
-          popup.style.minWidth = '220px';
-          popup.style.maxWidth = '320px';
-          popup.style.fontSize = '1em';
-          popup.style.display = 'flex';
-          popup.style.flexDirection = 'column';
-          popup.style.gap = '10px';
-          // ...existing code...
-          // Render notifications list
-          popup.innerHTML = `
-            <div style="font-weight:600;font-size:1.08em;margin-bottom:2px;letter-spacing:0.01em;">Notifications</div>
-            <div class="notification-list" style="max-height:180px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;">
-              ${allNotifications.length ? allNotifications.map(n => {
-                let time = typeof n.id === 'number' ? (typeof fmtTime === 'function' ? fmtTime(n.id) : '') : '';
-                if (time === 'just') time = 'just now';
-                return `<div style=\"background:${n.type==='error'?'#f44336':'#263245'};padding:8px 12px;border-radius:6px;box-shadow:0 1px 4px #0002;font-size:0.98em;display:flex;justify-content:space-between;align-items:center;gap:12px;\">
-                  <span>${n.message}</span>
-                  <span style=\"font-size:0.92em;opacity:0.7;white-space:nowrap;\">${time}</span>
-                </div>`;
-              }).join('') : '<span class=\"muted small\">No notifications yet.</span>'}
-            </div>
-            <button class="btn btn-ghost small" style="align-self:flex-end;margin-top:4px;" id="closeNotifPopupBtn">close</button>
-          `;
-          document.body.appendChild(popup);
-          // Close on button
-          popup.querySelector('#closeNotifPopupBtn').onclick = closePopup;
-          // Close on outside click (delay to avoid immediate close on touch)
-          setTimeout(() => {
-            document.addEventListener('mousedown', outsideClick, { once: true });
-            document.addEventListener('touchstart', outsideClick, { once: true });
-          }, 200);
-          function outsideClick(ev) {
-            if (popup && !popup.contains(ev.target) && ev.target !== mobileDot) closePopup();
-          }
-        }
-        mobileDot.addEventListener('click', handleDotActivate);
-        mobileDot.addEventListener('touchstart', handleDotActivate);
-        mobileDot.addEventListener('keydown', handleDotActivate);
+          mobileDot.addEventListener('click', handleDotActivate);
+          mobileDot.addEventListener('touchstart', handleDotActivate);
+          mobileDot.addEventListener('keydown', handleDotActivate);
+        });
       });
     }
     setupMobileDotLogic();
