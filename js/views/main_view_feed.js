@@ -224,15 +224,20 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
   dock.innerHTML = `
     <div class="hstack" style="justify-content:center; align-items:center; flex-wrap:wrap; gap:18px;">
       <div class="hstack" style="gap:18px;">
-        <button class="btn" data-action="q-prev" title="previous in queue (k)">[ prev ]</button>
-        <button class="btn" data-action="q-stop" title="stop">[ stop ]</button>
-        <button class="btn" data-action="q-next" title="next in queue (j)">[ next ]</button>
-        <button class="btn" data-action="q-shuffle" aria-pressed="${prefsNow.shuffle}" title="shuffle">[ shuffle ]</button>
-        <button class="btn btn-ghost" data-action="q-clear" title="clear queue">[ clear ]</button>
+  <button class="btn" data-action="q-prev" title="previous in queue (k)">&#9198;</button>
+  <button class="btn" data-action="q-stop" title="stop">&#9632;</button>
+  <button class="btn" data-action="q-next" title="next in queue (j)">&#9197;</button>
+  <button class="btn" data-action="q-shuffle" aria-pressed="${prefsNow.shuffle}" title="shuffle">&#8646;</button>
+  <button class="btn btn-ghost" data-action="q-clear" title="clear queue">&#215;</button>
       </div>
     </div>
-    <div class="small" style="text-align:center; margin-top:6px;">
-      <span id="nowPlaying" class="muted"></span> · queue <span id="qPos">0</span>/<span id="qLen">0</span>
+    <div class="dock-info">
+      <div class="nowplaying-marquee-wrap">
+        <span id="nowPlaying" class="muted nowplaying-marquee"></span>
+      </div>
+      <div class="queue-info small" style="text-align:center; margin-top:2px;">
+        queue <span id="qPos">0</span>/<span id="qLen">0</span>
+      </div>
     </div>
   `;
   dock.addEventListener('click', (e) => {
