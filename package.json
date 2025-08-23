@@ -1,4 +1,10 @@
 {
-  "dependencies": {
+  "scripts": {
+    "build:js": "esbuild js/core/app.js --bundle --minify --sourcemap --outdir=dist/js/core && esbuild js/core/notifications_init.js --bundle --minify --sourcemap --outdir=dist/js/core",
+    "build:css": "esbuild css/base.css --minify --outfile=dist/css/base.css && esbuild css/layout.css --minify --outfile=dist/css/layout.css && esbuild css/components.css --minify --outfile=dist/css/components.css && esbuild css/mobile_tabs.css --minify --outfile=dist/css/mobile_tabs.css && esbuild css/auth.css --minify --outfile=dist/css/auth.css",
+    "build": "npm run build:js && npm run build:css"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.9"
   }
 }
