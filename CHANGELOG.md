@@ -9,8 +9,15 @@ This file summarizes the major changes and improvements throughout the history o
 
 ### 2025-08-23
 - Leaderboard redesign: simplified style, profile pictures, clickable usernames/avatars, and improved mobile/responsive support
-- Notification system and dot indicator improvements (UI, logic, and mobile fixes)
+- Fixed leaderboard not opening on some devices/phones
+- Notification system and dot indicator improvements (UI, logic, mobile tap fixes, and debug)
 - Overlay/modal and menu stacking, layout, and interaction fixes
+- Tag dragging fixes and removed debug outline
+- Login now persists across browser restarts
+- Banner size and scrolling tweaks
+- Improved fit and layout on mobile, including dot tweaks and mobile CSS
+- Mobile menu improvements and bugfixes
+- Prevented left-scrolling banner
 - General UI/UX tweaks, bugfixes, and code cleanup
 
 ### 2025-08-22

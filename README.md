@@ -47,8 +47,11 @@ Your new favorite place to overshare your music taste. (We won't judge. Much.)
 ---
 
 
+
 ## Highlights
 
+- **Leaderboard Redesign:** Clean, simplified leaderboard with profile pictures, clickable usernames/avatars, and responsive scaling for all devices.
+- **Notification System:** Improved notification dot, mobile support, and UI/UX tweaks for alerts and activity.
 - **Auto-Refresh Feed:** Feed, likes, and comments update every 30 seconds, or instantly when you return to the tab. Playback is never interrupted.
 - **Full Help Guide:** In-app help overlay with step-by-step instructions, posting tips, queue/player info, keyboard shortcuts, and accessibility.
 - **UI & Accessibility:** Clean topbar, improved keyboard navigation, focus management, and live region for announcements.
@@ -64,8 +67,10 @@ Your new favorite place to overshare your music taste. (We won't judge. Much.)
 ---
 
 
+
 ## Features
 
+- **Leaderboard:** See top contributors and most liked users, with profile pictures and direct profile/about access.
 - **24-Hour Post Limit:** You can post once every 24 hours—come back daily to share your next favorite track!
 - **User Authentication:** Register/login with email/password (Supabase or local).
 - **Music Posts:** Share music links (YouTube, Spotify, Bandcamp, SoundCloud, direct audio).
