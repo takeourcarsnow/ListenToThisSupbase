@@ -102,12 +102,41 @@ export function renderHeader() {
     }
     function updatePostLimitInfo() {
       let newText, type;
+      // If guest (no user), animate ready messages as if post window is open
       if (!window.DB || !window.state || !window.state.user) {
-        newText = padLine('You can post once per day! Make it count!');
-        type = 'info';
-        if (readyMsgAnimTimer) {
-          clearTimeout(readyMsgAnimTimer);
-          readyMsgAnimTimer = null;
+        // Animate ready messages for guests
+        if (!readyMsgAnimTimer && lastType !== 'ready') {
+          newText = padLine('You can post once per day! Make it count!');
+          type = 'ready';
+          readyMsgAnimTimer = setTimeout(() => {
+            let nextIndex;
+            do {
+              nextIndex = Math.floor(Math.random() * readyMessages.length);
+            } while (readyMessages.length > 1 && nextIndex === readyMsgIndex);
+            readyMsgIndex = nextIndex;
+            updatePostLimitInfo();
+            // Start the normal animation loop
+            const scheduleNext = () => {
+              const nextDelay = 4500 + Math.random() * 3500;
+              readyMsgAnimTimer = setTimeout(() => {
+                if (!readyMsgFading) {
+                  let nextIndex;
+                  do {
+                    nextIndex = Math.floor(Math.random() * readyMessages.length);
+                  } while (readyMessages.length > 1 && nextIndex === readyMsgIndex);
+                  readyMsgIndex = nextIndex;
+                  updatePostLimitInfo();
+                  scheduleNext();
+                } else {
+                  readyMsgAnimTimer = setTimeout(scheduleNext, 500);
+                }
+              }, nextDelay);
+            };
+            scheduleNext();
+          }, 4500 + Math.random() * 3500);
+        } else if (readyMsgAnimTimer) {
+          newText = padLine(readyMessages[readyMsgIndex]);
+          type = 'ready';
         }
       } else {
         const countdown = getCountdown();
