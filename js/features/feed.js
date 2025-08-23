@@ -296,7 +296,7 @@ export function renderTags(el, DB) {
           overflow: visible;
         }
         .tag-sort-link.active {
-          color: #ffe082;
+          color: var(--acc, #8ab4ff);
         }
         .tag-sort-link::after {
           content: '';
@@ -304,7 +304,7 @@ export function renderTags(el, DB) {
           position: absolute;
           left: 0; right: 0; bottom: -2px;
           height: 2px;
-          background: #ffe082;
+          background: var(--acc, #8ab4ff);
           opacity: 0;
           transform: scaleX(0.5);
           transition: opacity 0.18s, transform 0.18s;
@@ -314,7 +314,7 @@ export function renderTags(el, DB) {
           transform: scaleX(1);
         }
         .tag-sort-link:hover, .tag-sort-link:focus {
-          color: #ffe082;
+          color: var(--acc, #8ab4ff);
         }
       </style>
     `;
