@@ -17,7 +17,8 @@
   <!-- Dynamically load minified or source files based on environment -->
   <script>
     // If running on localhost or 127.0.0.1, use source files; otherwise, use minified
-    const isLocal = /^(localhost|127\.|0\.0\.0\.)/.test(location.hostname);
+    // Only treat localhost and 127.0.0.1 as local; everything else is production
+    const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
     const cssFiles = [
       'base.css', 'layout.css', 'components.css', 'mobile_tabs.css', 'auth.css'
     ];
