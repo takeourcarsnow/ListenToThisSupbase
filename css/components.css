@@ -1114,7 +1114,7 @@ input[type=number] {
   cursor: pointer;
 }
 /* Removed tag frequency-based sizing: all tags same size */
-.tag-cloud .tag:hover { background: #3a3f4b; color: #ffe082; }
+.tag-cloud .tag:hover { background: #3a3f4b; color: #ff7b7b; }
 /* Show grabbing cursor when dragging tag cloud */
 .tag-cloud.dragging {
   cursor: grabbing !important;
