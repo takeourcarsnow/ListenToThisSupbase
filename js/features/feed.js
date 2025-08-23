@@ -305,9 +305,9 @@ export function renderTags(el, DB, prefs) {
     sortUI.style.marginTop = '6px';
     sortUI.style.fontSize = '0.93em';
     sortUI.innerHTML = `
-      <a href="#" data-sort="freq" class="tag-sort-link${sortMode==='freq'?' active':''}">freq</a>
+      <a href="#" data-sort="freq" class="tag-sort-link${sortMode==='freq'?' active':''}">frequency</a>
       <span style="color:#444;opacity:0.5;">|</span>
-      <a href="#" data-sort="az" class="tag-sort-link${sortMode==='az'?' active':''}" tabindex="0">A-Z</a>
+      <a href="#" data-sort="az" class="tag-sort-link${sortMode==='az'?' active':''}" tabindex="0">a - z</a>
       <style>
         .tag-sort-link {
           color: #aaa;

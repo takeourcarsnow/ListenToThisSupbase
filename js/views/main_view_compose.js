@@ -98,8 +98,8 @@ export function renderComposeBox(right, state, DB, render) {
       isCooldown = true;
       countdown = `${hours}h ${minutes}m ${seconds}s`;
       if (postBtn) postBtn.disabled = true;
-  // Compose wait messages (imported from constants)
-  const waitMessages = POST_LIMIT_MESSAGES;
+      // Compose wait messages (imported from constants)
+      const waitMessages = POST_LIMIT_MESSAGES;
       if (!window._composeWaitMsgIndex) window._composeWaitMsgIndex = 0;
       if (!window._composeWaitMsgTimer) {
         window._composeWaitMsgTimer = setInterval(() => {
@@ -110,6 +110,8 @@ export function renderComposeBox(right, state, DB, render) {
       // Fade in/out effect for wait message, only when changed
       const waitMsg = waitMessages[window._composeWaitMsgIndex];
       let waitTypeDiv = document.getElementById('waitTypeMsg');
+      const timerMsg = `<div>You can post again in ${hours}h ${minutes}m ${seconds}s.</div>`;
+      // Only update cooldownDiv if content actually changes (prevents flicker)
       if (!waitTypeDiv) {
         waitTypeDiv = document.createElement('div');
         waitTypeDiv.id = 'waitTypeMsg';
@@ -117,14 +119,19 @@ export function renderComposeBox(right, state, DB, render) {
         waitTypeDiv.style.color = '#888';
         waitTypeDiv.style.fontSize = '0.98em';
         waitTypeDiv.style.transition = 'opacity 0.45s cubic-bezier(.4,0,.2,1)';
-        cooldownDiv.innerHTML = `<div>You can post again in ${hours}h ${minutes}m ${seconds}s.</div>`;
+        cooldownDiv.innerHTML = timerMsg;
         cooldownDiv.appendChild(waitTypeDiv);
         waitTypeDiv.style.opacity = '1';
         waitTypeDiv.textContent = waitMsg;
         waitTypeDiv._lastMsg = waitMsg;
+        cooldownDiv._lastTimerMsg = timerMsg;
       } else {
-        cooldownDiv.innerHTML = `<div>You can post again in ${hours}h ${minutes}m ${seconds}s.</div>`;
-        cooldownDiv.appendChild(waitTypeDiv);
+        // Only update timer message if changed
+        if (cooldownDiv._lastTimerMsg !== timerMsg) {
+          cooldownDiv.innerHTML = timerMsg;
+          cooldownDiv.appendChild(waitTypeDiv);
+          cooldownDiv._lastTimerMsg = timerMsg;
+        }
         if (waitTypeDiv._lastMsg !== waitMsg) {
           waitTypeDiv.style.opacity = '0';
           setTimeout(() => {
@@ -138,7 +145,7 @@ export function renderComposeBox(right, state, DB, render) {
       window._waitTypewriterTimeouts = [];
     } else {
       if (postBtn) postBtn.disabled = false;
-      if (cooldownDiv) cooldownDiv.textContent = 'Share a track when you feel like it (1 per day)';
+      if (cooldownDiv && cooldownDiv.textContent !== 'Share a track when you feel like it (1 per day)') cooldownDiv.textContent = 'Share a track when you feel like it (1 per day)';
       if (window._composeWaitMsgTimer) {
         clearInterval(window._composeWaitMsgTimer);
         window._composeWaitMsgTimer = null;
