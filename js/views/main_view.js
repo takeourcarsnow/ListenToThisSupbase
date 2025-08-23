@@ -84,7 +84,8 @@ export async function renderMain(root, state, DB, render) {
   }
 
   // Mobile tab bar injection with accessibility and keyboard navigation
-  if (isMobile) {
+  // Never show mobile navigation tabs in auth section (when not logged in or forceLogin is true)
+  if (isMobile && state.user && !state.forceLogin) {
     // Remove any existing tab bar
     const oldTabBar = document.querySelector('.mobile-tab-bar');
     if (oldTabBar) oldTabBar.remove();
