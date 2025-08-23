@@ -1,16 +1,4 @@
 {
-  "name": "tunedin-space",
-  "version": "1.0.0",
-  "scripts": {
-    "build": "parcel build index.html --dist-dir dist --public-url ./"
-  },
-  "devDependencies": {
-    "@parcel/packager-raw-url": "^2.15.4",
-    "@parcel/transformer-webmanifest": "^2.15.4",
-    "buffer": "^6.0.3",
-    "parcel": "^2.11.0"
-  },
   "dependencies": {
-    "@supabase/supabase-js": "^2.56.0"
   }
 }
