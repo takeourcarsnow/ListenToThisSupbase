@@ -1,4 +1,5 @@
 // Header module: injects the header HTML into the page
+import { POST_LIMIT_MESSAGES, POST_READY_MESSAGES } from './constants.js';
 export async function renderHeader() {
   // Ensure DB is initialized before rendering header
   if (window.DB && typeof window.DB.init === 'function') {
@@ -27,15 +28,8 @@ export async function renderHeader() {
     }
     return str;
   }
-  // Post limit message variations
-  const postLimitMessages = [
-  'Hang tight—your daily post is recharging.',
-  'Almost there! New post window opens soon.',
-  'Rate limit on. Discover new tracks!',
-  'Patience, DJ! You can post again soon.',
-  'Enjoy the feed while you wait.',
-  'You’re recharging—back with a tune soon.'
-  ];
+  // Post limit message variations (imported from constants)
+  const postLimitMessages = POST_LIMIT_MESSAGES;
   let postLimitMsgIndex = 0;
   const headerHTML = `
     <img src="/assets/logo.png" alt="Logo" class="login-logo-anim header-logo-anim" style="width:44px; height:44px; object-fit:contain; display:block; margin:0 auto 8px auto;" />
@@ -68,18 +62,7 @@ export async function renderHeader() {
     }
     let hover = false;
     let lastType = '';
-    const readyMessages = [
-      "Time’s up! Drop your freshest tune.",
-      "The stage is yours—share your music!",
-      "Ready to post? Let’s hear what you’ve got!",
-      "Mic’s on. What are you listening to today?",
-      "It’s posting time - bring the vibes!",
-      "Your post window is open. Make it count!",
-      "Go on, share your soundtrack for today.",
-      "Let’s see what’s spinning in your world!",
-      "You’re up! What’s your tune of the day?",
-      "Spotlight’s on you—post your music pick!"
-    ];
+  const readyMessages = POST_READY_MESSAGES;
   let readyMsgIndex = 0;
   let readyMsgAnimTimer = null;
   let readyMsgFading = false;

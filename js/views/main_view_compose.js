@@ -1,5 +1,5 @@
 // js/views/main_view_compose.js
-import { PROMPTS } from '../core/constants.js';
+import { PROMPTS, POST_LIMIT_MESSAGES } from '../core/constants.js';
 import { $, esc } from '../core/utils.js';
 import { onCreatePost } from '../features/posts.js';
 import { parseProvider } from '../features/providers.js';
@@ -98,15 +98,8 @@ export function renderComposeBox(right, state, DB, render) {
       isCooldown = true;
       countdown = `${hours}h ${minutes}m ${seconds}s`;
       if (postBtn) postBtn.disabled = true;
-      // Compose wait messages (same as header, max 42 chars)
-      const waitMessages = [
-        'Hang tight—your daily post is recharging.',
-        'Almost there! New post window opens soon.',
-        'Rate limit on. Discover new tracks!',
-        'Patience, DJ! You can post again soon.',
-        'Enjoy the feed while you wait.',
-        'You’re recharging—back with a tune soon.'
-      ];
+  // Compose wait messages (imported from constants)
+  const waitMessages = POST_LIMIT_MESSAGES;
       if (!window._composeWaitMsgIndex) window._composeWaitMsgIndex = 0;
       if (!window._composeWaitMsgTimer) {
         window._composeWaitMsgTimer = setInterval(() => {

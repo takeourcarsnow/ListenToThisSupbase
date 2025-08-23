@@ -1,5 +1,28 @@
 
 // Shared string constants
+// Post limit / cooldown wait messages (shared by header and compose box)
+export const POST_LIMIT_MESSAGES = [
+	'Hang tight—your daily post is recharging.',
+	'Almost there! New post window opens soon.',
+	'Rate limit on. Discover new tracks!',
+	'Patience, DJ! You can post again soon.',
+	'Enjoy the feed while you wait.',
+	'You’re recharging—back with a tune soon.'
+];
+
+// Ready-to-post messages (header only, not currently used in compose box)
+export const POST_READY_MESSAGES = [
+	"Time’s up! Drop your freshest tune.",
+	"The stage is yours—share your music!",
+	"Ready to post? Let’s hear what you’ve got!",
+	"Mic’s on. What are you listening to today?",
+	"It’s posting time - bring the vibes!",
+	"Your post window is open. Make it count!",
+	"Go on, share your soundtrack for today.",
+	"Let’s see what’s spinning in your world!",
+	"You’re up! What’s your tune of the day?",
+	"Spotlight’s on you—post your music pick!"
+];
 export const PROMPT_STUCK = '> so what song has been stuck in your head lately?';
 export const PROMPT_SHARE = '> share a track that made your day better!';
 export const PROMPT_LOOPING = '> what have you been looping non-stop?';
