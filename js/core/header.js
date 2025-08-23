@@ -161,7 +161,15 @@ export async function renderHeader() {
             clearTimeout(readyMsgAnimTimer);
             readyMsgAnimTimer = null;
           }
-          newText = padLine(`Time left: ${countdown}`);
+          // Format a longer, friendlier countdown message (max 42 chars)
+          let timeMsg = `You can post again in ${countdown}.`;
+          if (timeMsg.length > 42) {
+            timeMsg = `Next post available in ${countdown}.`;
+          }
+          if (timeMsg.length > 42) {
+            timeMsg = `Time left: ${countdown}`;
+          }
+          newText = padLine(timeMsg);
           type = 'countdown';
         } else {
           // Not hovering: cycle waiting messages
@@ -224,6 +232,14 @@ export async function renderHeader() {
     }
   info.addEventListener('mouseenter', () => { hover = true; updatePostLimitInfo(); });
   info.addEventListener('mouseleave', () => { hover = false; updatePostLimitInfo(); });
+  // Mobile: tap to show countdown, tap again to hide
+  let touchActive = false;
+  info.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    touchActive = !touchActive;
+    hover = touchActive;
+    updatePostLimitInfo();
+  });
   updatePostLimitInfo();
   window._asciiHeaderInterval = setInterval(updatePostLimitInfo, 1000);
   }, 0);
