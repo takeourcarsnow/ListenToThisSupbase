@@ -14,22 +14,11 @@
     <link rel="icon" type="image/png" sizes="192x192" href="/assets/android-chrome-192x192.png">
     <link rel="icon" type="image/png" sizes="512x512" href="/assets/android-chrome-512x512.png">
     <link rel="shortcut icon" href="/favicon.ico">
-  <!-- Dynamically load minified or source files based on environment -->
-  <script>
-    // If running on localhost or 127.0.0.1, use source files; otherwise, use minified
-    // Only treat localhost and 127.0.0.1 as local; everything else is production
-    const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-    const cssFiles = [
-      'base.css', 'layout.css', 'components.css', 'mobile_tabs.css', 'auth.css'
-    ];
-    const cssPath = isLocal ? '/css/' : '/dist/css/';
-    cssFiles.forEach(f => {
-      const l = document.createElement('link');
-      l.rel = 'stylesheet';
-      l.href = cssPath + f;
-      document.head.appendChild(l);
-    });
-  </script>
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/layout.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/mobile_tabs.css">
+  <link rel="stylesheet" href="/css/auth.css"> <!-- You can load this only on auth pages -->
   </head>
 <body>
   <a class="sr-only" href="#app">Skip to content</a>
@@ -40,16 +29,8 @@
 
   <!-- bcryptjs for password hashing in browser -->
   <script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
-  <script>
-    // Dynamically load JS files based on environment
-    const jsPath = isLocal ? './js/core/' : './dist/js/core/';
-    ['app.js', 'notifications_init.js'].forEach(f => {
-      const s = document.createElement('script');
-      s.type = 'module';
-      s.src = jsPath + f;
-      document.body.appendChild(s);
-    });
-  </script>
+  <script type="module" src="./js/core/app.js"></script>
+  <script type="module" src="./js/core/notifications_init.js"></script>
 </body>
 </body>
 </html>
