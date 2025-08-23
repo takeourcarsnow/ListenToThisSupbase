@@ -70,8 +70,7 @@
           popup.style.display = 'flex';
           popup.style.flexDirection = 'column';
           popup.style.gap = '10px';
-          // Debug border for mobile
-          popup.style.outline = '2px solid red';
+          // ...existing code...
           // Render notifications list
           popup.innerHTML = `
             <div style="font-weight:600;font-size:1.08em;margin-bottom:2px;letter-spacing:0.01em;">Notifications</div>
