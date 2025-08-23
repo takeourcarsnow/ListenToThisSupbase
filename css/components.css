@@ -1045,7 +1045,7 @@ input[type=number] {
 
 /* Tag Cloud (one-line, scrollable) */
 .tag-cloud {
-  touch-action: none;
+  touch-action: pan-x;
   display: flex;
   flex-wrap: nowrap;
   overflow-x: auto;
