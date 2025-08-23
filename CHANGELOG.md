@@ -1,3 +1,11 @@
+## [2025-08-23]
+- Improved tabbed UI colors and minimalism for mobile tab bar
+- Tab tweaks and spacing adjustments for better theme fit
+- Increased logo spacing on mobile for better visual balance
+- Tabbed mobile UI enhancements and accessibility improvements
+- Removed leaderboard from UI
+- Tag cloud now supports tap on phone
+- Tag cloud frequency sort can now be turned off
 # Changelog
 
 This file summarizes the major changes and improvements throughout the history of the project.
