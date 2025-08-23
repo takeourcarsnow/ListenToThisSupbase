@@ -89,9 +89,7 @@
   --shadow: 0 0 0 1px var(--line);
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  * { scroll-behavior: smooth; }
-}
+
 
 /* Reset + base text */
 html, body {
