@@ -1,12 +1,12 @@
 // Leaderboard overlay logic
 export function openLeaderboardOverlay() {
   const overlay = document.getElementById('leaderboard-overlay');
-  if (overlay) overlay.style.display = '';
+  if (overlay) overlay.classList.add('active');
 }
 
 export function closeLeaderboardOverlay() {
   const overlay = document.getElementById('leaderboard-overlay');
-  if (overlay) overlay.style.display = 'none';
+  if (overlay) overlay.classList.remove('active');
   document.dispatchEvent(new CustomEvent('leaderboardOverlayClosed'));
 }
 
