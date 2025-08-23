@@ -1,5 +1,14 @@
 // --- MOBILE NOTIFICATION DOT (just below header, above user menu) ---
   if (/Mobi|Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)) {
+    // Remove the dot for guests immediately to prevent any rendering
+    try {
+      let isGuest = true;
+      if (window.state && window.state.user) isGuest = false;
+      if (isGuest) {
+        const dot = document.getElementById('mobile-notification-dot');
+        if (dot && dot.parentNode) dot.parentNode.removeChild(dot);
+      }
+    } catch(e) {}
     // Only add logic if dot exists in DOM
     function setupMobileDotLogic() {
       const mobileDot = document.getElementById('mobile-notification-dot');
