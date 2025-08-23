@@ -26,9 +26,9 @@
   box-sizing: border-box;
 }
 .changelog-modal-header {
-  padding: 16px 20px 10px 20px;
-  font-size: 1.2em;
-  font-weight: bold;
+  padding: 8px 14px 6px 14px;
+  font-size: 0.92em;
+  font-weight: 600;
   background: #23272a;
   border-bottom: 1px solid #222;
   display: flex;
@@ -48,10 +48,10 @@
   }
 }
 .changelog-modal-content {
-  padding: 18px 20px 20px 20px;
+  padding: 10px 14px 12px 14px;
   overflow-y: auto;
-  font-size: 0.98em;
-  line-height: 1.6;
+  font-size: 0.82em;
+  line-height: 1.45;
   flex: 1 1 auto;
   min-height: 0;
   box-sizing: border-box;
