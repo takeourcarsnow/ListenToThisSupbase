@@ -32,25 +32,18 @@
     margin-bottom: 2px;
     box-sizing: border-box;
   }
-  }
-  #notification-dot-container {
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    width: 100%;
-    position: relative;
-  }
   #mobile-notification-dot {
-    position: static !important;
+    display: inline-block !important;
     margin: 0 auto !important;
-    display: block !important;
-    left: unset !important;
-    right: unset !important;
-    transform: none !important;
+    opacity: 0.35 !important;
   }
 }
+/* Always hide on desktop */
 @media (min-width: 601px) {
-  #mobile-notification-dot, #mobile-notification-dot + .notification-popup-panel {
+  #mobile-notification-dot {
+    display: none !important;
+  }
+  #mobile-notification-dot + .notification-popup-panel {
     display: none !important;
   }
 }
