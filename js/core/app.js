@@ -102,7 +102,8 @@ window.addEventListener('DOMContentLoaded', function() {
     const isMobile = window.matchMedia('(max-width: 600px)').matches;
     const forceLogin = window.state && window.state.forceLogin;
     const noUser = !(window.state && window.state.user);
-    const isGuest = window.localStorage.getItem('guestMode') === 'true';
+    // Use correct guest key logic
+    const isGuest = window.localStorage.getItem('TunedIn.space/guest@v1') === '1';
     if (isMobile && (forceLogin || (noUser && !isGuest))) {
       shouldShowHeader = false;
     }

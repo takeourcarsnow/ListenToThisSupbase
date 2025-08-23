@@ -1,6 +1,7 @@
 import { $ } from '../core/utils.js';
 import { startPromptAnimation, startLoginPromptAnimation, stopLoginPromptAnimation } from './login_prompts.js';
 import { setGuestMode, setSession, clearSession } from '../auth/session.js';
+import { renderHeader } from '../core/header.js';
 
 export function renderLogin(root, DB, render) {
   const banner = document.getElementById('ascii-banner');
@@ -77,6 +78,13 @@ export function renderLogin(root, DB, render) {
   // Patch render to restore overflow if main view is rendered
   const wrappedRender = (...args) => {
     restoreOverflow();
+    // If in mobile mode, ensure header is present before rendering main view
+    if (window.matchMedia('(max-width: 600px)').matches) {
+      // Only add header if not present
+      if (!document.querySelector('header[role="banner"]')) {
+        renderHeader();
+      }
+    }
     render(...args);
   };
 
