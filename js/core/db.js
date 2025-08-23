@@ -19,7 +19,7 @@ const DISPOSABLE_EMAIL_DOMAINS = [
 ];
 
 // Checks if the email domain or any of its parent domains is in the blocklist
-function isDisposableEmail(email) {
+export function isDisposableEmail(email) {
   if (!email || typeof email !== 'string') return false;
   const domain = email.split('@')[1]?.toLowerCase();
   if (!domain) return false;
@@ -208,7 +208,8 @@ class SupabaseAdapter {
   }
   async init(){
     if(!this.supabase){
-      const { createClient } = await import('https://esm.sh/@supabase/supabase-js@2');
+      // Use static import for Parcel compatibility
+      const { createClient } = await import('@supabase/supabase-js');
       this.supabase = createClient(this.url, this.key);
     }
     await this.refresh();
