@@ -10,6 +10,13 @@ import { renderComposeBox } from './main_view_compose.js';
 import { setupAutoRefresh, setupVisibilityRefresh } from './main_view_refresh.js';
 
 export async function renderMain(root, state, DB, render) {
+  // Mobile tab bar logic
+  let isMobile = window.matchMedia('(max-width: 600px)').matches;
+  // Remove mobile tab bar if entering login/auth screen
+  if (isMobile && state.forceLogin) {
+    const oldTabBar = document.querySelector('.mobile-tab-bar');
+    if (oldTabBar) oldTabBar.remove();
+  }
   const prefs = loadPrefs();
 
   // Restore scrollbars and show header/banner
@@ -28,8 +35,6 @@ export async function renderMain(root, state, DB, render) {
   grid.appendChild(right);
   root.appendChild(grid);
 
-  // Mobile tab bar logic
-  let isMobile = window.matchMedia('(max-width: 600px)').matches;
   // Responsive: re-render on device width change
   if (!window._tunedinMobileResizeHandler) {
     window._tunedinMobileResizeHandler = true;
@@ -84,8 +89,8 @@ export async function renderMain(root, state, DB, render) {
   }
 
   // Mobile tab bar injection with accessibility and keyboard navigation
-  // Never show mobile navigation tabs in auth section (when not logged in or forceLogin is true)
-  if (isMobile && state.user && !state.forceLogin) {
+  // Show if mobile and NOT in login/auth screen (state.forceLogin)
+  if (isMobile && !state.forceLogin) {
     // Remove any existing tab bar
     const oldTabBar = document.querySelector('.mobile-tab-bar');
     if (oldTabBar) oldTabBar.remove();

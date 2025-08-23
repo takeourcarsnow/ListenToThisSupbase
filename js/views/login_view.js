@@ -4,6 +4,9 @@ import { setGuestMode, setSession, clearSession } from '../auth/session.js';
 import { renderHeader } from '../core/header.js';
 
 export function renderLogin(root, DB, render) {
+  // Remove mobile tab bar if present (prevents it from lingering on login screen)
+  const oldTabBar = document.querySelector('.mobile-tab-bar');
+  if (oldTabBar) oldTabBar.remove();
   const banner = document.getElementById('ascii-banner');
   if (banner) banner.style.display = 'none';
   document.body.classList.remove('show-header');
