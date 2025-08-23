@@ -7,6 +7,10 @@
         setTimeout(setupMobileDotLogic, 100); // Wait for dot to exist
         return;
       }
+      // Make dot accessible and focusable
+      mobileDot.setAttribute('tabindex', '0');
+      mobileDot.setAttribute('role', 'button');
+      mobileDot.setAttribute('aria-label', 'Show notifications');
       // Notification logic (subscribe, update, popup)
       let allNotifications = [];
       import('../core/notifications.js').then(({ default: notifications }) => {
@@ -34,8 +38,12 @@
             popup = null;
           }
         }
-        mobileDot.addEventListener('click', (e) => {
-          e.stopPropagation();
+        function handleDotActivate(e) {
+          if (e) {
+            if (e.type === 'keydown' && e.key !== 'Enter' && e.key !== ' ') return;
+            e.stopPropagation();
+            e.preventDefault();
+          }
           if (popup) {
             closePopup();
             return;
@@ -86,7 +94,10 @@
           function outsideClick(ev) {
             if (popup && !popup.contains(ev.target) && ev.target !== mobileDot) closePopup();
           }
-        });
+        }
+        mobileDot.addEventListener('click', handleDotActivate);
+        mobileDot.addEventListener('touchstart', handleDotActivate);
+        mobileDot.addEventListener('keydown', handleDotActivate);
       });
     }
     setupMobileDotLogic();
