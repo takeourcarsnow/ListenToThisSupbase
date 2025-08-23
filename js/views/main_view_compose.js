@@ -88,17 +88,23 @@ export function renderComposeBox(right, state, DB, render) {
     const lastPost = db.posts
       .filter(p => p.userId === me.id)
       .sort((a, b) => b.createdAt - a.createdAt)[0];
+    let isCooldown = false;
+    let countdown = '';
     if (lastPost && now - lastPost.createdAt < 24 * 60 * 60 * 1000) {
       const timeLeft = 24 * 60 * 60 * 1000 - (now - lastPost.createdAt);
       const hours = Math.floor(timeLeft / (60 * 60 * 1000));
       const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
       const seconds = Math.floor((timeLeft % (60 * 1000)) / 1000);
+      isCooldown = true;
+      countdown = `${hours}h ${minutes}m ${seconds}s`;
       if (postBtn) postBtn.disabled = true;
       if (cooldownDiv) cooldownDiv.textContent = `You can post again in ${hours}h ${minutes}m ${seconds}s.`;
     } else {
       if (postBtn) postBtn.disabled = false;
       if (cooldownDiv) cooldownDiv.textContent = '';
     }
+    // Expose cooldown state globally for header
+    window.composeCooldown = { isCooldown, countdown };
   }
   setInterval(updateCooldown, 1000);
   updateCooldown();

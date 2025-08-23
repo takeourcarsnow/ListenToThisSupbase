@@ -3,6 +3,10 @@ import { uid, esc, toast } from '../core/utils.js';
 import { checkPostModeration, containsBannedWords, looksLikeSpam } from './automod.js';
 
 export async function onCreatePost(e, state, DB, render) {
+  // After post, force header to re-render so it picks up new cooldown state
+  if (typeof window.renderHeader === 'function') {
+    window.renderHeader();
+  }
   e.preventDefault();
   const db = DB.getAll();
   const me = state.user;
@@ -202,6 +206,17 @@ export async function onCreatePost(e, state, DB, render) {
   };
   await DB.createPost(post);
 
+  // Always refresh DB after posting to ensure cache is up to date (for SupabaseAdapter)
+  if (DB.refresh) await DB.refresh();
+  // Debug: log DB cache after refresh
+  if (DB && DB.cache) {
+    console.log('[POSTS DEBUG] DB.cache after refresh:', DB.cache);
+  }
+  // Re-render header to ensure cooldown state is correct (after post is saved and cache is refreshed)
+  if (typeof window.renderHeader === 'function') {
+    window.renderHeader();
+  }
+
   document.getElementById('f_title').value = '';
   document.getElementById('f_artist').value = '';
   document.getElementById('f_url').value = '';
@@ -214,7 +229,12 @@ export async function onCreatePost(e, state, DB, render) {
   const evt = new Event('resetCaptcha');
   document.getElementById('postForm').dispatchEvent(evt);
 
-  render();
+  // Prefer global app re-render if available, else fallback to local render
+  if (typeof window.renderApp === 'function') {
+    window.renderApp();
+  } else {
+    render();
+  }
   setTimeout(() => {
     const el = document.getElementById('post-' + post.id);
     if (el) {

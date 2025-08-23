@@ -1,5 +1,17 @@
 // Header module: injects the header HTML into the page
-export function renderHeader() {
+export async function renderHeader() {
+  // Ensure DB is initialized before rendering header
+  if (window.DB && typeof window.DB.init === 'function') {
+    await window.DB.init();
+  }
+  // Force refresh to ensure cache is up to date
+  if (window.DB && typeof window.DB.refresh === 'function') {
+    await window.DB.refresh();
+  }
+  // Debug: log DB cache before rendering
+  if (window.DB && window.DB.cache) {
+    console.log('[HEADER DEBUG] DB.cache before rendering header:', window.DB.cache);
+  }
   // Use Unicode box-drawing for perfect frame, and wrap with invisible comment markers
   // Frame width: 36 chars (between | and |)
   const frameWidth = 41;
@@ -26,13 +38,28 @@ export function renderHeader() {
 <!--ascii-end-->
     </pre>
   `;
+  // Remove any existing header to avoid duplicates and stale event listeners
+  const oldHeader = document.querySelector('header[role="banner"]');
+  if (oldHeader) oldHeader.remove();
+  // Clear any previous updatePostLimitInfo intervals
+  if (window._asciiHeaderInterval) {
+    clearInterval(window._asciiHeaderInterval);
+    window._asciiHeaderInterval = null;
+  }
   // Animate and update the ascii-post-limit line
   setTimeout(() => {
-    const info = document.getElementById('ascii-post-limit');
-    if (!info) return;
-  let hover = false;
-  let lastType = '';
-  const readyMessages = [
+  const info = document.getElementById('ascii-post-limit');
+  if (!info) return;
+    // Always use latest DB and state
+    if (window && window.DB && typeof window.DB.refresh === 'function') {
+      window.DB.refresh();
+    }
+    if (window && window.state && window.state.user && typeof window.state.user === 'object') {
+      // Optionally refresh user if needed (if async, may need to await)
+    }
+    let hover = false;
+    let lastType = '';
+    const readyMessages = [
       "Time’s up! Drop your freshest tune.",
       "The stage is yours—share your music!",
       "Ready to post? Let’s hear what you’ve got!",
@@ -57,20 +84,32 @@ export function renderHeader() {
       `;
       document.head.appendChild(style);
     }
-    function getCountdown() {
-      if (!window.DB || !window.state || !window.state.user) return '';
-      const db = window.DB.getAll ? window.DB.getAll() : { posts: [] };
+    function getCooldownInfo() {
+      // Use compose box cooldown state if available
+      if (window.composeCooldown) {
+        const { isCooldown, countdown } = window.composeCooldown;
+        return { isGuest: false, isCooldown, countdown };
+      }
+      // Fallback to legacy logic if composeCooldown is not available
+      if (!window.state || !window.state.user) {
+        return { isGuest: true, isCooldown: false, countdown: '' };
+      }
+      let posts = [];
+      if (window.DB && typeof window.DB.getAll === 'function') {
+        const db = window.DB.getAll();
+        posts = db.posts || [];
+      }
       const me = window.state.user;
       const now = Date.now();
-      const lastPost = (db.posts || []).filter(p => p.userId === me.id).sort((a, b) => b.createdAt - a.createdAt)[0];
+      const lastPost = posts.filter(p => p.userId === me.id).sort((a, b) => b.createdAt - a.createdAt)[0];
       if (lastPost && now - lastPost.createdAt < 24 * 60 * 60 * 1000) {
         const timeLeft = 24 * 60 * 60 * 1000 - (now - lastPost.createdAt);
         const hours = Math.floor(timeLeft / (60 * 60 * 1000));
         const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
         const seconds = Math.floor((timeLeft % (60 * 1000)) / 1000);
-        return `${hours}h ${minutes}m ${seconds}s`;
+        return { isGuest: false, isCooldown: true, countdown: `${hours}h ${minutes}m ${seconds}s` };
       }
-      return '';
+      return { isGuest: false, isCooldown: false, countdown: '' };
     }
     function padLine(str) {
       // Remove any HTML tags for length calculation
@@ -100,11 +139,27 @@ export function renderHeader() {
         info.innerHTML = newText;
       }
     }
-    function updatePostLimitInfo() {
+  async function updatePostLimitInfo() {
+  // DEBUG: Log state for troubleshooting (after variables are initialized)
+  // (Move this log after isGuest, isCooldown, and countdown are set)
+      // Use getCooldownInfo for all cooldown state
       let newText, type;
-      // If guest (no user), animate ready messages as if post window is open
-      if (!window.DB || !window.state || !window.state.user) {
-        // Animate ready messages for guests
+      const { isGuest, isCooldown, countdown } = getCooldownInfo();
+      if (isCooldown) {
+        // On cooldown: always show static message, never animate, countdown only on hover
+        if (readyMsgAnimTimer) {
+          clearTimeout(readyMsgAnimTimer);
+          readyMsgAnimTimer = null;
+        }
+        if (hover) {
+          newText = padLine(`Time left: ${countdown}`);
+          type = 'countdown';
+        } else {
+          newText = padLine('You can post once per day! Make it count!');
+          type = 'info';
+        }
+      } else {
+        // Not on cooldown or guest: animate ready messages
         if (!readyMsgAnimTimer && lastType !== 'ready') {
           newText = padLine('You can post once per day! Make it count!');
           type = 'ready';
@@ -138,57 +193,6 @@ export function renderHeader() {
           newText = padLine(readyMessages[readyMsgIndex]);
           type = 'ready';
         }
-      } else {
-        const countdown = getCountdown();
-        if (countdown) {
-          if (readyMsgAnimTimer) {
-            clearTimeout(readyMsgAnimTimer);
-            readyMsgAnimTimer = null;
-          }
-          if (hover) {
-            newText = padLine(`Time left: ${countdown}`);
-            type = 'countdown';
-          } else {
-            newText = padLine('You can post once per day! Make it count!');
-            type = 'info';
-          }
-        } else {
-          // Show the initial message for a full interval, then start animating ready messages
-          if (!readyMsgAnimTimer && lastType !== 'ready') {
-            newText = padLine('You can post once per day! Make it count!');
-            type = 'ready';
-            // After a full interval, start the animation
-            readyMsgAnimTimer = setTimeout(() => {
-              let nextIndex;
-              do {
-                nextIndex = Math.floor(Math.random() * readyMessages.length);
-              } while (readyMessages.length > 1 && nextIndex === readyMsgIndex);
-              readyMsgIndex = nextIndex;
-              updatePostLimitInfo();
-              // Now start the normal animation loop
-              const scheduleNext = () => {
-                const nextDelay = 4500 + Math.random() * 3500;
-                readyMsgAnimTimer = setTimeout(() => {
-                  if (!readyMsgFading) {
-                    let nextIndex;
-                    do {
-                      nextIndex = Math.floor(Math.random() * readyMessages.length);
-                    } while (readyMessages.length > 1 && nextIndex === readyMsgIndex);
-                    readyMsgIndex = nextIndex;
-                    updatePostLimitInfo();
-                    scheduleNext();
-                  } else {
-                    readyMsgAnimTimer = setTimeout(scheduleNext, 500);
-                  }
-                }, nextDelay);
-              };
-              scheduleNext();
-            }, 4500 + Math.random() * 3500);
-          } else if (readyMsgAnimTimer) {
-            newText = padLine(readyMessages[readyMsgIndex]);
-            type = 'ready';
-          }
-        }
       }
       const typeChanged = type !== lastType;
       lastType = type;
@@ -197,7 +201,7 @@ export function renderHeader() {
   info.addEventListener('mouseenter', () => { hover = true; updatePostLimitInfo(); });
   info.addEventListener('mouseleave', () => { hover = false; updatePostLimitInfo(); });
   updatePostLimitInfo();
-  setInterval(updatePostLimitInfo, 1000);
+  window._asciiHeaderInterval = setInterval(updatePostLimitInfo, 1000);
   }, 0);
   const header = document.createElement('header');
   header.setAttribute('role', 'banner');

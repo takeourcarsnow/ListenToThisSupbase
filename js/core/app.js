@@ -16,6 +16,8 @@ async function renderApp() {
   // Keep state.user in sync
   const { refreshUser } = await import('./app_state.js');
   await refreshUser();
+  // Ensure window.state is always set for header logic
+  window.state = state;
   const prefs = loadPrefs();
 
   const root = $('#app');
