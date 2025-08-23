@@ -28,15 +28,92 @@ export async function renderMain(root, state, DB, render) {
   grid.appendChild(right);
   root.appendChild(grid);
 
+  // Mobile tab bar logic
+  let isMobile = window.matchMedia('(max-width: 600px)').matches;
+  // Responsive: re-render on device width change
+  if (!window._tunedinMobileResizeHandler) {
+    window._tunedinMobileResizeHandler = true;
+    let lastIsMobile = isMobile;
+    window.addEventListener('resize', () => {
+      const nowMobile = window.matchMedia('(max-width: 600px)').matches;
+      if (nowMobile !== lastIsMobile) {
+        lastIsMobile = nowMobile;
+        // Remove tab bar if present
+        const oldTabBar = document.querySelector('.mobile-tab-bar');
+        if (oldTabBar) oldTabBar.remove();
+        // Re-render main view
+        render();
+      }
+    });
+  }
+  let currentTab = 'feed';
+  // Helper to show/hide views
+  function showTab(tab) {
+    currentTab = tab;
+    // Hide all
+    left.style.display = 'none';
+    right.style.display = 'none';
+    // Show selected
+    if (tab === 'feed') left.style.display = '';
+    if (tab === 'compose' || tab === 'profile') right.style.display = '';
+    // If profile, only show profile box, else show compose
+    if (tab === 'profile') {
+      right.innerHTML = '';
+      renderProfileBox(right, state, DB, render);
+    } else if (tab === 'compose') {
+      right.innerHTML = '';
+      renderComposeBox(right, state, DB, render);
+    }
+    // Update tab bar active state
+    const tabBtns = document.querySelectorAll('.mobile-tab-bar button');
+    tabBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
+  }
 
   // Left side: topbar + dock + tags + feed
   setupFeedPane({ root, left, state, DB, prefs, render });
 
   // Right side: profile + compose (or guest prompt)
-  if (state.user) {
-    renderProfileBox(right, state, DB, render);
+  if (!isMobile) {
+    if (state.user) {
+      renderProfileBox(right, state, DB, render);
+    }
+    renderComposeBox(right, state, DB, render);
+  } else {
+    // On mobile, default to feed tab, right is hidden until tab is switched
+    right.style.display = 'none';
   }
-  renderComposeBox(right, state, DB, render);
+
+  // Mobile tab bar injection
+  if (isMobile) {
+    // Remove any existing tab bar
+    const oldTabBar = document.querySelector('.mobile-tab-bar');
+    if (oldTabBar) oldTabBar.remove();
+    const tabBar = document.createElement('nav');
+    tabBar.className = 'mobile-tab-bar';
+    tabBar.innerHTML = `
+      <button data-tab="feed" class="active" aria-label="Feed">
+        <span>🏠</span>
+        <span class="tab-label">Feed</span>
+      </button>
+      <button data-tab="compose" aria-label="Compose">
+        <span>✍️</span>
+        <span class="tab-label">Compose</span>
+      </button>
+      <button data-tab="profile" aria-label="Profile">
+        <span>👤</span>
+        <span class="tab-label">Profile</span>
+      </button>
+    `;
+    document.body.appendChild(tabBar);
+    tabBar.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-tab]');
+      if (btn) {
+        showTab(btn.dataset.tab);
+      }
+    });
+    // Initial state
+    showTab('feed');
+  }
 
   // Initialize dock UI
   updateDock(false, state, DB);

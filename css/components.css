@@ -62,7 +62,7 @@
   }
   #mobile-notification-dot {
     display: inline-block !important;
-    margin: 10px auto 0 auto !important;
+    margin: 2px auto 0 auto !important;
     opacity: 0.35 !important;
     width: 18px !important;
     height: 18px !important;
