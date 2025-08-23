@@ -27,13 +27,22 @@ export async function renderHeader() {
     }
     return str;
   }
-  const initialMsg = 'You can post once per day! Make it count!';
+  // Post limit message variations
+  const postLimitMessages = [
+  'Hang tight—your daily post is recharging.',
+  'Almost there! New post window opens soon.',
+  'Rate limit on. Discover new tracks!',
+  'Patience, DJ! You can post again soon.',
+  'Enjoy the feed while you wait.',
+  'You’re recharging—back with a tune soon.'
+  ];
+  let postLimitMsgIndex = 0;
   const headerHTML = `
     <img src="/assets/logo.png" alt="Logo" class="login-logo-anim header-logo-anim" style="width:44px; height:44px; object-fit:contain; display:block; margin:0 auto 8px auto;" />
     <pre id="ascii-banner" class="head ascii-banner" aria-hidden="false" style="font-family:'Fira Mono','Consolas','Menlo','Monaco','Liberation Mono',monospace !important;font-size:1em;line-height:1.1;letter-spacing:0;white-space:pre;overflow-x:auto;margin:0 auto 8px auto;max-width:100vw;">
 <!--ascii-start-->
 ●--------------------------- TunedIn.space --●
-| <span id="ascii-post-limit">${padLine(initialMsg)}</span> |
+| <span id="ascii-post-limit">${padLine(postLimitMessages[0])}</span> |
 ●--------------------------------------------●
 <!--ascii-end-->
     </pre>
@@ -146,40 +155,55 @@ export async function renderHeader() {
       let newText, type;
       const { isGuest, isCooldown, countdown } = getCooldownInfo();
       if (isCooldown) {
-        // On cooldown: always show static message, never animate, countdown only on hover
-        if (readyMsgAnimTimer) {
-          clearTimeout(readyMsgAnimTimer);
-          readyMsgAnimTimer = null;
-        }
+        // On cooldown: show countdown on hover, otherwise show waiting messages
         if (hover) {
+          if (readyMsgAnimTimer) {
+            clearTimeout(readyMsgAnimTimer);
+            readyMsgAnimTimer = null;
+          }
           newText = padLine(`Time left: ${countdown}`);
           type = 'countdown';
         } else {
-          newText = padLine('You can post once per day! Make it count!');
-          type = 'info';
+          // Not hovering: cycle waiting messages
+          if (!readyMsgAnimTimer && lastType !== 'ready') {
+            newText = padLine(postLimitMessages[postLimitMsgIndex]);
+            type = 'ready';
+            readyMsgAnimTimer = setTimeout(() => {
+              postLimitMsgIndex = (postLimitMsgIndex + 1) % postLimitMessages.length;
+              updatePostLimitInfo();
+              // Start the normal animation loop
+              const scheduleNext = () => {
+                const nextDelay = 4500 + Math.random() * 3500;
+                readyMsgAnimTimer = setTimeout(() => {
+                  if (!readyMsgFading) {
+                    postLimitMsgIndex = (postLimitMsgIndex + 1) % postLimitMessages.length;
+                    updatePostLimitInfo();
+                    scheduleNext();
+                  } else {
+                    readyMsgAnimTimer = setTimeout(scheduleNext, 500);
+                  }
+                }, nextDelay);
+              };
+              scheduleNext();
+            }, 4500 + Math.random() * 3500);
+          } else if (readyMsgAnimTimer) {
+            newText = padLine(postLimitMessages[postLimitMsgIndex]);
+            type = 'ready';
+          }
         }
       } else {
-        // Not on cooldown or guest: animate ready messages
+        // Not on cooldown: show nothing or a default message (optional)
         if (!readyMsgAnimTimer && lastType !== 'ready') {
-          newText = padLine('You can post once per day! Make it count!');
+          newText = padLine(postLimitMessages[postLimitMsgIndex]);
           type = 'ready';
           readyMsgAnimTimer = setTimeout(() => {
-            let nextIndex;
-            do {
-              nextIndex = Math.floor(Math.random() * readyMessages.length);
-            } while (readyMessages.length > 1 && nextIndex === readyMsgIndex);
-            readyMsgIndex = nextIndex;
+            postLimitMsgIndex = (postLimitMsgIndex + 1) % postLimitMessages.length;
             updatePostLimitInfo();
-            // Start the normal animation loop
             const scheduleNext = () => {
               const nextDelay = 4500 + Math.random() * 3500;
               readyMsgAnimTimer = setTimeout(() => {
                 if (!readyMsgFading) {
-                  let nextIndex;
-                  do {
-                    nextIndex = Math.floor(Math.random() * readyMessages.length);
-                  } while (readyMessages.length > 1 && nextIndex === readyMsgIndex);
-                  readyMsgIndex = nextIndex;
+                  postLimitMsgIndex = (postLimitMsgIndex + 1) % postLimitMessages.length;
                   updatePostLimitInfo();
                   scheduleNext();
                 } else {
@@ -190,7 +214,7 @@ export async function renderHeader() {
             scheduleNext();
           }, 4500 + Math.random() * 3500);
         } else if (readyMsgAnimTimer) {
-          newText = padLine(readyMessages[readyMsgIndex]);
+          newText = padLine(postLimitMessages[postLimitMsgIndex]);
           type = 'ready';
         }
       }

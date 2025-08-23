@@ -98,10 +98,10 @@ export function renderComposeBox(right, state, DB, render) {
       isCooldown = true;
       countdown = `${hours}h ${minutes}m ${seconds}s`;
       if (postBtn) postBtn.disabled = true;
-      if (cooldownDiv) cooldownDiv.textContent = `You can post again in ${hours}h ${minutes}m ${seconds}s.`;
+  if (cooldownDiv) cooldownDiv.textContent = `You can post again in ${hours}h ${minutes}m ${seconds}s.`;
     } else {
       if (postBtn) postBtn.disabled = false;
-      if (cooldownDiv) cooldownDiv.textContent = '';
+      if (cooldownDiv) cooldownDiv.textContent = 'Share a track when you feel like it (1 per day)';
     }
     // Expose cooldown state globally for header
     window.composeCooldown = { isCooldown, countdown };
