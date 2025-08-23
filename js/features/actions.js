@@ -28,6 +28,10 @@ export async function onActionClick(e, state, DB, render) {
       try { pl._cleanup && pl._cleanup(); } catch {}
       pl.innerHTML = '';
       card.classList.remove('is-playing');
+      // Clear queue and reset dock when closing the player
+      state.queue = [];
+      state.qIndex = 0;
+      updateDock(false, state, DB);
     } else {
       // Close any other active players
       document.querySelectorAll('.player.active').forEach(otherPl => {
@@ -46,11 +50,16 @@ export async function onActionClick(e, state, DB, render) {
         toast(card || root, 'Could not load post for playback', true);
         return;
       }
+      // Set queue to just this post and set qIndex to 0
+      state.queue = [postId];
+      state.qIndex = 0;
       console.log('Attempting to build embed:', { post: p, playerDiv: pl });
       buildEmbed(p, pl, { autoplay: true, onEnded: () => queueNext(true, state, DB) });
       console.log('Embed built. Player div innerHTML:', pl.innerHTML);
       markNowPlaying(postId, state, DB);
       if (loadPrefs().autoScroll) card.scrollIntoView({ block: 'center' });
+      // Show docked player when a post is played
+      updateDock(true, state, DB);
     }
     return;
   }
