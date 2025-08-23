@@ -176,7 +176,6 @@ button, .button, [class*="button"], [class*="btn"] {
   vertical-align: middle;
 }
 .btn:hover { border-color: var(--line2); }
-.btn:active { transform: translateY(1px); }
 .btn-ghost { border-style: dashed; }
 .btn.icon { padding: 4px 8px; }
 .btn[aria-pressed="true"] { border-color: var(--acc); color: var(--acc); }

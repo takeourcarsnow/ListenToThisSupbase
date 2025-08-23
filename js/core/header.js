@@ -1,5 +1,5 @@
 // Header module: injects the header HTML into the page
-import { POST_LIMIT_MESSAGES, POST_READY_MESSAGES } from './constants.js';
+import { POST_LIMIT_MESSAGES, POST_READY_MESSAGES, GUEST_HEADER_MESSAGES } from './constants.js';
 export async function renderHeader() {
   // Ensure DB is initialized before rendering header
   if (window.DB && typeof window.DB.init === 'function') {
@@ -135,9 +135,32 @@ export async function renderHeader() {
   // DEBUG: Log state for troubleshooting (after variables are initialized)
   // (Move this log after isGuest, isCooldown, and countdown are set)
       // Use getCooldownInfo for all cooldown state
-      let newText, type;
+      let newText = '', type = '';
       const { isGuest, isCooldown, countdown } = getCooldownInfo();
-      if (isCooldown) {
+      if (isGuest) {
+        // Guest mode: show a guest-appropriate message (cycled)
+        const guestMessages = GUEST_HEADER_MESSAGES;
+        // On first load, pick a random message index
+        if (typeof window._guestMsgIndex !== 'number' || window._guestMsgIndex < 0 || window._guestMsgIndex >= guestMessages.length) {
+          window._guestMsgIndex = Math.floor(Math.random() * guestMessages.length);
+        }
+        newText = padLine(guestMessages[window._guestMsgIndex]);
+        type = 'guest';
+        // Only set up the timer if not already running
+        if (!readyMsgAnimTimer && lastType !== 'guest') {
+          readyMsgAnimTimer = setTimeout(function cycleGuestMsg() {
+            // Pick a random index different from the current one
+            let nextIdx;
+            do {
+              nextIdx = Math.floor(Math.random() * guestMessages.length);
+            } while (guestMessages.length > 1 && nextIdx === window._guestMsgIndex);
+            window._guestMsgIndex = nextIdx;
+            updatePostLimitInfo();
+            const nextDelay = 4500 + Math.random() * 3500;
+            readyMsgAnimTimer = setTimeout(cycleGuestMsg, nextDelay);
+          }, 4500 + Math.random() * 3500);
+        }
+      } else if (isCooldown) {
         // On cooldown: show countdown on hover, otherwise show waiting messages
         if (hover) {
           if (readyMsgAnimTimer) {

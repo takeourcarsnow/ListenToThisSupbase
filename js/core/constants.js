@@ -1,3 +1,16 @@
+// Guest mode header messages (cycled in header)
+export const GUEST_HEADER_MESSAGES = [
+	'Welcome, anon! Eavesdrop on the feed.',
+	'Ready to drop a track? Smash the login!',
+	'Sign up to join the party & post your pick.',
+	'Browse the vibes. Want in? Create an account.',
+	'Guest mode: listen, lurk, discover.',
+	'Your turn to post? Log in and join us!',
+	'No account? No post. But you can still jam!',
+	'Feed’s open. Posting? That’s members only.',
+	'Want to share a song? Register & join in!',
+	'Liking the tunes? Make an account & post!'
+];
 
 // Shared string constants
 // Post limit / cooldown wait messages (shared by header and compose box)

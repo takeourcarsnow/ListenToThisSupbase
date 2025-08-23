@@ -177,8 +177,7 @@ body.show-header header[role="banner"] {
     overflow-wrap: anywhere;
     max-width: 98vw;
     text-align: center;
-    line-height: 1.1;
-    font-family: 'Fira Mono', 'Consolas', 'Menlo', 'Monaco', 'Liberation Mono', monospace !important;
+      font-family: 'Fira Mono', 'Consolas', 'Menlo', 'Monaco', 'Liberation Mono', monospace !important;
   }
   .subtitle {
     font-size: 1em;
