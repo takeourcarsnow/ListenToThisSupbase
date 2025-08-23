@@ -36,6 +36,10 @@ async function renderApp() {
     body.classList.remove('show-header');
     renderLogin(root, DB, renderApp);
   } else {
+    if (!document.querySelector('header[role="banner"]')) {
+      const { renderHeader } = await import('./header.js');
+      renderHeader();
+    }
     if (banner) banner.style.display = '';
     body.classList.add('show-header');
     renderMain(root, state, DB, renderApp);
@@ -96,21 +100,6 @@ import { renderHelpOverlay } from './help.js';
 
 window.addEventListener('DOMContentLoaded', function() {
   // Only render header if not about to show login/register in mobile tabbed mode
-  let shouldShowHeader = true;
-  try {
-    // If no user, not guest, or forceLogin, login/register will be shown
-    const isMobile = window.matchMedia('(max-width: 600px)').matches;
-    const forceLogin = window.state && window.state.forceLogin;
-    const noUser = !(window.state && window.state.user);
-    // Use correct guest key logic
-    const isGuest = window.localStorage.getItem('TunedIn.space/guest@v1') === '1';
-    if (isMobile && (forceLogin || (noUser && !isGuest))) {
-      shouldShowHeader = false;
-    }
-  } catch (e) {}
-  if (shouldShowHeader) {
-    renderHeader();
-  }
   renderMainContainers();
   renderHelpOverlay();
   document.body.classList.add('header-logo-ready');
