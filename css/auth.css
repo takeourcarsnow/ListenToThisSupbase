@@ -1,3 +1,8 @@
+/* Hide mobile tab bar when login view is present */
+.login .mobile-tab-bar,
+body.login-page .mobile-tab-bar {
+  display: none !important;
+}
 /* Hide vertical scrollbar on login page */
 body.login-page, .login {
   overflow: hidden !important;
