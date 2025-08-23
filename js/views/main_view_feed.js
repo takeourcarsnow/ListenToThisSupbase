@@ -306,6 +306,11 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
 
   // Always reload prefs and re-render feed/tags for correct tag highlight (mobile/desktop)
   function doRender() {
+    // Save tag cloud scroll position before rerender
+    const tagCloud = document.querySelector('.tag-cloud');
+    if (tagCloud) {
+      window._tagCloudScrollLeft = tagCloud.scrollLeft;
+    }
     const latestPrefs = loadPrefs();
     state.page = 1;
     renderFeed($('#feed'), $('#pager'), state, DB, latestPrefs);

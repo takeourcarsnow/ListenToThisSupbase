@@ -15,9 +15,14 @@ async function smartRefresh(state, DB) {
   if (!feedEl || !pagerEl || !tagsEl) return; // Not on main view
 
   if (!activePlayer) {
-  const prefs = loadPrefs();
-  renderFeed(feedEl, pagerEl, state, DB, prefs);
-  renderTags(tagsEl, DB, prefs);
+    // Save tag cloud scroll position before rerender
+    const tagCloud = document.querySelector('.tag-cloud');
+    if (tagCloud) {
+      window._tagCloudScrollLeft = tagCloud.scrollLeft;
+    }
+    const prefs = loadPrefs();
+    renderFeed(feedEl, pagerEl, state, DB, prefs);
+    renderTags(tagsEl, DB, prefs);
     return;
   }
 

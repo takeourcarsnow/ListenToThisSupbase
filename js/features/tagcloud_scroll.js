@@ -91,25 +91,28 @@ if (typeof window !== 'undefined') {
       } else if (el && el.closest && el.closest('.tag')) {
         tagEl = el.closest('.tag');
       }
-      if (tagEl === downTag) {
-        // Save scroll position
-        // Save scroll position globally so it can be restored on next init
-        if (typeof window !== 'undefined') {
-          window._tagCloudScrollLeft = tagCloud.scrollLeft;
-        }
-        if (typeof window.onActionClick === 'function') {
-          const evt = new Event('click', { bubbles: true, cancelable: true });
-          Object.defineProperty(evt, 'target', { value: tagEl, enumerable: true });
-          window.onActionClick(evt, window.state, window.DB, window.renderApp);
-        } else {
-          tagEl.click();
-        }
-        // Force re-render after tag tap (mobile fix)
-        if (typeof window.renderApp === 'function') {
-          setTimeout(() => {
+        if (tagEl === downTag) {
+          // Toggle tag selection: if already selected, unselect
+          if (window && window.prefs && typeof window.prefs.filterTag !== 'undefined') {
+            const tag = tagEl.getAttribute('data-tag');
+            if (window.prefs.filterTag === tag) {
+              window.prefs.filterTag = '';
+              if (typeof window.renderApp === 'function') window.renderApp();
+              return;
+            } else {
+              window.prefs.filterTag = tag;
+            }
+          }
+          if (typeof window.onActionClick === 'function') {
+            const evt = new Event('click', { bubbles: true, cancelable: true });
+            Object.defineProperty(evt, 'target', { value: tagEl, enumerable: true });
+            window.onActionClick(evt, window.state, window.DB, window.renderApp);
+          } else {
+            tagEl.click();
+          }
+          if (typeof window.renderApp === 'function') {
             window.renderApp();
-          }, 0);
-        }
+          }
       }
     }
     isDown = false;
