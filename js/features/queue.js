@@ -43,7 +43,10 @@ export function updateDock(showIfHidden, state, DB) {
     // Set queue info with extra details
     const queueInfo = document.querySelector('.queue-info');
     if (queueInfo) {
-      let info = `queue ${len ? (state.qIndex + 1) : 0}/${len}`;
+      let info = '';
+      if (len > 1) {
+        info = `queue ${len ? (state.qIndex + 1) : 0}/${len}`;
+      }
       if (p) {
         let userStr = '';
         if (user) {
@@ -53,34 +56,34 @@ export function updateDock(showIfHidden, state, DB) {
         let provStr = provider ? `, source: ${provider}` : '';
         info += ` <span class="muted small">${userStr}${agoStr}${provStr}</span>`;
       }
-  // Add click handler for username link in dock
-  const dockUserLink = document.querySelector('.dock-user-link');
-  if (dockUserLink) {
-    dockUserLink.onclick = (e) => {
-      e.preventDefault();
-      const userId = dockUserLink.getAttribute('data-user-id');
-      // Simulate a click on the username in the feed post that is currently playing
-      const id = getActiveQueueId(state);
-      if (id) {
-        // Find the feed post element
-        const postElem = document.getElementById('post-' + id);
-        if (postElem) {
-          // Try to find a username link inside the post
-          const userLink = postElem.querySelector('.user-link, .post-user, [data-action="view-user"]');
-          if (userLink) {
-            userLink.click();
-            return;
+      // Add click handler for username link in dock
+      const dockUserLink = document.querySelector('.dock-user-link');
+      if (dockUserLink) {
+        dockUserLink.onclick = (e) => {
+          e.preventDefault();
+          const userId = dockUserLink.getAttribute('data-user-id');
+          // Simulate a click on the username in the feed post that is currently playing
+          const id = getActiveQueueId(state);
+          if (id) {
+            // Find the feed post element
+            const postElem = document.getElementById('post-' + id);
+            if (postElem) {
+              // Try to find a username link inside the post
+              const userLink = postElem.querySelector('.user-link, .post-user, [data-action="view-user"]');
+              if (userLink) {
+                userLink.click();
+                return;
+              }
+            }
           }
-        }
+          // Fallback: open modal directly
+          import('../views/profile.js').then(mod => {
+            if (mod && typeof mod.showUserProfile === 'function') {
+              mod.showUserProfile(userId, DB);
+            }
+          });
+        };
       }
-      // Fallback: open modal directly
-      import('../views/profile.js').then(mod => {
-        if (mod && typeof mod.showUserProfile === 'function') {
-          mod.showUserProfile(userId, DB);
-        }
-      });
-    };
-  }
       queueInfo.innerHTML = info;
     }
   } else {

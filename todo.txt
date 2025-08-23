@@ -23,3 +23,4 @@ x dd option to sort tags by name AND frequency
 
 tags not clicking on phone in cloud
 make tabs on phone for posting and feed 
+when playing posts one by one from post play it should not say queue number

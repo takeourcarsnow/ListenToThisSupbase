@@ -50,9 +50,10 @@ export async function onActionClick(e, state, DB, render) {
         toast(card || root, 'Could not load post for playback', true);
         return;
       }
-      // Set queue to just this post and set qIndex to 0
-      state.queue = [postId];
-      state.qIndex = 0;
+  // Set queue to all visible posts in the feed and set qIndex to the played post
+  const posts = document.querySelectorAll('#feed .post');
+  state.queue = Array.from(posts).map(n => n.dataset.post);
+  state.qIndex = state.queue.indexOf(postId);
       console.log('Attempting to build embed:', { post: p, playerDiv: pl });
       buildEmbed(p, pl, { autoplay: true, onEnded: () => queueNext(true, state, DB) });
       console.log('Embed built. Player div innerHTML:', pl.innerHTML);
