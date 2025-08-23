@@ -1,8 +1,9 @@
 export const SESSION_KEY = 'TunedIn.space/session@v1';
 export const GUEST_KEY = 'TunedIn.space/guest@v1';
 
-// Use sessionStorage for session data (cleared on tab close, less persistent)
+// Only use sessionStorage for local/guest mode. Supabase manages its own session persistence.
 export function getSession() {
+  // For local/guest mode only
   try { return JSON.parse(sessionStorage.getItem(SESSION_KEY) || 'null'); } catch { return null; }
 }
 export function setSession(s) { sessionStorage.setItem(SESSION_KEY, JSON.stringify(s)); }

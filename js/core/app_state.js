@@ -11,7 +11,8 @@ export const state = {
   forceLogin: false
 };
 
-// Optionally, you can add a function to refresh the user
+// Always refresh user from Supabase (or local DB for local mode)
+// Supabase manages its own session persistence, so sessionStorage is not needed for remote users
 export async function refreshUser() {
   state.user = await currentUser(DB);
 }

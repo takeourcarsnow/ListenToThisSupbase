@@ -163,7 +163,7 @@ export function renderLogin(root, DB, render) {
             return;
           } else {
             u = await DB.ensureUser(name, email, pass);
-            setSession({ userId: u.id });
+            setSession({ userId: u.id }); // Only for local users
             setGuestMode(false);
             await DB.refresh();
             wrappedRender();
@@ -199,16 +199,14 @@ export function renderLogin(root, DB, render) {
           $('#loginMsg').innerHTML = 'You must confirm your email before logging in. Please check your inbox.';
           return;
         }
-        const userId = userObj.id;
-        u = { id: userId, email };
-        setSession({ userId: u.id });
+        // Do not setSession for Supabase users; rely on Supabase session
         setGuestMode(false);
         await DB.refresh();
         wrappedRender();
       } else {
         u = await DB.loginUser(email, pass);
         if (!u) throw new Error('Invalid credentials');
-        setSession({ userId: u.id });
+        setSession({ userId: u.id }); // Only for local users
         setGuestMode(false);
         await DB.refresh();
         wrappedRender();
