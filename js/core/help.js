@@ -9,8 +9,8 @@ export function renderHelpOverlay() {
       <div class="sep"></div>
       <div class="small stack" style="gap:1.5em">
         <div style="text-align:center;">
-          <b>👋 Welcome to <span style="color:var(--accent,#6cf)">TunedIn.space</span>!</b><br>
-          <span class="muted">Share your favorite track—just one per day! Come back tomorrow to post again. (We won't judge. Much.)</span><br>
+          <b>👋 Welcome to <span style="color:var(--accent,#6cf)">TunedIn.space</span></b><br>
+          <span class="muted">Post less. Feel more.</span><br>
           <span class="muted" style="display:block; margin-top:0.5em;">
           </span>
         </div>
