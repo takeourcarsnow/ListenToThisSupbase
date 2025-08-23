@@ -95,7 +95,21 @@ import { renderHelpOverlay } from './help.js';
 // Ensure posts always fit the screen
 
 window.addEventListener('DOMContentLoaded', function() {
-  renderHeader();
+  // Only render header if not about to show login/register in mobile tabbed mode
+  let shouldShowHeader = true;
+  try {
+    // If no user, not guest, or forceLogin, login/register will be shown
+    const isMobile = window.matchMedia('(max-width: 600px)').matches;
+    const forceLogin = window.state && window.state.forceLogin;
+    const noUser = !(window.state && window.state.user);
+    const isGuest = window.localStorage.getItem('guestMode') === 'true';
+    if (isMobile && (forceLogin || (noUser && !isGuest))) {
+      shouldShowHeader = false;
+    }
+  } catch (e) {}
+  if (shouldShowHeader) {
+    renderHeader();
+  }
   renderMainContainers();
   renderHelpOverlay();
   document.body.classList.add('header-logo-ready');

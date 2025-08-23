@@ -16,9 +16,9 @@ export function renderLogin(root, DB, render) {
   div.className = 'login login-fadein';
   div.innerHTML = `
     <div class="auth-shell">
-  <img src="/assets/logo.png" alt="Logo" class="login-logo-anim" style="display:block; margin:0 auto; width:64px; height:64px; object-fit:contain;" />
+      <img src="/assets/logo.png" alt="Logo" class="login-logo-anim" style="display:block; margin:0 auto; width:64px; height:64px; object-fit:contain; animation:none;" />
       <div class="small muted">┌─ login or register to</div>
-  <div class="logo">TunedIn.space</div>
+      <div class="logo">TunedIn.space</div>
       <div class="small muted">└──────────────────────</div>
 
       <div class="title">
@@ -55,6 +55,20 @@ export function renderLogin(root, DB, render) {
   `;
 
   root.appendChild(div);
+  // After parent fade-in, trigger logo animation
+  setTimeout(() => {
+    const logo = div.querySelector('.login-logo-anim');
+    if (logo) {
+      logo.style.animation = '';
+    }
+  }, 700); // match .login-fadein duration
+  // In mobile tabbed mode, remove header (and logo) from DOM if present
+  if (window.matchMedia('(max-width: 600px)').matches) {
+    const header = document.querySelector('header[role="banner"]');
+    if (header && header.parentNode) {
+      header.parentNode.removeChild(header);
+    }
+  }
   // Restore overflow when leaving login view
   const restoreOverflow = () => {
     document.body.style.overflow = prevBodyOverflow || '';
