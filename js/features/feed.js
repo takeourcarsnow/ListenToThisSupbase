@@ -228,9 +228,40 @@ export function renderTags(el, DB) {
   const db = DB.getAll();
   const m = new Map();
   db.posts.forEach(p => (p.tags || []).forEach(t => m.set(t, (m.get(t) || 0) + 1)));
-  const top = Array.from(m.entries())
-    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-    .slice(0, 80);
+
+  // Sorting UI
+  let sortMode = window.localStorage.getItem('tagSortMode') || 'freq';
+  function setSortMode(mode) {
+    sortMode = mode;
+    window.localStorage.setItem('tagSortMode', mode);
+    renderTags(el, DB);
+  }
+  // Remove old sort UI if present
+  const oldSortUI = el.querySelector('.tag-sort-ui');
+  if (oldSortUI) oldSortUI.remove();
+  // Add new sort UI
+  const sortUI = document.createElement('div');
+  sortUI.className = 'tag-sort-ui';
+  sortUI.style.display = 'flex';
+  sortUI.style.gap = '8px';
+  sortUI.style.marginBottom = '6px';
+  sortUI.innerHTML = `
+    <button class="btn btn-ghost small" data-sort="freq" ${sortMode==='freq'?'disabled':''}>Sort by frequency</button>
+    <button class="btn btn-ghost small" data-sort="abc" ${sortMode==='abc'?'disabled':''}>Sort A-Z</button>
+  `;
+  sortUI.addEventListener('click', e => {
+    const btn = e.target.closest('button[data-sort]');
+    if (btn) setSortMode(btn.getAttribute('data-sort'));
+  });
+  el.prepend(sortUI);
+
+  let top = Array.from(m.entries());
+  if (sortMode === 'freq') {
+    top = top.sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
+  } else {
+    top = top.sort((a, b) => a[0].localeCompare(b[0]) || b[1] - a[1]);
+  }
+  top = top.slice(0, 80);
   if (top.length === 0) { el.innerHTML = '<span class="muted small">no tags yet</span>'; return; }
   // Find min and max counts for scaling
   const counts = top.map(([_, c]) => c);
@@ -242,8 +273,13 @@ export function renderTags(el, DB) {
     const level = Math.ceil(((count - min) / (max - min)) * 4) + 1; // 1-5
     return level >= 5 ? 'tag--freq-max' : `tag--freq-${level}`;
   }
-  el.innerHTML = `<div class="tag-cloud">` +
-    top.map(([t, c]) =>
-      `<span class="tag ${freqClass(c)}" data-action="filter-tag" data-tag="${esc(t)}"><span class="tag-label">#${esc(t)}</span></span>`
-    ).join(' ') + `</div>`;
+  // Remove old tag cloud if present
+  const oldCloud = el.querySelector('.tag-cloud');
+  if (oldCloud) oldCloud.remove();
+  const tagCloudDiv = document.createElement('div');
+  tagCloudDiv.className = 'tag-cloud';
+  tagCloudDiv.innerHTML = top.map(([t, c]) =>
+    `<span class="tag ${freqClass(c)}" data-action="filter-tag" data-tag="${esc(t)}"><span class="tag-label">#${esc(t)}</span></span>`
+  ).join(' ');
+  el.appendChild(tagCloudDiv);
 }
