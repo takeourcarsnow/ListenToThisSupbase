@@ -98,13 +98,14 @@ class LocalAdapter {
         name: name.trim(),
         email: email,
         password: hash, // store hash
-        about: '',
-        facebook: '',
-        instagram: '',
-        twitter: '',
-        bandcamp: '',
-        soundcloud: '',
-        youtube: '',
+  about: '',
+  facebook: '',
+  instagram: '',
+  twitter: '',
+  bandcamp: '',
+  soundcloud: '',
+  youtube: '',
+  lastfm: '',
         createdAt: Date.now()
       };
       this.cache.users.push(u); await this._save();
@@ -248,12 +249,13 @@ class SupabaseAdapter {
       id: row.id,
       name: row.name,
       about: row.about || '',
-      facebook: row.facebook || '',
-      instagram: row.instagram || '',
-      twitter: row.twitter || '',
-      bandcamp: row.bandcamp || '',
-      soundcloud: row.soundcloud || '',
-      youtube: row.youtube || '',
+  facebook: row.facebook || '',
+  instagram: row.instagram || '',
+  twitter: row.twitter || '',
+  bandcamp: row.bandcamp || '',
+  soundcloud: row.soundcloud || '',
+  youtube: row.youtube || '',
+  lastfm: row.lastfm || '',
       avatarUrl: row.avatarurl || '',
       createdAt: row.created_at ? new Date(row.created_at).getTime() : Date.now()
     };
@@ -369,15 +371,16 @@ class SupabaseAdapter {
     }
     if (!userId) throw new Error('No authenticated user');
     const update = {};
-    if (patch.name !== undefined) update.name = patch.name;
-    if (patch.about !== undefined) update.about = patch.about;
-    if (patch.avatarUrl !== undefined) update.avatarurl = patch.avatarUrl;
-    if (patch.facebook !== undefined) update.facebook = patch.facebook;
-    if (patch.instagram !== undefined) update.instagram = patch.instagram;
-    if (patch.twitter !== undefined) update.twitter = patch.twitter;
-    if (patch.bandcamp !== undefined) update.bandcamp = patch.bandcamp;
-    if (patch.soundcloud !== undefined) update.soundcloud = patch.soundcloud;
-    if (patch.youtube !== undefined) update.youtube = patch.youtube;
+  if (patch.name !== undefined) update.name = patch.name;
+  if (patch.about !== undefined) update.about = patch.about;
+  if (patch.avatarUrl !== undefined) update.avatarurl = patch.avatarUrl;
+  if (patch.facebook !== undefined) update.facebook = patch.facebook;
+  if (patch.instagram !== undefined) update.instagram = patch.instagram;
+  if (patch.twitter !== undefined) update.twitter = patch.twitter;
+  if (patch.bandcamp !== undefined) update.bandcamp = patch.bandcamp;
+  if (patch.soundcloud !== undefined) update.soundcloud = patch.soundcloud;
+  if (patch.youtube !== undefined) update.youtube = patch.youtube;
+  if (patch.lastfm !== undefined) update.lastfm = patch.lastfm;
     if (Object.keys(update).length === 0) return this.getUserById(userId);
     const { error } = await this.supabase.from('users').update(update).eq('id', userId);
     if(error) console.error('updateUser error', error);

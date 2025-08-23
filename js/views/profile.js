@@ -38,7 +38,8 @@ export function showUserProfile(userId, DB) {
                   twitter: u.twitter || '',
                   bandcamp: u.bandcamp || '',
                   soundcloud: u.soundcloud || '',
-                  youtube: u.youtube || ''
+                  youtube: u.youtube || '',
+                  lastfm: u.lastfm || ''
                 };
                 const icons = {
                   facebook: '🌐',
@@ -46,7 +47,8 @@ export function showUserProfile(userId, DB) {
                   twitter: '🐦',
                   bandcamp: '🎵',
                   soundcloud: '☁️',
-                  youtube: '▶️'
+                  youtube: '▶️',
+                  lastfm: '🎶'
                 };
                 function extractUser(url, type) {
                   if (!url) return '';
@@ -70,7 +72,8 @@ export function showUserProfile(userId, DB) {
                       facebook: /facebook\.com\/([^/?#]+)/i,
                       instagram: /instagram\.com\/([^/?#]+)/i,
                       twitter: /twitter\.com\/([^/?#]+)/i,
-                      soundcloud: /soundcloud\.com\/([^/?#]+)/i
+                      soundcloud: /soundcloud\.com\/([^/?#]+)/i,
+                      lastfm: /last\.fm\/user\/([^/?#]+)/i
                     };
                     if (patterns[type]) {
                       const m = u.match(patterns[type]);

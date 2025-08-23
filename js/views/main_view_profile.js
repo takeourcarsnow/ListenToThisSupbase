@@ -180,11 +180,12 @@ export function renderProfileBox(right, state, DB, render) {
     twitter: meUser?.twitter || '',
     bandcamp: meUser?.bandcamp || '',
     soundcloud: meUser?.soundcloud || '',
-    youtube: meUser?.youtube || ''
+    youtube: meUser?.youtube || '',
+    lastfm: meUser?.lastfm || ''
   };
 
   function renderSocialLinks(s) {
-    const icons = { facebook: '🌐', instagram: '📸', twitter: '🐦', bandcamp: '🎵', soundcloud: '☁️', youtube: '▶️' };
+    const icons = { facebook: '🌐', instagram: '📸', twitter: '🐦', bandcamp: '🎵', soundcloud: '☁️', youtube: '▶️', lastfm: '🎶' };
     return Object.entries(s)
       .filter(([_, v]) => v)
       .map(([k, v]) => `<a href="${esc(v)}" target="_blank" rel="noopener" class="social-link" title="${k}">${icons[k]}</a>`)
@@ -229,6 +230,8 @@ export function renderProfileBox(right, state, DB, render) {
           <input class="field" type="text" id="socialSoundcloud" name="sc_user" placeholder="SoundCloud username or URL" value="${esc(getSocialUsername(socials.soundcloud, 'soundcloud'))}" autocomplete="username" />
           <label for="socialYoutube"><span class="sr-only">YouTube</span></label>
           <input class="field" type="text" id="socialYoutube" name="yt_user" placeholder="YouTube username or URL" value="${esc(getSocialUsername(socials.youtube, 'youtube'))}" autocomplete="username" />
+          <label for="socialLastfm"><span class="sr-only">Last.fm</span></label>
+          <input class="field" type="text" id="socialLastfm" name="lastfm_user" placeholder="Last.fm username or URL" value="${esc(getSocialUsername(socials.lastfm, 'lastfm'))}" autocomplete="username" />
         </div>
         <div class="muted small" style="margin-top:8px;">You can enter just your username or a full URL for each social field.</div>
       </fieldset>
@@ -403,6 +406,8 @@ export function renderProfileBox(right, state, DB, render) {
         }
         // Otherwise, assume it's a username or channel name
         return 'https://www.youtube.com/c/' + input.replace(/^@/, '');
+      case 'lastfm':
+        return 'https://www.last.fm/user/' + input.replace(/^@/, '');
       default:
         return input;
     }
@@ -419,8 +424,9 @@ export function renderProfileBox(right, state, DB, render) {
   const bandcamp = formatSocial(form.querySelector('#socialBandcamp').value, 'bandcamp');
   const soundcloud = formatSocial(form.querySelector('#socialSoundcloud').value, 'soundcloud');
   const youtube = formatSocial(form.querySelector('#socialYoutube').value, 'youtube');
+  const lastfm = formatSocial(form.querySelector('#socialLastfm').value, 'lastfm');
 
-  await DB.updateUser(me.id, { about, facebook, instagram, twitter, bandcamp, soundcloud, youtube });
+  await DB.updateUser(me.id, { about, facebook, instagram, twitter, bandcamp, soundcloud, youtube, lastfm });
     setTimeout(() => {
       aboutEditForm.style.display = 'none';
       aboutCollapsed.style.display = 'flex';
