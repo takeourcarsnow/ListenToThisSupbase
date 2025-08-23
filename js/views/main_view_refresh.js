@@ -68,11 +68,13 @@ export function setupAutoRefresh(state, DB) {
   if (!window._autoFeedRefresh) {
     window._autoFeedRefresh = setInterval(() => {
       smartRefresh(state, DB).catch(console.error);
-    }, 30000); // 30s
+    }, 600000); // 10 minutes
   }
 }
 
 export function setupVisibilityRefresh(state, DB) {
+  // To re-enable auto-refresh on page refocus or visibility change, uncomment the code below:
+  /*
   if (!window._feedVisibilityHandler) {
     const instantRefresh = () => smartRefresh(state, DB).catch(console.error);
     window.addEventListener('focus', instantRefresh);
@@ -81,4 +83,5 @@ export function setupVisibilityRefresh(state, DB) {
     });
     window._feedVisibilityHandler = true;
   }
+  */
 }
