@@ -68,12 +68,36 @@ if (typeof window !== 'undefined') {
   tagCloud.scrollLeft = scrollLeft - walk;
   e.preventDefault();
   }, { passive: false });
-  tagCloud.addEventListener('touchend', () => {
-  isDown = false;
-  tagCloud.classList.remove('dragging');
-  tagCloudRect = null;
-  dragStarted = false;
-  // Prevent native scroll/momentum
-  event?.preventDefault && event.preventDefault();
+  tagCloud.addEventListener('touchend', function(event) {
+    // Only handle if touch started on this tag cloud
+    if (!isDown) return;
+    isDown = false;
+    tagCloud.classList.remove('dragging');
+    tagCloudRect = null;
+    // If not dragging, treat as tap: trigger click on tag if touched
+    if (!dragStarted && event.changedTouches && event.changedTouches.length === 1) {
+      const touch = event.changedTouches[0];
+      const el = document.elementFromPoint(touch.clientX, touch.clientY);
+      let tagEl = null;
+      if (el && el.classList.contains('tag')) {
+        tagEl = el;
+      } else if (el && el.closest('.tag')) {
+        tagEl = el.closest('.tag');
+      }
+      if (tagEl) {
+        // Try to call the delegated handler directly if present
+        if (typeof window.onActionClick === 'function') {
+          // Build a synthetic event similar to click
+          const evt = new Event('click', { bubbles: true, cancelable: true });
+          Object.defineProperty(evt, 'target', { value: tagEl, enumerable: true });
+          window.onActionClick(evt, window.state, window.DB, window.renderApp);
+        } else {
+          tagEl.click();
+        }
+      }
+    }
+    dragStarted = false;
+    // Prevent native scroll/momentum
+    event?.preventDefault && event.preventDefault();
   });
 }

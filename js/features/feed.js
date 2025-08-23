@@ -262,6 +262,27 @@ export function renderTags(el, DB) {
   if (typeof enableTagCloudDragScroll === 'function') {
     enableTagCloudDragScroll(tagCloudDiv);
   }
+  // On mobile, add touchend handler directly to each tag to ensure tap works
+  if ('ontouchstart' in window) {
+    tagCloudDiv.querySelectorAll('.tag').forEach(tag => {
+      tag.addEventListener('touchend', function(event) {
+        // Only trigger if not a drag (mimic previous logic)
+        if (typeof window.enableTagCloudDragScroll === 'function' && window._tagCloudDragging) return;
+        // Prevent duplicate click
+        event.preventDefault();
+        // Directly trigger filter-tag action
+        const t = tag.dataset.tag;
+        if (t && typeof window.savePrefs === 'function' && typeof window.state !== 'undefined' && typeof window.DB !== 'undefined' && typeof window.renderApp === 'function') {
+          window.savePrefs({ filterTag: t, search: '' });
+          window.state.page = 1;
+          window.renderApp();
+        } else {
+          // fallback: try to trigger click
+          tag.click();
+        }
+      }, { passive: false });
+    });
+  }
   // Minimal sort UI below
     const sortUI = document.createElement('div');
     sortUI.className = 'tag-sort-ui';

@@ -16,10 +16,10 @@ clicking on edit about me brings up vertical slider for a blnk of an eye before 
 fix small typewriter breaking to new line mid-word
 make sure about me section slides back nicer, it kind of snaps back instantly now
 edit save to close with slide up
-tag cloud by color 
+? ,oitag cloud by color 
 when the time is done when i hover over it should say something like go post it now
 x notifications
-add option to sort tags by name AND frequency 
+x dd option to sort tags by name AND frequency 
 
 tags not clicking on phone in cloud
 make tabs on phone for posting and feed 
