@@ -169,6 +169,16 @@ export function renderProfileBox(right, state, DB, render) {
       case 'soundcloud':
         v = v.replace(/^(www\.)?soundcloud\.com\//i, '');
         break;
+      case 'lastfm':
+        // Extract username from last.fm/user/ or just use as-is
+        let match = v.match(/last\.fm\/user\/([^\/]+)/i);
+        if (match) {
+          v = match[1];
+        } else {
+          // Remove www. and leading @ if present
+          v = v.replace(/^www\./, '').replace(/^@/, '');
+        }
+        break;
       default:
         break;
     }
@@ -195,9 +205,48 @@ export function renderProfileBox(right, state, DB, render) {
 
   function renderSocialLinks(s) {
     const icons = { facebook: '🌐', instagram: '📸', twitter: '🐦', bandcamp: '🎵', soundcloud: '☁️', youtube: '▶️', lastfm: '🎶' };
+    // Use formatSocial for all links to ensure proper URLs
+    function formatSocial(val, type) {
+      const input = (val || '').trim();
+      if (!input) return '';
+      if (/^https?:\/\//i.test(input)) return input;
+      switch (type) {
+        case 'facebook':
+          return 'https://facebook.com/' + input.replace(/^@/, '');
+        case 'instagram':
+          return 'https://instagram.com/' + input.replace(/^@/, '');
+        case 'twitter':
+          return 'https://twitter.com/' + input.replace(/^@/, '');
+        case 'bandcamp':
+          return 'https://' + input.replace(/^https?:\/\//, '').replace(/\/$/, '') + '.bandcamp.com/';
+        case 'soundcloud':
+          return 'https://soundcloud.com/' + input.replace(/^@/, '');
+        case 'youtube':
+          if (/^[\w-]{11}$/.test(input)) {
+            return 'https://www.youtube.com/watch?v=' + input;
+          }
+          if (/^@/.test(input)) {
+            return 'https://www.youtube.com/' + input;
+          }
+          return 'https://www.youtube.com/c/' + input.replace(/^@/, '');
+        case 'lastfm':
+          let cleaned = input.replace(/^@/, '');
+          const lastfmMatch = cleaned.match(/last\.fm\/user\/([^\/]+)/i);
+          if (lastfmMatch) {
+            return 'https://www.last.fm/user/' + lastfmMatch[1];
+          }
+          cleaned = cleaned.replace(/^www\./, '');
+          return 'https://www.last.fm/user/' + cleaned;
+        default:
+          return input;
+      }
+    }
     return Object.entries(s)
       .filter(([_, v]) => v)
-      .map(([k, v]) => `<a href="${esc(v)}" target="_blank" rel="noopener" class="social-link" title="${k}">${icons[k]}</a>`)
+      .map(([k, v]) => {
+        const url = formatSocial(v, k);
+        return `<a href="${esc(url)}" target="_blank" rel="noopener" class="social-link" title="${k}">${icons[k]}</a>`;
+      })
       .join(' ');
   }
 
