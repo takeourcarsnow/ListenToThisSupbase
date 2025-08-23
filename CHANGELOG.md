@@ -8,8 +8,15 @@ This file summarizes the major changes and improvements throughout the history o
 
 
 ### 2025-08-23
-- Leaderboard redesign: simplified style, profile pictures, clickable usernames/avatars, and improved mobile/responsive support
+- Added non-default confirmation popups for deleting comments, posts, and duplicate post links for a consistent, modern UI
+- Major improvements to header timer and random words display
+- Integrated last.fm social links
+- Improved tag scrolling on PC
+- Enhanced tag sorting options (sort by frequency or alphabetically)
+- Refined tag sorting logic and UI
+- Other UI/UX tweaks and bugfixes
 - Fixed leaderboard not opening on some devices/phones
+- Leaderboard redesign: simplified style, profile pictures, clickable usernames/avatars, and improved mobile/responsive support
 - Notification system and dot indicator improvements (UI, logic, mobile tap fixes, and debug)
 - Overlay/modal and menu stacking, layout, and interaction fixes
 - Tag dragging fixes and removed debug outline
@@ -18,11 +25,6 @@ This file summarizes the major changes and improvements throughout the history o
 - Improved fit and layout on mobile, including dot tweaks and mobile CSS
 - Mobile menu improvements and bugfixes
 - Prevented left-scrolling banner
-- General UI/UX tweaks, bugfixes, and code cleanup
-- Added custom confirmation popup for deleting posts (matches comment delete style)
-- Added custom confirmation popup for duplicate post links (matches comment/post delete style)
-- Improved consistency and UI for all confirmation dialogs
-- Header timer and random words improvements
 
 ### 2025-08-22
 - Notification system redesign and multiple improvements (UI, logic, auto-hide, post activity alerts)
