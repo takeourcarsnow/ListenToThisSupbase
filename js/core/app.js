@@ -92,6 +92,39 @@ async function boot() {
 
 boot();
 
+// --- Track visits: send user or anonymous ID to backend ---
+function getOrCreateVisitorId() {
+  let id = localStorage.getItem('visitorId');
+  if (!id) {
+    id = 'anon_' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
+    localStorage.setItem('visitorId', id);
+  }
+  return id;
+}
+
+async function trackVisit() {
+  // Wait for state.user to be set (after boot)
+  let userId = null;
+  if (window.state && window.state.user && window.state.user.id) {
+    userId = window.state.user.id;
+  }
+  const visitorId = getOrCreateVisitorId();
+  const userAgent = navigator.userAgent;
+  const timestamp = Date.now();
+  try {
+    await fetch('/api/track_visit', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ visitorId, userId, userAgent, timestamp })
+    });
+  } catch (e) {
+    // Ignore errors
+  }
+}
+
+// Track visit after boot (user info available)
+boot().then(trackVisit);
+
 // Add header, main containers, and help overlay on DOMContentLoaded
 import { renderHeader, renderMainContainers } from './header.js';
 import { renderHelpOverlay } from './help.js';
