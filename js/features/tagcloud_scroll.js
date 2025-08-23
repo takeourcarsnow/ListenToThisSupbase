@@ -7,87 +7,86 @@ if (typeof window !== 'undefined') {
   window.enableTagCloudDragScroll = enableTagCloudDragScroll;
 }
   let isDown = false;
-  let startX;
+  let startX, startY;
   let scrollLeft;
   let tagCloudRect;
-  // Removed velocity/momentum variables
-  let dragStarted = false;
-  // Instantly start drag on mobile for best responsiveness
-  const isMobile = /Mobi|Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-  const DRAG_THRESHOLD = isMobile ? 0 : 5; // px
+  let downTag = null;
+  let drag = false;
+  let pointerId = null;
+  const DRAG_THRESHOLD = 5; // px, same for all devices for consistency
 
-  // Mouse events
-  tagCloud.addEventListener('mousedown', (e) => {
-    if (e.button !== 0) return; // Only left mouse button
+  function pointerDown(e) {
+    // Only left mouse button or single touch
+    if ((e.type === 'mousedown' && e.button !== 0) || (e.type === 'pointerdown' && e.pointerType === 'mouse' && e.button !== 0)) return;
     isDown = true;
+    drag = false;
+    pointerId = e.pointerId || null;
     tagCloud.classList.add('dragging');
     tagCloudRect = tagCloud.getBoundingClientRect();
-    startX = e.pageX - tagCloudRect.left;
-    scrollLeft = tagCloud.scrollLeft;
-    e.preventDefault();
-  });
-  document.addEventListener('mousemove', (e) => {
-    if (!isDown) return;
-    if (!tagCloudRect) tagCloudRect = tagCloud.getBoundingClientRect();
-    const x = e.pageX - tagCloudRect.left;
-    const walk = (x - startX) * 1.2; // scroll speed for mouse
-    tagCloud.scrollLeft = scrollLeft - walk;
-  });
-  document.addEventListener('mouseup', () => {
-    isDown = false;
-    tagCloud.classList.remove('dragging');
-    tagCloudRect = null;
-  });
-
-  // Touch events (1:1 mapping, more natural, with momentum)
-  tagCloud.addEventListener('touchstart', (e) => {
-  if (e.touches.length !== 1) return;
-  isDown = true;
-  dragStarted = isMobile ? true : false;
-  tagCloud.classList.add('dragging');
-  tagCloudRect = tagCloud.getBoundingClientRect();
-  startX = e.touches[0].pageX - tagCloudRect.left;
-  scrollLeft = tagCloud.scrollLeft;
-  e.preventDefault();
-  }, { passive: false });
-  tagCloud.addEventListener('touchmove', (e) => {
-    if (!isDown || e.touches.length !== 1) return;
-    if (!tagCloudRect) tagCloudRect = tagCloud.getBoundingClientRect();
-    const x = e.touches[0].pageX - tagCloudRect.left;
-    if (!dragStarted) {
-      if (Math.abs(x - startX) > DRAG_THRESHOLD) {
-        dragStarted = true;
-        // Re-anchor drag to current position for immediate follow
-        startX = x;
-        scrollLeft = tagCloud.scrollLeft;
-      } else {
-        return; // Don't scroll until threshold passed
-      }
+    if (e.type.startsWith('touch')) {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+    } else {
+      startX = e.clientX;
+      startY = e.clientY;
     }
-  const walk = (x - startX); // 1:1 for touch
-  tagCloud.scrollLeft = scrollLeft - walk;
-  e.preventDefault();
-  }, { passive: false });
-  tagCloud.addEventListener('touchend', function(event) {
-    // Only handle if touch started on this tag cloud
+    scrollLeft = tagCloud.scrollLeft;
+    // Track tag under pointer down
+    let el = e.target;
+    if (el && el.classList && el.classList.contains('tag')) {
+      downTag = el;
+    } else if (el && el.closest && el.closest('.tag')) {
+      downTag = el.closest('.tag');
+    } else {
+      downTag = null;
+    }
+    e.preventDefault && e.preventDefault();
+  }
+
+  function pointerMove(e) {
     if (!isDown) return;
-    isDown = false;
-    tagCloud.classList.remove('dragging');
-    tagCloudRect = null;
-    // If not dragging, treat as tap: trigger click on tag if touched
-    if (!dragStarted && event.changedTouches && event.changedTouches.length === 1) {
-      const touch = event.changedTouches[0];
-      const el = document.elementFromPoint(touch.clientX, touch.clientY);
+    let clientX, clientY;
+    if (e.type.startsWith('touch')) {
+      clientX = e.touches[0].clientX;
+      clientY = e.touches[0].clientY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+    const dx = clientX - startX;
+    const dy = clientY - startY;
+    if (!drag && Math.sqrt(dx * dx + dy * dy) > DRAG_THRESHOLD) {
+      drag = true;
+    }
+    if (!tagCloudRect) tagCloudRect = tagCloud.getBoundingClientRect();
+    const x = clientX - tagCloudRect.left;
+    tagCloud.scrollLeft = scrollLeft - (x - (startX - tagCloudRect.left));
+    e.preventDefault && e.preventDefault();
+  }
+
+  function pointerUp(e) {
+    if (!isDown) return;
+    let clientX, clientY;
+    if (e.type.startsWith('touch')) {
+      clientX = (e.changedTouches && e.changedTouches[0].clientX) || startX;
+      clientY = (e.changedTouches && e.changedTouches[0].clientY) || startY;
+    } else {
+      clientX = e.clientX;
+      clientY = e.clientY;
+    }
+    const dx = clientX - startX;
+    const dy = clientY - startY;
+    // Only select if no drag and pointer up is on the same tag as pointer down
+    if (!drag && downTag) {
+      const el = document.elementFromPoint(clientX, clientY);
       let tagEl = null;
-      if (el && el.classList.contains('tag')) {
+      if (el && el.classList && el.classList.contains('tag')) {
         tagEl = el;
-      } else if (el && el.closest('.tag')) {
+      } else if (el && el.closest && el.closest('.tag')) {
         tagEl = el.closest('.tag');
       }
-      if (tagEl) {
-        // Try to call the delegated handler directly if present
+      if (tagEl === downTag) {
         if (typeof window.onActionClick === 'function') {
-          // Build a synthetic event similar to click
           const evt = new Event('click', { bubbles: true, cancelable: true });
           Object.defineProperty(evt, 'target', { value: tagEl, enumerable: true });
           window.onActionClick(evt, window.state, window.DB, window.renderApp);
@@ -96,8 +95,28 @@ if (typeof window !== 'undefined') {
         }
       }
     }
-    dragStarted = false;
-    // Prevent native scroll/momentum
-    event?.preventDefault && event.preventDefault();
-  });
+    isDown = false;
+    downTag = null;
+    drag = false;
+    pointerId = null;
+    tagCloud.classList.remove('dragging');
+    tagCloudRect = null;
+    e.preventDefault && e.preventDefault();
+  }
+
+  // Use pointer events if available, else fallback to mouse/touch
+  if (window.PointerEvent) {
+    tagCloud.addEventListener('pointerdown', pointerDown, { passive: false });
+    tagCloud.addEventListener('pointermove', pointerMove, { passive: false });
+    tagCloud.addEventListener('pointerup', pointerUp, { passive: false });
+    tagCloud.addEventListener('pointercancel', pointerUp, { passive: false });
+  } else {
+    tagCloud.addEventListener('mousedown', pointerDown, { passive: false });
+    document.addEventListener('mousemove', pointerMove, { passive: false });
+    document.addEventListener('mouseup', pointerUp, { passive: false });
+    tagCloud.addEventListener('touchstart', pointerDown, { passive: false });
+    tagCloud.addEventListener('touchmove', pointerMove, { passive: false });
+    tagCloud.addEventListener('touchend', pointerUp, { passive: false });
+    tagCloud.addEventListener('touchcancel', pointerUp, { passive: false });
+  }
 }
