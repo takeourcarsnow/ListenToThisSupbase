@@ -228,7 +228,7 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
   <button class="btn" data-action="q-stop" title="stop">&#9632;</button>
   <button class="btn" data-action="q-next" title="next in queue (j)">&#9197;</button>
   <button class="btn" data-action="q-shuffle" aria-pressed="${prefsNow.shuffle}" title="shuffle">&#8646;</button>
-  <button class="btn btn-ghost" data-action="q-clear" title="clear queue">&#215;</button>
+  <button class="btn btn-ghost" data-action="q-clear" title="clear queue"><span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;"><svg width="13" height="13" viewBox="0 0 13 13" style="display:block;margin:auto;" xmlns="http://www.w3.org/2000/svg"><line x1="3" y1="3" x2="10" y2="10" stroke="#39ff14" stroke-width="1.7" stroke-linecap="round"/><line x1="10" y1="3" x2="3" y2="10" stroke="#39ff14" stroke-width="1.7" stroke-linecap="round"/></svg></span></button>
       </div>
     </div>
     <div class="dock-info">
@@ -255,6 +255,19 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
         if (playingPost) playingPost.classList.remove('is-playing');
       }
     }
+
+    // Handle clear queue button: also close the current open post
+    const clearBtn = e.target.closest('[data-action="q-clear"]');
+    if (clearBtn) {
+      // Remove any overlays (if open post is an overlay)
+      document.querySelectorAll('.overlay').forEach(el => el.remove());
+      // Remove is-playing from any post
+      const playingPost = document.querySelector('.post.is-playing');
+      if (playingPost) playingPost.classList.remove('is-playing');
+      // Remove active from any player
+      const activePlayer = document.querySelector('.player.active');
+      if (activePlayer) activePlayer.classList.remove('active');
+    }
   });
 
   // Left column: tags and feed
@@ -267,7 +280,6 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
   tagsBox.innerHTML = `
     <div class="hstack" style="justify-content:space-between; align-items:center">
       <div class="muted small">> tags</div>
-      ${prefs.filterTag ? `<button class="btn btn-ghost small" data-action="clear-tag">[ clear tag ]</button>` : ''}
     </div>
     <div id="tags"></div>
   `;
