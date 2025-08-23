@@ -19,3 +19,4 @@ edit save to close with slide up
 tag cloud by color 
 when the time is done when i hover over it should say something like go post it now
 x notifications
+add option to sort tags by name AND frequency 
