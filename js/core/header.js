@@ -30,8 +30,23 @@ export function renderHeader() {
   setTimeout(() => {
     const info = document.getElementById('ascii-post-limit');
     if (!info) return;
-    let hover = false;
-    let lastType = '';
+  let hover = false;
+  let lastType = '';
+  const readyMessages = [
+      "Time’s up! Drop your freshest tune.",
+      "The stage is yours—share your music!",
+      "Ready to post? Let’s hear what you’ve got!",
+      "Mic’s on. What are you listening to today?",
+      "It’s posting time - bring the vibes!",
+      "Your post window is open. Make it count!",
+      "Go on, share your soundtrack for today.",
+      "Let’s see what’s spinning in your world!",
+      "You’re up! What’s your tune of the day?",
+      "Spotlight’s on you—post your music pick!"
+    ];
+  let readyMsgIndex = 0;
+  let readyMsgAnimTimer = null;
+  let readyMsgFading = false;
     // Add fade animation style if not present
     if (!document.getElementById('ascii-post-limit-fade-style')) {
       const style = document.createElement('style');
@@ -71,13 +86,16 @@ export function renderHeader() {
     }
     function setTextWithFade(newText, typeChanged) {
       // Only update if changed
-      if (info.textContent === newText || info.innerHTML === newText) return;
-      if (typeChanged) {
+      if (info.innerHTML === newText) return;
+      // Only fade for ready messages, not for countdown/info
+      if (typeChanged && (lastType === 'ready' || typeChanged === 'ready')) {
+        readyMsgFading = true;
         info.classList.add('fade');
         setTimeout(() => {
           info.innerHTML = newText;
           info.classList.remove('fade');
-        }, 180);
+          setTimeout(() => { readyMsgFading = false; }, 350); // allow fade in to finish
+        }, 350); // fade out duration
       } else {
         info.innerHTML = newText;
       }
@@ -87,24 +105,70 @@ export function renderHeader() {
       if (!window.DB || !window.state || !window.state.user) {
         newText = padLine('You can post once per day! Make it count!');
         type = 'info';
+        if (readyMsgAnimTimer) {
+          clearTimeout(readyMsgAnimTimer);
+          readyMsgAnimTimer = null;
+        }
       } else {
         const countdown = getCountdown();
-        if (hover && countdown) {
-          newText = padLine(`Time left: ${countdown}`);
-          type = 'countdown';
+        if (countdown) {
+          if (readyMsgAnimTimer) {
+            clearTimeout(readyMsgAnimTimer);
+            readyMsgAnimTimer = null;
+          }
+          if (hover) {
+            newText = padLine(`Time left: ${countdown}`);
+            type = 'countdown';
+          } else {
+            newText = padLine('You can post once per day! Make it count!');
+            type = 'info';
+          }
         } else {
-          newText = padLine('You can post once per day! Make it count!');
-          type = 'info';
+          // Show the initial message for a full interval, then start animating ready messages
+          if (!readyMsgAnimTimer && lastType !== 'ready') {
+            newText = padLine('You can post once per day! Make it count!');
+            type = 'ready';
+            // After a full interval, start the animation
+            readyMsgAnimTimer = setTimeout(() => {
+              let nextIndex;
+              do {
+                nextIndex = Math.floor(Math.random() * readyMessages.length);
+              } while (readyMessages.length > 1 && nextIndex === readyMsgIndex);
+              readyMsgIndex = nextIndex;
+              updatePostLimitInfo();
+              // Now start the normal animation loop
+              const scheduleNext = () => {
+                const nextDelay = 4500 + Math.random() * 3500;
+                readyMsgAnimTimer = setTimeout(() => {
+                  if (!readyMsgFading) {
+                    let nextIndex;
+                    do {
+                      nextIndex = Math.floor(Math.random() * readyMessages.length);
+                    } while (readyMessages.length > 1 && nextIndex === readyMsgIndex);
+                    readyMsgIndex = nextIndex;
+                    updatePostLimitInfo();
+                    scheduleNext();
+                  } else {
+                    readyMsgAnimTimer = setTimeout(scheduleNext, 500);
+                  }
+                }, nextDelay);
+              };
+              scheduleNext();
+            }, 4500 + Math.random() * 3500);
+          } else if (readyMsgAnimTimer) {
+            newText = padLine(readyMessages[readyMsgIndex]);
+            type = 'ready';
+          }
         }
       }
       const typeChanged = type !== lastType;
       lastType = type;
       setTextWithFade(newText, typeChanged);
     }
-    info.addEventListener('mouseenter', () => { hover = true; updatePostLimitInfo(); });
-    info.addEventListener('mouseleave', () => { hover = false; updatePostLimitInfo(); });
-    updatePostLimitInfo();
-    setInterval(updatePostLimitInfo, 1000);
+  info.addEventListener('mouseenter', () => { hover = true; updatePostLimitInfo(); });
+  info.addEventListener('mouseleave', () => { hover = false; updatePostLimitInfo(); });
+  updatePostLimitInfo();
+  setInterval(updatePostLimitInfo, 1000);
   }, 0);
   const header = document.createElement('header');
   header.setAttribute('role', 'banner');
