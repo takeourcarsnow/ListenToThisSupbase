@@ -1,10 +1,12 @@
-
 # Changelog
 
-This changelog is auto-generated from the commit history. Only meaningful changes are included; trivial or duplicate entries are omitted for clarity.
-
----
-
+## [2025-08-23] (Unreleased)
+### UI/UX & Header Improvements
+- Guest header messages now cycle randomly and start at a random message on each load, matching the logged-in experience.
+- Guest header messages are now stored in `constants.js` for easier editing and consistency.
+- Improved guest message style and variety for a more welcoming, on-brand experience.
+- Header animation and cycling logic improved for both guests and logged-in users.
+- Various header and mobile UI tweaks for consistency and accessibility.
 
 ## [2025-08-23]
 ### General Improvements
