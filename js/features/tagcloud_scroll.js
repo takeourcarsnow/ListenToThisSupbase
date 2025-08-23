@@ -15,7 +15,9 @@ if (typeof window !== 'undefined') {
   let velocity = 0;
   let momentumFrame = null;
   let dragStarted = false;
-  const DRAG_THRESHOLD = 5; // px
+  // Lower drag threshold for mobile to reduce delay
+  const isMobile = /Mobi|Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  const DRAG_THRESHOLD = isMobile ? 1 : 5; // px
 
   // Mouse events
   tagCloud.addEventListener('mousedown', (e) => {
