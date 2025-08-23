@@ -94,7 +94,50 @@ export async function onCreatePost(e, state, DB, render) {
     (p.provider && provider && p.provider.provider === provider.provider && p.provider.id === provider.id && p.provider.kind === provider.kind)
   );
   if (dup) {
-    if (!confirm('This link looks like a duplicate. Add anyway?')) {
+    // Remove any existing confirm popup
+    document.querySelectorAll('.comment-delete-confirm').forEach(el => el.remove());
+
+    // Create confirm popup (identical to comment/post delete)
+    const confirmDiv = document.createElement('div');
+    confirmDiv.className = 'comment-delete-confirm fadein';
+    confirmDiv.innerHTML = `
+      <div class="confirm-inner">
+        <span><b>This link looks like a duplicate. Add anyway?</b></span>
+        <button class="btn small btn-danger confirm-yes" tabindex="0">OK</button>
+        <button class="btn small confirm-no" tabindex="0">Cancel</button>
+      </div>
+    `;
+    // Position near the submit button
+    const submitBtn = document.querySelector('#postForm button[type="submit"]');
+    const rect = submitBtn ? submitBtn.getBoundingClientRect() : {left: window.innerWidth/2, bottom: window.innerHeight/2};
+    confirmDiv.style.position = 'absolute';
+    confirmDiv.style.zIndex = 10010;
+    let left = rect.left + window.scrollX;
+    const minWidth = 260;
+    if (left + minWidth > window.innerWidth - 8) {
+      left = window.innerWidth - minWidth - 8;
+    }
+    confirmDiv.style.left = left + 'px';
+    confirmDiv.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+
+    document.body.appendChild(confirmDiv);
+
+    // Remove popup helper (with fadeout)
+    function removeConfirm() {
+      confirmDiv.classList.remove('fadein');
+      confirmDiv.classList.add('fadeout');
+      setTimeout(() => confirmDiv.remove(), 180);
+    }
+
+    // Confirm
+    confirmDiv.querySelector('.confirm-yes').onclick = () => {
+      removeConfirm();
+      // Continue with post creation
+      actuallyCreatePost();
+    };
+    // Cancel
+    confirmDiv.querySelector('.confirm-no').onclick = () => {
+      removeConfirm();
       setTimeout(() => {
         const el = document.getElementById('post-' + dup.id);
         if (el) {
@@ -103,7 +146,46 @@ export async function onCreatePost(e, state, DB, render) {
           setTimeout(() => el.classList.remove('highlight'), 1500);
         }
       }, 10);
-      return;
+    };
+    // Keyboard accessibility
+    confirmDiv.onkeydown = (ev) => {
+      if (ev.key === 'Enter') {
+        confirmDiv.querySelector('.confirm-yes').click();
+      } else if (ev.key === 'Escape') {
+        removeConfirm();
+      }
+    };
+    setTimeout(() => {
+      confirmDiv.querySelector('.confirm-yes').focus();
+    }, 10);
+    setTimeout(() => {
+      function outside(ev) {
+        if (!confirmDiv.contains(ev.target)) {
+          removeConfirm();
+          document.removeEventListener('mousedown', outside);
+        }
+      }
+      document.addEventListener('mousedown', outside);
+    }, 0);
+
+    // Prevent default post creation
+    return;
+
+    // Helper to continue post creation if confirmed
+    function actuallyCreatePost() {
+      // ...existing code for post creation below...
+      const post = {
+        id: uid('p'),
+        userId: me.id,
+        title, artist, url,
+        provider,
+        tags,
+        body,
+        likes: [],
+        comments: [],
+        createdAt: Date.now()
+      };
+      DB.createPost(post).then(() => render());
     }
   }
 

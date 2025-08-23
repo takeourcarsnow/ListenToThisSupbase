@@ -89,10 +89,72 @@ export async function onActionClick(e, state, DB, render) {
     const p = db.posts.find(x => x.id === postId);
     if (!p) return;
     if (!state.user || p.userId !== state.user.id) { toast(card || root, 'you can only delete your posts', true); return; }
-    if (confirm('Delete this post?')) {
+
+    // Remove any existing confirm popup
+    document.querySelectorAll('.post-delete-confirm').forEach(el => el.remove());
+
+    // Create confirm popup (identical to comment delete)
+    const confirmDiv = document.createElement('div');
+    confirmDiv.className = 'comment-delete-confirm fadein';
+    confirmDiv.innerHTML = `
+      <div class="confirm-inner">
+        <span><b>Delete this post?</b></span>
+        <button class="btn small btn-danger confirm-yes" tabindex="0">OK</button>
+        <button class="btn small confirm-no" tabindex="0">Cancel</button>
+      </div>
+    `;
+    // Position near the button
+    const rect = btn.getBoundingClientRect();
+    confirmDiv.style.position = 'absolute';
+    confirmDiv.style.zIndex = 10010;
+    let left = rect.left + window.scrollX;
+    const minWidth = 180;
+    // Prevent offscreen right
+    if (left + minWidth > window.innerWidth - 8) {
+      left = window.innerWidth - minWidth - 8;
+    }
+    confirmDiv.style.left = left + 'px';
+    confirmDiv.style.top = (rect.bottom + window.scrollY + 4) + 'px';
+
+    document.body.appendChild(confirmDiv);
+
+    // Remove popup helper (with fadeout)
+    function removeConfirm() {
+      confirmDiv.classList.remove('fadein');
+      confirmDiv.classList.add('fadeout');
+      setTimeout(() => confirmDiv.remove(), 180);
+    }
+
+    // Confirm
+    confirmDiv.querySelector('.confirm-yes').onclick = async () => {
+      removeConfirm();
       await DB.deletePost(postId);
       render();
-    }
+    };
+    // Cancel
+    confirmDiv.querySelector('.confirm-no').onclick = removeConfirm;
+    // Keyboard accessibility
+    confirmDiv.onkeydown = (ev) => {
+      if (ev.key === 'Enter') {
+        confirmDiv.querySelector('.confirm-yes').click();
+      } else if (ev.key === 'Escape') {
+        removeConfirm();
+      }
+    };
+    // Focus first button
+    setTimeout(() => {
+      confirmDiv.querySelector('.confirm-yes').focus();
+    }, 10);
+    // Dismiss on outside click
+    setTimeout(() => {
+      function outside(ev) {
+        if (!confirmDiv.contains(ev.target)) {
+          removeConfirm();
+          document.removeEventListener('mousedown', outside);
+        }
+      }
+      document.addEventListener('mousedown', outside);
+    }, 0);
     return;
   }
 
