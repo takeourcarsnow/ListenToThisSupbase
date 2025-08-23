@@ -407,7 +407,16 @@ export function renderProfileBox(right, state, DB, render) {
         // Otherwise, assume it's a username or channel name
         return 'https://www.youtube.com/c/' + input.replace(/^@/, '');
       case 'lastfm':
-        return 'https://www.last.fm/user/' + input.replace(/^@/, '');
+        // Remove leading @ if present
+        let cleaned = input.replace(/^@/, '');
+        // If input contains last.fm/user/, extract the username
+        const lastfmMatch = cleaned.match(/last\.fm\/user\/([^\/]+)/i);
+        if (lastfmMatch) {
+          return 'https://www.last.fm/user/' + lastfmMatch[1];
+        }
+        // If input starts with www., remove it
+        cleaned = cleaned.replace(/^www\./, '');
+        return 'https://www.last.fm/user/' + cleaned;
       default:
         return input;
     }
