@@ -104,14 +104,30 @@ export function renderComposeBox(right, state, DB, render) {
       if (!window._composeWaitMsgTimer) {
         window._composeWaitMsgTimer = setInterval(() => {
           window._composeWaitMsgIndex = (window._composeWaitMsgIndex + 1) % waitMessages.length;
-          updateCooldown();
+          // Only update the wait message, not the timer
+          const waitTypeDiv = document.getElementById('waitTypeMsg');
+          if (waitTypeDiv) {
+            const waitMsg = waitMessages[window._composeWaitMsgIndex];
+            if (waitTypeDiv._lastMsg !== waitMsg) {
+              waitTypeDiv.style.opacity = '0';
+              setTimeout(() => {
+                waitTypeDiv.textContent = waitMsg;
+                waitTypeDiv.style.opacity = '1';
+                waitTypeDiv._lastMsg = waitMsg;
+              }, 250);
+            }
+          }
         }, 4000);
       }
-      // Fade in/out effect for wait message, only when changed
-      const waitMsg = waitMessages[window._composeWaitMsgIndex];
+      // Separate timer and wait message elements
+      let timerDiv = document.getElementById('cooldownTimerMsg');
       let waitTypeDiv = document.getElementById('waitTypeMsg');
-      const timerMsg = `<div>You can post again in ${hours}h ${minutes}m ${seconds}s.</div>`;
-      // Only update cooldownDiv if content actually changes (prevents flicker)
+      if (!timerDiv) {
+        timerDiv = document.createElement('div');
+        timerDiv.id = 'cooldownTimerMsg';
+        cooldownDiv.innerHTML = '';
+        cooldownDiv.appendChild(timerDiv);
+      }
       if (!waitTypeDiv) {
         waitTypeDiv = document.createElement('div');
         waitTypeDiv.id = 'waitTypeMsg';
@@ -119,27 +135,15 @@ export function renderComposeBox(right, state, DB, render) {
         waitTypeDiv.style.color = '#888';
         waitTypeDiv.style.fontSize = '0.98em';
         waitTypeDiv.style.transition = 'opacity 0.45s cubic-bezier(.4,0,.2,1)';
-        cooldownDiv.innerHTML = timerMsg;
         cooldownDiv.appendChild(waitTypeDiv);
         waitTypeDiv.style.opacity = '1';
-        waitTypeDiv.textContent = waitMsg;
-        waitTypeDiv._lastMsg = waitMsg;
-        cooldownDiv._lastTimerMsg = timerMsg;
-      } else {
-        // Only update timer message if changed
-        if (cooldownDiv._lastTimerMsg !== timerMsg) {
-          cooldownDiv.innerHTML = timerMsg;
-          cooldownDiv.appendChild(waitTypeDiv);
-          cooldownDiv._lastTimerMsg = timerMsg;
-        }
-        if (waitTypeDiv._lastMsg !== waitMsg) {
-          waitTypeDiv.style.opacity = '0';
-          setTimeout(() => {
-            waitTypeDiv.textContent = waitMsg;
-            waitTypeDiv.style.opacity = '1';
-            waitTypeDiv._lastMsg = waitMsg;
-          }, 250);
-        }
+        waitTypeDiv.textContent = waitMessages[window._composeWaitMsgIndex];
+        waitTypeDiv._lastMsg = waitMessages[window._composeWaitMsgIndex];
+      }
+      // Only update timer text if changed
+      const timerMsg = `You can post again in ${hours}h ${minutes}m ${seconds}s.`;
+      if (timerDiv.textContent !== timerMsg) {
+        timerDiv.textContent = timerMsg;
       }
       if (window._waitTypewriterTimeouts) window._waitTypewriterTimeouts.forEach(clearTimeout);
       window._waitTypewriterTimeouts = [];
