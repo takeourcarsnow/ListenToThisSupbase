@@ -1,4 +1,38 @@
 @media (max-width: 600px) {
+  /* Center posts and add horizontal padding for narrow screens */
+  .post {
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 10px;
+    padding-right: 10px;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .post .meta,
+  .post .post-tags {
+    flex-wrap: wrap !important;
+    gap: 6px;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+  .post .actions {
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    align-items: stretch;
+  }
+  .post .actions > * {
+    width: auto !important;
+    min-width: 90px !important;
+    max-width: 100%;
+    margin-bottom: 2px;
+    box-sizing: border-box;
+  }
+  }
   #notification-dot-container {
     display: flex;
     justify-content: center;
@@ -690,7 +724,7 @@ input[type=number] {
   padding: var(--space-3);
   background: var(--bg2);
   border-radius: var(--radius-1);
-  width: 100%;
+  width: 96%;
   box-sizing: border-box;
   max-width: 100%;
 }

@@ -92,6 +92,8 @@ boot();
 import { renderHeader, renderMainContainers } from './header.js';
 import { renderHelpOverlay } from './help.js';
 
+// Ensure posts always fit the screen
+
 window.addEventListener('DOMContentLoaded', function() {
   renderHeader();
   renderMainContainers();
