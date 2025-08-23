@@ -1045,6 +1045,7 @@ input[type=number] {
 
 /* Tag Cloud (one-line, scrollable) */
 .tag-cloud {
+  touch-action: none;
   display: flex;
   flex-wrap: nowrap;
   overflow-x: auto;
@@ -1080,7 +1081,7 @@ input[type=number] {
   font-size: 0.85rem;
   font-weight: 500;
   white-space: nowrap;
-  transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+  /* transition removed to eliminate any ease/smoothing during drag */
   box-shadow: 0 1px 4px rgba(0,0,0,0.08);
   cursor: pointer;
 }
