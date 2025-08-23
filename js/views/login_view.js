@@ -4,6 +4,8 @@ import { setGuestMode, setSession, clearSession } from '../auth/session.js';
 import { renderHeader } from '../core/header.js';
 
 export function renderLogin(root, DB, render) {
+  // Add a class to body for reliable CSS targeting
+  document.body.classList.add('login-page');
   // Remove mobile tab bar if present (prevents it from lingering on login screen)
   const oldTabBar = document.querySelector('.mobile-tab-bar');
   if (oldTabBar) oldTabBar.remove();
@@ -73,10 +75,11 @@ export function renderLogin(root, DB, render) {
       header.parentNode.removeChild(header);
     }
   }
-  // Restore overflow when leaving login view
+  // Restore overflow and remove login-page class when leaving login view
   const restoreOverflow = () => {
     document.body.style.overflow = prevBodyOverflow || '';
     document.documentElement.style.overflow = prevHtmlOverflow || '';
+    document.body.classList.remove('login-page');
   };
   // Patch render to restore overflow if main view is rendered
   const wrappedRender = (...args) => {
