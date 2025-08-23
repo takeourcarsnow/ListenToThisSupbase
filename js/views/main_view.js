@@ -83,36 +83,79 @@ export async function renderMain(root, state, DB, render) {
     right.style.display = 'none';
   }
 
-  // Mobile tab bar injection
+  // Mobile tab bar injection with accessibility and keyboard navigation
   if (isMobile) {
     // Remove any existing tab bar
     const oldTabBar = document.querySelector('.mobile-tab-bar');
     if (oldTabBar) oldTabBar.remove();
     const tabBar = document.createElement('nav');
     tabBar.className = 'mobile-tab-bar';
+    tabBar.setAttribute('role', 'tablist');
     tabBar.innerHTML = `
-      <button data-tab="feed" class="active" aria-label="Feed">
+      <div class="tab-indicator"></div>
+      <button data-tab="feed" class="active" aria-label="Feed" role="tab" aria-selected="true" tabindex="0">
         <span>🏠</span>
         <span class="tab-label">Feed</span>
       </button>
-      <button data-tab="compose" aria-label="Compose">
+      <button data-tab="compose" aria-label="Compose" role="tab" aria-selected="false" tabindex="-1">
         <span>✍️</span>
         <span class="tab-label">Compose</span>
       </button>
-      <button data-tab="profile" aria-label="Profile">
+      <button data-tab="profile" aria-label="Profile" role="tab" aria-selected="false" tabindex="-1">
         <span>👤</span>
         <span class="tab-label">Profile</span>
       </button>
     `;
     document.body.appendChild(tabBar);
+
+    const tabBtns = Array.from(tabBar.querySelectorAll('button[data-tab]'));
+    const indicator = tabBar.querySelector('.tab-indicator');
+    function moveIndicator(tab) {
+      const idx = tabBtns.findIndex(b => b.dataset.tab === tab);
+      if (idx !== -1 && indicator) {
+        indicator.style.left = `calc(${idx} * 100% / 3)`;
+      }
+    }
+
+    tabBar.addEventListener('keydown', (e) => {
+      const idx = tabBtns.findIndex(btn => btn === document.activeElement);
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        let nextIdx = idx;
+        if (e.key === 'ArrowRight') nextIdx = (idx + 1) % tabBtns.length;
+        if (e.key === 'ArrowLeft') nextIdx = (idx - 1 + tabBtns.length) % tabBtns.length;
+        tabBtns[nextIdx].focus();
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        tabBtns[0].focus();
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        tabBtns[tabBtns.length - 1].focus();
+      } else if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        if (idx !== -1) tabBtns[idx].click();
+      }
+    });
+
     tabBar.addEventListener('click', (e) => {
       const btn = e.target.closest('button[data-tab]');
       if (btn) {
         showTab(btn.dataset.tab);
+        // Update ARIA attributes and tabindex
+        tabBtns.forEach(b => {
+          b.setAttribute('aria-selected', b === btn ? 'true' : 'false');
+          b.tabIndex = b === btn ? 0 : -1;
+        });
+        btn.focus();
+        moveIndicator(btn.dataset.tab);
       }
     });
+
     // Initial state
     showTab('feed');
+    moveIndicator('feed');
+    // Ensure first tab is focusable
+    tabBtns[0].tabIndex = 0;
   }
 
   // Initialize dock UI
