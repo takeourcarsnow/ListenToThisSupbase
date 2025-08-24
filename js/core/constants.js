@@ -1,3 +1,5 @@
+// Header update message (shown below ASCII frame)
+export const UPDATE_HEADER_MESSAGE = '> updates: thumbnails and user uploads';
 // Guest mode header messages (cycled in header)
 export const GUEST_HEADER_MESSAGES = [
 	'Welcome, anon! Eavesdrop on the feed.',

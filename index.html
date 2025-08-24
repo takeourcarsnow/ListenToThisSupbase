@@ -2,6 +2,18 @@
 <html lang="en">
   <!-- style for #ascii-banner-mobile moved to css/components.css -->
   <head>
+    <style>.announcement-bar{display:none!important;}</style>
+    <script>
+      // Prevent announcement bar flash if dismissed
+      try {
+        if (!localStorage.getItem('announcementDismissed')) {
+          document.addEventListener('DOMContentLoaded', function() {
+            var ann = document.getElementById('announcement-bar');
+            if (ann) ann.style.display = '';
+          });
+        }
+      } catch(e){}
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="twitter:image" content="https://TunedIn.space/assets/logo.png" />
     <meta name="theme-color" content="#0b0d10" />
@@ -23,6 +35,7 @@
   </head>
 <body>
   <a class="sr-only" href="#app">Skip to content</a>
+  <div class="site-message">> recents updates: thumbnails & user uploads</div>
   <div class="wrap"></div>
   <noscript>
     <div class="notice warn">This app requires JavaScript.</div>

@@ -1,5 +1,6 @@
 // Header module: injects the header HTML into the page
 import { POST_LIMIT_MESSAGES, POST_READY_MESSAGES, GUEST_HEADER_MESSAGES } from './constants.js';
+import { UPDATE_HEADER_MESSAGE } from './constants.js';
 export async function renderHeader() {
   // Ensure DB is initialized before rendering header
   if (window.DB && typeof window.DB.init === 'function') {
@@ -31,6 +32,21 @@ export async function renderHeader() {
   // Post limit message variations (imported from constants)
   const postLimitMessages = POST_LIMIT_MESSAGES;
   let postLimitMsgIndex = 0;
+  // Helper to pad the update message for the ASCII frame
+  // Helper to pad the update message to the right of the frame
+  function padAsciiUpdateCenter(str) {
+    // Center the message to the frame width (41)
+    const plain = str.replace(/<[^>]*>/g, '');
+    const len = plain.length;
+    if (len < frameWidth) {
+      const pad = frameWidth - len;
+      const left = Math.floor(pad / 2);
+      const right = pad - left;
+      return '\u00A0'.repeat(left) + str + '\u00A0'.repeat(right);
+    }
+    return str;
+  }
+  const updateAsciiMsg = padAsciiUpdateCenter(`<span id="ascii-update-msg">${UPDATE_HEADER_MESSAGE}</span>`);
   const headerHTML = `
     <img src="/assets/logo.png" alt="Logo" class="login-logo-anim header-logo-anim" style="width:44px; height:44px; object-fit:contain; display:block; margin:0 auto 8px auto;" />
     <pre id="ascii-banner" class="head ascii-banner" aria-hidden="false" style="font-family:'Fira Mono','Consolas','Menlo','Monaco','Liberation Mono',monospace !important;font-size:1em;line-height:1.1;letter-spacing:0;white-space:pre;overflow-x:auto;margin:0 auto 8px auto;max-width:100vw;">
@@ -38,9 +54,27 @@ export async function renderHeader() {
 ●--------------------------- TunedIn.space --●
 | <span id="ascii-post-limit">${padLine(postLimitMessages[0])}</span> |
 ●--------------------------------------------●
+${updateAsciiMsg}
 <!--ascii-end-->
     </pre>
   `;
+  // Inject subtle animation for the update message if not present
+  if (!document.getElementById('ascii-update-msg-style')) {
+    const style = document.createElement('style');
+    style.id = 'ascii-update-msg-style';
+    style.textContent = `
+      #ascii-update-msg {
+        animation: ascii-update-fade 2.8s ease-in-out infinite alternate;
+        color: #2e8b57;
+        transition: color 0.5s;
+      }
+      @keyframes ascii-update-fade {
+        0% { opacity: 0.7; }
+        100% { opacity: 1; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
   // Remove any existing header to avoid duplicates and stale event listeners
   const oldHeader = document.querySelector('header[role="banner"]');
   if (oldHeader) oldHeader.remove();
