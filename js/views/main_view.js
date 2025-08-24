@@ -228,4 +228,15 @@ export async function renderMain(root, state, DB, render) {
 
   const chk = $('#autoScroll');
   if (chk) chk.onchange = () => savePrefs({ autoScroll: chk.checked });
+
+  // Restore player UI after re-render (fixes player closing on resize)
+  if (state.queue && state.queue.length > 0 && typeof state.qIndex === 'number') {
+    setTimeout(() => {
+      import('../features/queue.js').then(mod => {
+        if (mod && typeof mod.jumpToQueueItem === 'function') {
+          mod.jumpToQueueItem(state.qIndex, state);
+        }
+      });
+    }, 0);
+  }
 }

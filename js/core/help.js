@@ -11,11 +11,21 @@ export function renderHelpOverlay() {
         <div style="text-align:center;">
           <b>👋 Welcome to <span style="color:var(--accent,#6cf)">TunedIn.space</span></b><br>
           <span class="muted">Post less. Feel more.</span><br>
-          <span class="muted" style="display:block; margin-top:0.5em;">
-          </span>
         </div>
         <div class="hstack" style="justify-content:center; gap:12px; margin: 1em 0 0.5em 0;">
           <button class="btn btn-ghost" data-action="show-changelog">[ dev changelog ]</button>
+        </div>
+        <div style="background:var(--bg2,#181a); border-radius:8px; padding:1em; margin-bottom:0.5em;">
+          <b>✨ What’s New</b><br>
+          <ul style="margin:0 0 0 1.2em; padding:0;">
+            <li>🎤 <b>Lyrics display</b> for posts – sing along or just vibe.</li>
+            <li>🖼️ <b>Clickable thumbnails</b> – hit the pic to play the track.</li>
+            <li>🔊 <b>Longer posts</b> – up to 500 characters to say why it slaps.</li>
+            <li>🚀 <b>Faster feed</b> – lazyloading for smooth scrolling.</li>
+            <li>📢 <b>Announcements</b> now show up under the header.</li>
+            <li>📱 <b>Sliding tabs</b> on mobile – swipe between sections.</li>
+            <li>🎨 <b>Composer blur</b> when you’re on cooldown (so you know).</li>
+          </ul>
         </div>
         <div>
           <b>Getting Started</b><br>
