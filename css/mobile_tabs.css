@@ -94,6 +94,11 @@
     opacity: 0.85;
   }
 }
+  /* Ensure cooldown/wait messages are not covered by the tab bar */
+  #postCooldown {
+    margin-bottom: 64px !important;
+    /* 56px tab bar + 8px gap */
+  }
 @media (min-width: 601px) {
   .mobile-tab-bar {
     display: none !important;

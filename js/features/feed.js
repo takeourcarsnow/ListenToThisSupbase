@@ -320,7 +320,6 @@ export function renderTags(el, DB, prefs) {
           background: none;
           padding: 0 2px;
           cursor: pointer;
-          position: relative;
           transition: color 0.18s;
           font-weight: 500;
           appearance: none;

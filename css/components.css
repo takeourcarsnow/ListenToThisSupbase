@@ -1,8 +1,38 @@
+/* Extra force: Hide a.tag-sort-link.active::after with max specificity */
+a.tag-sort-link.active::after,
+a.tag-sort-link:active::after,
+a.tag-sort-link:focus::after,
+a.tag-sort-link:hover::after {
+  display: none !important;
+  opacity: 0 !important;
+  background: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  content: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+/* Force hide the a.tag-sort-link active underline */
+a.tag-sort-link:active::after {
+  display: none !important;
+  opacity: 0 !important;
+}
+/* Force hide the tag-sort-link active underline */
+.tag-sort-link:active::after {
+  display: none !important;
+  opacity: 0 !important;
+}
+/* Force hide the tag-sort-link hover/focus/active underline */
+.tag-sort-link:hover::after {
+  display: none !important;
+  opacity: 0 !important;
+}
 /* Custom file input for post upload */
 
 .custom-file-input-wrapper {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
   margin-bottom: 8px;
 }
@@ -31,8 +61,10 @@
   color: #fff;
   border-color: #2a7fff;
 }
+/* Remove glowing border on file input focus */
 .custom-file-input:focus + .custom-file-label {
-  outline: 1.5px solid var(--acc, #2a7fff);
+  outline: none;
+}
 }
 /* Hide any pseudo-element arrows on tag sort links (fix for unwanted up/down arrows) */
 .tag-sort-link::before,
@@ -1070,7 +1102,7 @@ input[type=number] {
   background: none !important;
   box-shadow: 0 1px 4px #0002;
 }
-.sort-btn:focus { outline: 2px solid var(--accent, #2a7fff); }
+.sort-btn:focus { outline: none; }
 .icon-sort-newest::before {
   content: '\23F3'; /* Unicode for hourglass ⏳ */
   font-size: 1.2em;
