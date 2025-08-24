@@ -1058,6 +1058,16 @@ input[type=number] {
 }
   .actions .btn { font-size: 12px; padding: 2px 8px; border-radius: 4px; }
 
+/* Subtle click effect for feed buttons */
+.actions .btn:active,
+.user-action-buttons .btn:active,
+.user-action-buttons .btn-ghost:active {
+  transform: scale(0.96);
+  box-shadow: 0 2px 8px #0003;
+  filter: brightness(0.97);
+  transition: transform 0.08s, box-shadow 0.08s, filter 0.08s;
+}
+
 @media (max-width: 600px) {
   .actions {
     flex-direction: column;

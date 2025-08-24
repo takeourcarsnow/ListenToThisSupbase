@@ -39,7 +39,7 @@ export function updateDock(showIfHidden, state, DB) {
     }
     // Set now playing text
     const now = document.getElementById('nowPlaying');
-    if (now) now.textContent = p ? `now: ${p.title}${p.artist ? ' — ' + p.artist : ''}` : '';
+  if (now) now.textContent = p ? `${p.title}${p.artist ? ' — ' + p.artist : ''}` : '';
     // Set queue info with extra details, queue info last
     const queueInfo = document.querySelector('.queue-info');
     if (queueInfo) {
@@ -51,9 +51,9 @@ export function updateDock(showIfHidden, state, DB) {
         if (user) {
           userStr = `by <a href="#" class="dock-user-link" data-user-id="${user.id}">${user.name}</a>`;
         }
-        agoStr = ago ? `, ${ago}` : '';
+        agoStr = ago ? ` | ${ago}` : '';
         if (provider === 'audio') {
-          provStr = ', source: user upload';
+          provStr = ' | source: upload';
         } else if (provider) {
           provStr = `, source: ${provider}`;
         } else {
@@ -64,7 +64,7 @@ export function updateDock(showIfHidden, state, DB) {
         info += `<span class="muted small">${userStr}${agoStr}${provStr}</span> `;
       }
       if (len > 1) {
-    info += `<span class="muted small">, queue ${len ? (state.qIndex + 1) : 0}/${len}</span>`;
+    info += `<span class="muted small">| queue ${len ? (state.qIndex + 1) : 0}/${len}</span>`;
       }
       // Add click handler for username link in dock
       // Use event delegation for dock username click

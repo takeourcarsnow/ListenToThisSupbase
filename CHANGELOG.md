@@ -1,7 +1,22 @@
 # Changelog
 
+## [2025-08-25]
+### Features & Improvements
+- Added lyrics display for posts.
+- Increased post length limit to 500 characters.
+- Added support for post thumbnails and click-to-play on thumbnails.
+- Implemented lazyloading for improved performance.
+- Announcements now appear under the header.
+- Sliding screen effect for mobile tabs.
+- Composer is blurred when on cooldown.
+- Improved messages for guests in composer bottom.
+- Updated favicon.
+- Various UI tweaks and text improvements.
+- Removed redundant message at the top of the page.
+- Minor code and UI/UX improvements.
 
-## [2025-08-24] (Unreleased)
+
+## [2025-08-24]
 ### UI/UX & Post Composer Improvements
 - Double-click to like now only works on the main feed area, not in comments or edit fields (prevents accidental likes).
 - Audio file upload button in the post composer is now minimalistic and modern.
