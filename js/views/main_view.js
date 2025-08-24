@@ -45,6 +45,51 @@ export async function renderMain(root, state, DB, render) {
     // For compatibility with rest of code
     left = feedPane;
     right = composePane; // will be used for compose/profile
+
+    // --- Swipe gesture support for mobile tabs ---
+    let touchStartX = null, touchStartY = null, touchEndX = null, touchEndY = null;
+    const tabOrder = ['feed', 'compose', 'profile'];
+    slideWrapper.addEventListener('touchstart', function(e) {
+      if (e.touches.length === 1) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+        touchEndX = null;
+        touchEndY = null;
+      }
+    });
+    slideWrapper.addEventListener('touchmove', function(e) {
+      if (e.touches.length === 1) {
+        touchEndX = e.touches[0].clientX;
+        touchEndY = e.touches[0].clientY;
+      }
+    });
+    slideWrapper.addEventListener('touchend', function(e) {
+      if (touchStartX !== null && touchEndX !== null) {
+        const dx = touchEndX - touchStartX;
+        const dy = (touchEndY || 0) - (touchStartY || 0);
+        // Only trigger if mostly horizontal swipe and at least 40px
+        if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+          let currentTab = slideWrapper.getAttribute('data-tab') || 'feed';
+          let idx = tabOrder.indexOf(currentTab);
+          if (dx < 0 && idx < tabOrder.length - 1) {
+            // Swipe left: next tab
+            const nextTab = tabOrder[idx + 1];
+            if (nextTab) {
+              const btn = document.querySelector('.mobile-tab-bar button[data-tab="' + nextTab + '"]');
+              if (btn) btn.click();
+            }
+          } else if (dx > 0 && idx > 0) {
+            // Swipe right: previous tab
+            const prevTab = tabOrder[idx - 1];
+            if (prevTab) {
+              const btn = document.querySelector('.mobile-tab-bar button[data-tab="' + prevTab + '"]');
+              if (btn) btn.click();
+            }
+          }
+        }
+      }
+      touchStartX = touchStartY = touchEndX = touchEndY = null;
+    });
   } else {
     // Desktop: use grid as before
     slideWrapper = null;
