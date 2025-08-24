@@ -16,8 +16,7 @@
   animation: marquee-scroll 36s linear infinite;
 }
 @media (max-width: 600px) {
-  .mobile-slide-wrapper,
-  .mobile-slide-pane {
+  .mobile-slide-wrapper {
     overflow: visible !important;
     height: auto !important;
     max-height: none !important;
