@@ -32,7 +32,7 @@ export async function onCreatePost(e, state, DB, render) {
   const artist = document.getElementById('f_artist').value.trim();
   let url = document.getElementById('f_url').value.trim();
   let body = document.getElementById('f_body').value.trim();
-  if (body.length > 200) body = body.slice(0, 200);
+  if (body.length > 500) body = body.slice(0, 500);
   let tags = (document.getElementById('f_tags').value || '').trim();
   const errorDiv = document.getElementById('postFormError');
   if (errorDiv) errorDiv.textContent = '';
@@ -324,8 +324,8 @@ export function openEditInline(postId, state, DB, opts = {}) {
       <input class="field" name="url" value="${esc(p.url)}" required readonly style="background:#222;opacity:0.7;cursor:not-allowed;" tabindex="-1" aria-readonly="true" placeholder="Link (YouTube / Spotify / Bandcamp, etc)"/>
       <div class="muted small" style="margin-bottom:8px;">[ link editing is disabled for all posts ]</div>
       <input class="field" name="tags" value="${esc((p.tags || []).join(' '))}" placeholder="#Tags go here"/>
-    <textarea class="field" name="body" rows="4" maxlength="200" oninput="this.nextElementSibling.textContent = this.value.length + '/200';" placeholder="Share something about this track, a memory, or the vibe it gives you.">${esc(p.body || '')}</textarea>
-    <div class="muted small" style="text-align:right">${(p.body||'').length}/200</div>
+  <textarea class="field" name="body" rows="4" maxlength="500" oninput="this.nextElementSibling.textContent = this.value.length + '/500';" placeholder="Share something about this track, a memory, or the vibe it gives you.">${esc(p.body || '')}</textarea>
+  <div class="muted small" style="text-align:right">${(p.body||'').length}/500</div>
         <div class="hstack">
           <button class="btn" type="submit">[ save ]</button>
           <button class="btn btn-ghost" type="button" data-action="toggle-player">[ preview ]</button>
