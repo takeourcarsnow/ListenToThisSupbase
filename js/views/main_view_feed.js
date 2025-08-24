@@ -12,18 +12,17 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
     const popup = document.createElement('div');
     popup.className = 'info-popup-banner popup-onboarding';
     popup.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:space-between;width:100%;gap:18px;">
-        <div style="display:flex;align-items:center;gap:10px;text-align:center;">
-          <span style="font-size:1.5em;line-height:1.1;">🎉</span>
-          <span style="font-size:1.08em;line-height:1.5;text-align:center;display:block;">
-            <b>Welcome!</b> Check 
+      <div class="popup-banner-inner" style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;width:100%;gap:10px;">
+        <div class="popup-banner-msg" style="display:flex;flex-wrap:wrap;align-items:center;gap:7px;font-size:1.08em;line-height:1.5;">
+          <span style="font-size:1.15em;line-height:1.1;">Hey!</span>
+          <span style="display:inline;white-space:normal;">Check
             <a href="#" class="popup-link popup-nowrap" data-popup-action="help" style="color:#6cf;text-decoration:underline;cursor:pointer;white-space:nowrap;"><b>[ help ]</b></a>
-            for tips & 
-            <a href="#" class="popup-link popup-changelog-link popup-nowrap" data-popup-action="changelog" style="color:#6cf;text-decoration:underline;cursor:pointer;white-space:nowrap;"><b>[ dev changelog ]</b></a>
-            for project updates.
+            &amp;
+            <a href="#" class="popup-link popup-changelog-link popup-nowrap" data-popup-action="changelog" style="color:#6cf;text-decoration:underline;cursor:pointer;white-space:nowrap;"><b>[ changelog ]</b></a>
+            for updates.
           </span>
         </div>
-        <button class="btn btn-ghost small" style="font-size:1.25em;opacity:0.7;padding:2px 10px 0 10px;line-height:1;" title="Dismiss" aria-label="Dismiss">✕</button>
+        <button class="btn btn-ghost small" style="font-size:1.25em;opacity:0.7;padding:2px 10px 0 10px;line-height:1;align-self:flex-start;" title="Dismiss" aria-label="Close">×</button>
       </div>
     `;
     // Dismiss logic (only one declaration)
@@ -84,17 +83,18 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
       margin: '0 auto',
       background: 'linear-gradient(90deg, #23272a 80%, #2d3136 100%)',
       color: '#f3f3f3',
-      padding: '14px 28px 14px 22px',
+      padding: '14px 18px 14px 18px',
       borderRadius: '13px',
       fontSize: '1em',
-      display: 'flex',
-      alignItems: 'center',
+      display: 'block',
       boxShadow: '0 8px 32px #0005',
       maxWidth: '480px',
       minWidth: '220px',
       zIndex: 20000,
       animation: 'fadein-popup-banner-bottom 0.7s',
       cursor: 'default',
+      wordBreak: 'break-word',
+      overflowWrap: 'break-word',
     });
   // (removed duplicate close function)
     popup.querySelector('button').onclick = close;
