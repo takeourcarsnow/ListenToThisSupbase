@@ -26,14 +26,36 @@ export async function renderMain(root, state, DB, render) {
   if (banner) banner.style.display = '';
   document.body.classList.add('show-header');
 
-  // Layout containers
-  const grid = document.createElement('div');
-  grid.className = 'grid';
-  const left = document.createElement('div');
-  const right = document.createElement('div');
-  grid.appendChild(left);
-  grid.appendChild(right);
-  root.appendChild(grid);
+  // Layout containers with sliding wrapper for mobile
+  let slideWrapper, feedPane, composePane, profilePane, left, right;
+  if (window.matchMedia('(max-width: 600px)').matches) {
+    slideWrapper = document.createElement('div');
+    slideWrapper.className = 'mobile-slide-wrapper';
+    // Each pane is 100vw wide
+    feedPane = document.createElement('div');
+    feedPane.className = 'mobile-slide-pane feed-pane';
+    composePane = document.createElement('div');
+    composePane.className = 'mobile-slide-pane compose-pane';
+    profilePane = document.createElement('div');
+    profilePane.className = 'mobile-slide-pane profile-pane';
+    slideWrapper.appendChild(feedPane);
+    slideWrapper.appendChild(composePane);
+    slideWrapper.appendChild(profilePane);
+    root.appendChild(slideWrapper);
+    // For compatibility with rest of code
+    left = feedPane;
+    right = composePane; // will be used for compose/profile
+  } else {
+    // Desktop: use grid as before
+    slideWrapper = null;
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+    left = document.createElement('div');
+    right = document.createElement('div');
+    grid.appendChild(left);
+    grid.appendChild(right);
+    root.appendChild(grid);
+  }
 
   // Responsive: re-render on device width change
   if (!window._tunedinMobileResizeHandler) {
@@ -52,40 +74,62 @@ export async function renderMain(root, state, DB, render) {
     });
   }
   let currentTab = 'feed';
-  // Helper to show/hide views
+  // Helper to show/hide views with sliding animation
   function showTab(tab) {
-    currentTab = tab;
-    // Hide all
-    left.style.display = 'none';
-    right.style.display = 'none';
-    // Show selected
-    if (tab === 'feed') left.style.display = '';
-    if (tab === 'compose' || tab === 'profile') right.style.display = '';
-    // If profile, only show profile box, else show compose
-    if (tab === 'profile') {
-      right.innerHTML = '';
-      renderProfileBox(right, state, DB, render);
-    } else if (tab === 'compose') {
-      right.innerHTML = '';
-      renderComposeBox(right, state, DB, render);
+    if (!isMobile) {
+      currentTab = tab;
+      left.style.display = '';
+      right.style.display = '';
+      if (tab === 'profile') {
+        right.innerHTML = '';
+        renderProfileBox(right, state, DB, render);
+      } else if (tab === 'compose') {
+        right.innerHTML = '';
+        renderComposeBox(right, state, DB, render);
+      }
+      // Update tab bar active state
+      const tabBtns = document.querySelectorAll('.mobile-tab-bar button');
+      tabBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
+      return;
     }
-    // Update tab bar active state
-    const tabBtns = document.querySelectorAll('.mobile-tab-bar button');
-    tabBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
+    // Mobile: animate slide
+    currentTab = tab;
+    // Render content into correct pane
+    if (feedPane && composePane && profilePane) {
+      if (tab === 'feed') {
+        // feedPane is already rendered by setupFeedPane
+      } else if (tab === 'compose') {
+        composePane.innerHTML = '';
+        renderComposeBox(composePane, state, DB, render);
+      } else if (tab === 'profile') {
+        profilePane.innerHTML = '';
+        renderProfileBox(profilePane, state, DB, render);
+      }
+      // Slide to correct tab
+      let slideIndex = 0;
+      if (tab === 'feed') slideIndex = 0;
+      if (tab === 'compose') slideIndex = 1;
+      if (tab === 'profile') slideIndex = 2;
+      slideWrapper.style.transform = `translateX(-${slideIndex * 100}vw)`;
+      slideWrapper.setAttribute('data-tab', tab);
+      // Update tab bar active state
+      const tabBtns = document.querySelectorAll('.mobile-tab-bar button');
+      tabBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
+    }
   }
 
   // Left side: topbar + dock + tags + feed
-  setupFeedPane({ root, left, state, DB, prefs, render });
-
-  // Right side: profile + compose (or guest prompt)
-  if (!isMobile) {
+  if (window.matchMedia('(max-width: 600px)').matches) {
+    // Only render feedPane initially, others are blank until tab is switched
+    setupFeedPane({ root, left: feedPane, state, DB, prefs, render });
+    // Compose/profile panes will be rendered on tab switch
+  } else {
+    setupFeedPane({ root, left, state, DB, prefs, render });
+    // Right side: profile + compose (or guest prompt)
     if (state.user) {
       renderProfileBox(right, state, DB, render);
     }
     renderComposeBox(right, state, DB, render);
-  } else {
-    // On mobile, default to feed tab, right is hidden until tab is switched
-    right.style.display = 'none';
   }
 
   // Mobile tab bar injection with accessibility and keyboard navigation
