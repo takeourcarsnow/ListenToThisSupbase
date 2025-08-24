@@ -168,24 +168,32 @@ export function renderComposeBox(right, state, DB, render) {
       window._waitTypewriterTimeouts = [];
     } else {
       if (postBtn) postBtn.disabled = false;
-      // Cycle fun messages when not in cooldown
+      // Cycle fun messages when not in cooldown, with subtle animation
       if (!window._composeNoCooldownMsgTimer) {
         window._composeNoCooldownMsgIndex = 0;
+        if (cooldownDiv) {
+          cooldownDiv.classList.add('cycle-fade', 'cycle-fade-in');
+        }
         window._composeNoCooldownMsgTimer = setInterval(() => {
           window._composeNoCooldownMsgIndex = (window._composeNoCooldownMsgIndex + 1) % POST_NO_COOLDOWN_MESSAGES.length;
           const msg = POST_NO_COOLDOWN_MESSAGES[window._composeNoCooldownMsgIndex];
           if (cooldownDiv && cooldownDiv.textContent !== msg) {
-            cooldownDiv.style.opacity = '0';
+            cooldownDiv.classList.remove('cycle-fade-in');
+            cooldownDiv.classList.add('cycle-fade-out');
             setTimeout(() => {
               cooldownDiv.textContent = msg;
-              cooldownDiv.style.opacity = '1';
+              cooldownDiv.classList.remove('cycle-fade-out');
+              cooldownDiv.classList.add('cycle-fade-in');
             }, 250);
           }
         }, 4000);
       }
       // Set initial message if needed
       const msg = POST_NO_COOLDOWN_MESSAGES[window._composeNoCooldownMsgIndex || 0];
-      if (cooldownDiv && cooldownDiv.textContent !== msg) cooldownDiv.textContent = msg;
+      if (cooldownDiv && cooldownDiv.textContent !== msg) {
+        cooldownDiv.textContent = msg;
+        cooldownDiv.classList.add('cycle-fade', 'cycle-fade-in');
+      }
       // Clear cooldown wait message timer if switching from cooldown
       if (window._composeWaitMsgTimer) {
         clearInterval(window._composeWaitMsgTimer);

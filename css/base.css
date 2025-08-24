@@ -1,3 +1,16 @@
+/* Subtle fade/slide for cycling messages */
+.cycle-fade {
+  transition: opacity 0.35s cubic-bezier(.4,0,.2,1), transform 0.35s cubic-bezier(.4,0,.2,1);
+  will-change: opacity, transform;
+}
+.cycle-fade-out {
+  opacity: 0;
+  transform: translateY(10px) scale(0.98);
+}
+.cycle-fade-in {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
 /* Fix mobile menu buttons cut off on the right */
 @media (max-width: 600px) {
   .user-menu, .user-menu * {
