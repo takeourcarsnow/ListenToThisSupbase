@@ -34,6 +34,9 @@ export async function onCreatePost(e, state, DB, render) {
   let body = document.getElementById('f_body').value.trim();
   if (body.length > 500) body = body.slice(0, 500);
   let tags = (document.getElementById('f_tags').value || '').trim();
+  let lyrics = '';
+  const lyricsEl = document.getElementById('f_lyrics');
+  if (lyricsEl) lyrics = lyricsEl.value.trim();
   const errorDiv = document.getElementById('postFormError');
   if (errorDiv) errorDiv.textContent = '';
   // Captcha check
@@ -238,6 +241,7 @@ export async function onCreatePost(e, state, DB, render) {
     provider,
     tags,
     body,
+    lyrics,
     likes: [],
     comments: [],
     createdAt: Date.now()
@@ -324,8 +328,10 @@ export function openEditInline(postId, state, DB, opts = {}) {
       <input class="field" name="url" value="${esc(p.url)}" required readonly style="background:#222;opacity:0.7;cursor:not-allowed;" tabindex="-1" aria-readonly="true" placeholder="Link (YouTube / Spotify / Bandcamp, etc)"/>
       <div class="muted small" style="margin-bottom:8px;">[ link editing is disabled for all posts ]</div>
       <input class="field" name="tags" value="${esc((p.tags || []).join(' '))}" placeholder="#Tags go here"/>
-  <textarea class="field" name="body" rows="4" maxlength="500" oninput="this.nextElementSibling.textContent = this.value.length + '/500';" placeholder="Share something about this track, a memory, or the vibe it gives you.">${esc(p.body || '')}</textarea>
-  <div class="muted small" style="text-align:right">${(p.body||'').length}/500</div>
+      <textarea class="field" name="body" rows="4" maxlength="500" oninput="this.nextElementSibling.textContent = this.value.length + '/500';" placeholder="Share something about this track, a memory, or the vibe it gives you.">${esc(p.body || '')}</textarea>
+      <div class="muted small" style="text-align:right">${(p.body||'').length}/500</div>
+      <textarea class="field" name="lyrics" rows="4" maxlength="4000" placeholder="Paste lyrics here (optional)">${esc(p.lyrics || '')}</textarea>
+      <div class="muted small" style="text-align:right">${(p.lyrics||'').length}/4000</div>
         <div class="hstack">
           <button class="btn" type="submit">[ save ]</button>
           <button class="btn btn-ghost" type="button" data-action="toggle-player">[ preview ]</button>
@@ -344,7 +350,8 @@ export function openEditInline(postId, state, DB, opts = {}) {
         artist: form.artist?.value,
         url: form.url?.value,
         tags: form.tags?.value,
-        body: form.body?.value
+  body: form.body?.value,
+  lyrics: form.lyrics?.value
       };
     };
     form.addEventListener('input', saveDraft);
@@ -355,7 +362,8 @@ export function openEditInline(postId, state, DB, opts = {}) {
       if (draft.artist !== undefined) form.artist.value = draft.artist;
       if (draft.url !== undefined) form.url.value = draft.url;
       if (draft.tags !== undefined) form.tags.value = draft.tags;
-      if (draft.body !== undefined) form.body.value = draft.body;
+  if (draft.body !== undefined) form.body.value = draft.body;
+  if (draft.lyrics !== undefined) form.lyrics.value = draft.lyrics;
     }
   }
 

@@ -20,6 +20,79 @@ export async function onActionClick(e, state, DB, render) {
   const card = e.target.closest('.post');
   const postId = card ? card.dataset.post : null;
 
+  // Show Lyrics button handler
+  if (action === 'show-lyrics' && postId) {
+    const artist = btn.dataset.artist;
+    const title = btn.dataset.title;
+    const lyricsBox = document.getElementById('lyrics-' + postId);
+    const db = DB.getAll();
+    const post = db.posts.find(x => String(x.id) === String(postId));
+    if (lyricsBox.style.display === 'block') {
+      lyricsBox.classList.remove('fade-in');
+      lyricsBox.classList.add('fade-out');
+      setTimeout(() => {
+        lyricsBox.style.display = 'none';
+        lyricsBox.textContent = '';
+        lyricsBox.classList.remove('fade-out');
+      }, 180);
+      return;
+    }
+    // Close open comment or edit panels in this post card
+    if (card) {
+      // Close comment box if open
+      const commentBox = card.querySelector('.comment-box.active');
+      if (commentBox) commentBox.classList.remove('active');
+      // Close edit panel if open
+      const editPanel = card.querySelector('[id^="editbox-"]');
+      if (editPanel) {
+        editPanel.classList.remove('fade-in');
+        editPanel.classList.add('fade-out');
+        setTimeout(() => {
+          if (editPanel.parentNode) editPanel.parentNode.removeChild(editPanel);
+          if (window.editingPostId == postId) window.editingPostId = null;
+        }, 180);
+      }
+    }
+    lyricsBox.style.display = 'block';
+    lyricsBox.classList.remove('fade-out');
+    lyricsBox.classList.add('fade-in');
+    if (post && post.lyrics && post.lyrics.trim()) {
+      lyricsBox.textContent = post.lyrics;
+      return;
+    }
+    if (!artist || !title) {
+      lyricsBox.textContent = 'Artist or title missing.';
+      return;
+    }
+    lyricsBox.textContent = 'Fetching lyrics...';
+    const apiUrl = `https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`;
+    console.log('[Lyrics Fetch] URL:', apiUrl);
+    try {
+      const resp = await fetch(apiUrl);
+      console.log('[Lyrics Fetch] Response:', resp);
+      if (!resp.ok) {
+        const text = await resp.text();
+        console.error('[Lyrics Fetch] Error response:', text);
+        throw new Error('No lyrics found');
+      }
+      const data = await resp.json();
+      console.log('[Lyrics Fetch] Data:', data);
+      if (data.lyrics) {
+        lyricsBox.textContent = data.lyrics;
+      } else {
+        lyricsBox.textContent = 'Lyrics not found.';
+      }
+    } catch (err) {
+      if (err instanceof TypeError && err.message.includes('Failed to fetch')) {
+        lyricsBox.textContent = 'Network error or CORS issue. Try reloading or check your connection.';
+      } else {
+        lyricsBox.textContent = 'Lyrics not found. (' + (err.message || err) + ')';
+      }
+      console.error('[Lyrics Fetch] Error:', err);
+    }
+    return;
+  }
+
   if (action === 'toggle-player' && postId) {
     const pl = document.getElementById('player-' + postId);
     const active = pl.classList.contains('active');
@@ -505,7 +578,8 @@ export async function onDelegatedSubmit(e, state, DB, render) {
     const tagsRaw = form.querySelector('[name=tags]').value.trim();
     const tags = tagsRaw.split(/[#,\s]+/g).map(t => t.trim().toLowerCase()).filter(Boolean).slice(0, 12);
     const provider = parseProvider(url);
-    const updated = await DB.updatePost(pid, { title, artist, url, body, tags, provider });
+    const lyrics = form.querySelector('[name=lyrics]')?.value.trim() || '';
+    const updated = await DB.updatePost(pid, { title, artist, url, body, tags, provider, lyrics });
     const card = document.getElementById('post-' + pid);
     if (card && updated) card.outerHTML = renderPostHTML(updated, state, DB);
     liveSay('post updated');

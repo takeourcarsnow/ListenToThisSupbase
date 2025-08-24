@@ -67,8 +67,12 @@ export function renderComposeBox(right, state, DB, render) {
       <input class="field" id="f_tags" placeholder="#Tags go here"/>
       <div id="tagSuggestions" class="hstack" style="flex-wrap:wrap; gap:4px; margin:4px 0 0 0;"></div>
       <div style="position:relative;">
-  <textarea class="field" id="f_body" rows="4" placeholder="Share something about this track, a memory, or the vibe it gives you." maxlength="500" oninput="document.getElementById('bodyCounter').textContent = this.value.length + '/500';"></textarea>
-  <span class="muted small" id="bodyCounter" style="position:absolute; bottom:6px; right:10px; pointer-events:none;">0/500</span>
+        <textarea class="field" id="f_body" rows="4" placeholder="Share something about this track, a memory, or the vibe it gives you." maxlength="500" oninput="document.getElementById('bodyCounter').textContent = this.value.length + '/500';"></textarea>
+        <span class="muted small" id="bodyCounter" style="position:absolute; bottom:6px; right:10px; pointer-events:none;">0/500</span>
+      </div>
+      <div style="position:relative; margin-top:8px;">
+        <textarea class="field" id="f_lyrics" name="lyrics" rows="4" maxlength="4000" placeholder="Paste lyrics here (optional)"></textarea>
+        <span class="muted small" id="lyricsCounter" style="position:absolute; bottom:6px; right:10px; pointer-events:none;">0/4000</span>
       </div>
       <div class="hstack" style="justify-content:space-between; align-items:center; margin-bottom:4px;">
         <div class="muted small" id="captchaBox" style="margin:0;"></div>
@@ -83,6 +87,14 @@ export function renderComposeBox(right, state, DB, render) {
       <div id="postCooldown" class="muted small" style="text-align:center;margin-top:8px;"></div>
     </form>
   `;
+  // Lyrics character counter
+  const lyricsInput = box.querySelector('#f_lyrics');
+  const lyricsCounter = box.querySelector('#lyricsCounter');
+  if (lyricsInput && lyricsCounter) {
+    lyricsInput.addEventListener('input', function() {
+      lyricsCounter.textContent = this.value.length + '/4000';
+    });
+  }
   // Audio file input: show file name when selected
   const audioInput = box.querySelector('#f_audio');
   const audioFileName = box.querySelector('#audioFileName');

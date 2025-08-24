@@ -107,18 +107,20 @@ export function renderPostHTML(p, state, DB) {
   ${tgs ? `<span class="muted sep-slash">/</span> <div class="tag-cloud post-tags-twolines">${tgs}</div>` : ''}
       </div>
     </div>
-    ${p.body ? `<div class="sep"></div><div>${esc(p.body)}</div>` : ''}
-    <div class="actions hstack" style="margin-top:8px">
-      <button class="btn" data-action="toggle-player">[ play ]</button>
-      <button class="btn ${liked ? 'like-on' : ''}" data-action="like" aria-pressed="${liked}" title="like">[ ♥ ${likeCount} ]</button>
-      <button class="btn" data-action="comment" title="comments">[ comments ${commentsCount} ]</button>
-      <button class="btn btn-ghost" data-action="queue" title="add to queue">[ add to queue ]</button>
-      <button class="btn btn-ghost" data-action="share" data-perma="${esc(perma)}" title="share/copy link">[ share ]</button>
+  ${p.body ? `<div class="sep"></div><div>${esc(p.body)}</div>` : ''}
+  <div class="actions hstack" style="margin-top:8px">
+  <button class="btn" data-action="toggle-player">[ play ]</button>
+  <button class="btn ${liked ? 'like-on' : ''}" data-action="like" aria-pressed="${liked}" title="like">[ ♥ ${likeCount} ]</button>
+  <button class="btn" data-action="comment" title="comments">[ comments ${commentsCount} ]</button>
+  <button class="btn btn-ghost" data-action="show-lyrics" data-artist="${esc(p.artist || '')}" data-title="${esc(p.title || '')}" data-post="${p.id}">[ lyrics ]</button>
+  <button class="btn btn-ghost" data-action="queue" title="add to queue">[ add to queue ]</button>
+  <button class="btn btn-ghost" data-action="share" data-perma="${esc(perma)}" title="share/copy link">[ share ]</button>
       ${canEdit ? `
         <button class="btn btn-ghost" data-action="edit" data-post="${p.id}">[ edit ]</button>
         <button class="btn btn-ghost" data-action="delete">[ delete ]</button>
       ` : ''}
     </div>
+  <div class="lyrics-box small muted" id="lyrics-${p.id}" style="display:none;margin-top:8px;white-space:pre-line;"></div>
     <div class="player" id="player-${p.id}" aria-label="player"></div>
     <div class="comment-box" id="cbox-${p.id}">
       <div class="sep"></div>
@@ -199,10 +201,22 @@ export function renderFeed(el, pager, state, DB, prefs) {
 // Attach edit button handler globally (once)
 if (!window._editBtnHandlerAttached) {
   document.addEventListener('click', function(e) {
-    const btn = e.target.closest('button[data-action="edit"][data-post]');
-    if (btn) {
-      const postId = btn.getAttribute('data-post');
+    // Edit button
+    const editBtn = e.target.closest('button[data-action="edit"][data-post]');
+    if (editBtn) {
+      const postId = editBtn.getAttribute('data-post');
       const card = document.getElementById('post-' + postId);
+      // Close lyrics panel if open
+      const lyricsBox = document.getElementById('lyrics-' + postId);
+      if (lyricsBox && lyricsBox.style.display === 'block') {
+        lyricsBox.classList.remove('fade-in');
+        lyricsBox.classList.add('fade-out');
+        setTimeout(() => {
+          lyricsBox.style.display = 'none';
+          lyricsBox.textContent = '';
+          lyricsBox.classList.remove('fade-out');
+        }, 180);
+      }
       const editBoxId = 'editbox-' + postId;
       const opened = card ? card.querySelector('#' + editBoxId) : null;
       if (opened) {
@@ -217,7 +231,27 @@ if (!window._editBtnHandlerAttached) {
         openEditInline(postId, window._lastFeedState, window._lastFeedDB);
       }
       e.preventDefault();
+      return;
     }
+    // Comment button
+    const commentBtn = e.target.closest('button[data-action="comment"][data-post],button[data-action="comment"]');
+    if (commentBtn) {
+      const postId = commentBtn.getAttribute('data-post') || (commentBtn.closest('.post') && commentBtn.closest('.post').dataset.post);
+      if (postId) {
+        // Close lyrics panel if open
+        const lyricsBox = document.getElementById('lyrics-' + postId);
+        if (lyricsBox && lyricsBox.style.display === 'block') {
+          lyricsBox.classList.remove('fade-in');
+          lyricsBox.classList.add('fade-out');
+          setTimeout(() => {
+            lyricsBox.style.display = 'none';
+            lyricsBox.textContent = '';
+            lyricsBox.classList.remove('fade-out');
+          }, 180);
+        }
+      }
+    }
+    // ...existing code...
   });
   window._editBtnHandlerAttached = true;
 }
