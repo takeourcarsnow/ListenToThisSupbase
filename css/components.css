@@ -125,13 +125,12 @@
   white-space: nowrap !important;
 }
 /* Comment delete confirm popup */
-.comment-delete-confirm {
-  position: absolute;
-  background: #181c22;
+.delete-post-confirm {
+  background: rgba(20, 24, 32, 0.55);
   color: #fff;
-  border: 1.5px solid var(--line2);
-  border-radius: 7px;
-  box-shadow: 0 4px 18px #000a;
+  border: 1.5px solid #222;
+  border-radius: 14px;
+  box-shadow: 0 4px 32px 0 rgba(0,0,0,0.18), 0 1.5px 8px 0 #222;
   padding: 8px 14px 7px 14px;
   font-size: 0.98em;
   min-width: 180px;
@@ -140,7 +139,28 @@
   align-items: center;
   gap: 10px;
   animation: fadein 0.18s;
-  transition: opacity 0.18s;
+  transition: background 0.3s, box-shadow 0.3s, opacity 0.18s;
+  backdrop-filter: blur(16px) saturate(180%) contrast(1.1);
+  -webkit-backdrop-filter: blur(16px) saturate(180%) contrast(1.1);
+}
+.comment-delete-confirm {
+  position: absolute;
+  background: rgba(20, 24, 32, 0.55);
+  color: #fff;
+  border: 1.5px solid #222;
+  border-radius: 14px;
+  box-shadow: 0 4px 32px 0 rgba(0,0,0,0.18), 0 1.5px 8px 0 #222;
+  padding: 8px 14px 7px 14px;
+  font-size: 0.98em;
+  min-width: 180px;
+  max-width: 96vw;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  animation: fadein 0.18s;
+  transition: background 0.3s, box-shadow 0.3s, opacity 0.18s;
+  backdrop-filter: blur(16px) saturate(180%) contrast(1.1);
+  -webkit-backdrop-filter: blur(16px) saturate(180%) contrast(1.1);
 }
 .comment-delete-confirm.fadeout {
   animation: fadeout 0.18s;
@@ -195,16 +215,20 @@
   justify-content: center;
 }
 #leaderboard-overlay .overlay-inner {
-  background: #181c22;
-  border-radius: 12px;
+  background: rgba(20, 24, 32, 0.55);
+  border-radius: 18px;
   padding: 32px 32px 24px 32px;
   min-width: 320px;
   max-width: 90vw;
   max-height: 80vh;
   overflow-y: auto;
-  box-shadow: 0 4px 32px rgba(0,0,0,0.25);
+  box-shadow: 0 4px 32px 0 rgba(0,0,0,0.18), 0 1.5px 8px 0 #222;
   color: #fff;
   position: relative;
+  backdrop-filter: blur(16px) saturate(180%) contrast(1.1);
+  -webkit-backdrop-filter: blur(16px) saturate(180%) contrast(1.1);
+  border: 1.5px solid #222;
+  transition: background 0.3s, box-shadow 0.3s;
 }
 #leaderboard-overlay .btn {
   margin-bottom: 12px;
@@ -213,9 +237,9 @@
 .leaderboard-box {
   margin: 18px 0;
   padding: 18px 16px;
-  background: #181c22;
-  border-radius: 8px;
-  box-shadow: none;
+  background: rgba(20, 24, 32, 0.55);
+  border-radius: 18px;
+  box-shadow: 0 4px 32px 0 rgba(0,0,0,0.18), 0 1.5px 8px 0 #222;
   color: #fff;
   font-family: inherit;
   width: 100%;
@@ -223,8 +247,11 @@
   min-width: 0;
   margin-left: auto;
   margin-right: auto;
-  border: 1px dashed var(--line);
+  border: 1.5px solid #222;
   box-sizing: border-box;
+  backdrop-filter: blur(16px) saturate(180%) contrast(1.1);
+  -webkit-backdrop-filter: blur(16px) saturate(180%) contrast(1.1);
+  transition: background 0.3s, box-shadow 0.3s;
 }
 .leaderboard-box h2 {
   margin: 0 0 10px 0;
@@ -395,17 +422,22 @@
   display: none;
 }
 .post-tags-twolines .tag {
-  background: none;
+  background: #23272a;
   border-radius: 1em;
-  padding: 0.13em 0.6em;
+  padding: 0.13em 0.7em;
   font-family: 'Fira Mono', monospace;
-  font-size: 0.93em;
+  font-size: 0.97em;
   font-weight: 500;
-  box-shadow: none;
-  transition: text-decoration 0.2s;
+  box-shadow: 0 1px 4px 0 rgba(0,0,0,0.08);
+  color: #bfc7d5;
+  border: 1px solid #23272a;
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
 }
 .post-tags-twolines .tag:hover {
-  text-decoration: underline;
+  background: #2a7fff;
+  color: #fff;
+  text-decoration: none;
+  box-shadow: 0 2px 8px 0 rgba(42,127,255,0.13);
 }
 .post-header-inline {
   display: flex;
@@ -867,38 +899,45 @@ input[type=number] {
 
 /* Generic “box” container */
 .box {
-  border: 1px dashed var(--line);
-  padding: var(--space-3);
-  background: var(--bg2);
-  border-radius: var(--radius-1);
+  border: 1.5px solid #23272a;
+  padding: 18px 18px 14px 18px;
+  background: rgba(20, 22, 28, 0.88);
+  border-radius: 8px;
+  box-shadow: none;
   width: 96%;
   box-sizing: border-box;
   max-width: 100%;
+  transition: box-shadow 0.18s, background 0.18s;
+  margin-bottom: 22px;
+}
+.box:last-child {
+  margin-bottom: 0;
+}
 }
 
 /* Liquid glass look for overlays (profile/about, modals, etc.) */
 .overlay .box, #profile .box {
-  background: rgba(20, 24, 32, 0.55) !important;
-  box-shadow: 0 4px 32px 0 rgba(0,0,0,0.18), 0 1.5px 8px 0 #222 !important;
+  background: rgba(20, 22, 28, 0.88) !important;
+  box-shadow: none !important;
   backdrop-filter: blur(16px) saturate(180%) contrast(1.1);
   -webkit-backdrop-filter: blur(16px) saturate(180%) contrast(1.1);
-  border-radius: 18px !important;
-  transition: background 0.3s, box-shadow 0.3s;
-  border: 1.5px solid #222 !important;
+  border-radius: 8px !important;
+  transition: background 0.18s, box-shadow 0.18s;
+  border: 1.5px solid #23272a !important;
 }
 
 /* Post/Card */
 .post {
-  border: 1px solid var(--line, #333);
-  box-shadow: 0 1px 6px 0 rgba(0,0,0,0.06);
-  padding: var(--space-3);
-  margin-bottom: 28px;
-  background: var(--bg3);
-  border-radius: var(--radius-1, 8px);
-  transition: border-color .15s, box-shadow .2s, background-color .2s;
+  border: 1.5px solid #23272a;
+  box-shadow: none;
+  padding: 18px 18px 14px 18px;
+  margin: 22px auto 28px auto;
+  background: rgba(20, 22, 28, 0.88);
+  border-radius: 8px;
+  transition: box-shadow 0.18s, background 0.18s;
   width: 100%;
   box-sizing: border-box;
-  max-width: 100%;
+  max-width: 700px;
 }
 .post .post-title {
   font-weight: 700;
@@ -910,15 +949,16 @@ input[type=number] {
   margin-bottom: 6px;
 }
 .post:hover {
-  border-color: var(--line2, #444);
-  box-shadow: 0 2px 10px 0 rgba(0,0,0,0.10);
-  background: var(--bg3);
+  box-shadow: none;
+  background: rgba(28, 32, 40, 0.92);
 }
 .post .meta {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
   margin-bottom: 4px;
+  color: #bfc7d5;
+  font-size: 0.99em;
 }
 .post .meta .dot { opacity: .5; }
 .post .post-tags {
@@ -928,7 +968,7 @@ input[type=number] {
   gap: 8px;
   font-size: 0.97em;
 }
-.post.is-playing { outline: 2px dotted var(--acc); outline-offset: 2px; }
+
 
 /* Density toggles */
 :root[data-density="compact"] .post { padding: 10px; }
@@ -1177,8 +1217,16 @@ input[type=number] {
 
 /* Media/player */
 .player {
-  margin-top: 6px; display: none; background: #0b0e12; padding: 6px;
-  border: 1px dashed var(--line); border-radius: 4px;
+  margin-top: 6px;
+  display: none;
+  background: rgba(20, 24, 32, 0.55);
+  padding: 6px;
+  border: 1.5px solid #222;
+  border-radius: 14px;
+  box-shadow: 0 4px 32px 0 rgba(0,0,0,0.18), 0 1.5px 8px 0 #222;
+  backdrop-filter: blur(16px) saturate(180%) contrast(1.1);
+  -webkit-backdrop-filter: blur(16px) saturate(180%) contrast(1.1);
+  transition: background 0.3s, box-shadow 0.3s;
 }
 .player.active { display: block; }
 iframe { border: 0; }
@@ -1196,7 +1244,14 @@ iframe[loading=lazy] { contain: content; }
 .comment-box.active {
   display: block;
 }
-.comment { padding: 4px 0; border-top: 1px dashed var(--line); }
+.comment {
+  padding: 8px 0 8px 0;
+  border-top: 1px solid #23272a;
+  background: rgba(20, 24, 32, 0.38);
+  border-radius: 10px;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
 
 /* Pills/outline */
 .pill { border: 1px dashed var(--line); padding: 3px 8px; border-radius: 999px; }
@@ -1222,18 +1277,20 @@ iframe[loading=lazy] { contain: content; }
 .overlay .sheet {
   width: 100%;
   max-width: 520px;
-  background: linear-gradient(135deg, var(--bg2) 80%, var(--bg3) 100%);
-  border: 1.5px solid var(--line2);
-  border-radius: 16px;
+  background: rgba(20, 24, 32, 0.55);
+  border: 1.5px solid #222;
+  border-radius: 18px;
   padding: 28px 20px 24px 20px;
   box-sizing: border-box;
   margin: 0 auto;
   overflow-y: auto;
   max-height: 90vh;
-  box-shadow: 0 8px 32px 0 rgba(0,0,0,0.25), 0 1.5px 8px 0 var(--line2);
+  box-shadow: 0 4px 32px 0 rgba(0,0,0,0.18), 0 1.5px 8px 0 #222;
   font-size: 1.08em;
   color: var(--fg);
-  transition: box-shadow 0.2s, background 0.2s;
+  transition: background 0.3s, box-shadow 0.3s;
+  backdrop-filter: blur(16px) saturate(180%) contrast(1.1);
+  -webkit-backdrop-filter: blur(16px) saturate(180%) contrast(1.1);
 }
 @media (max-width: 600px) {
   .overlay .sheet {
