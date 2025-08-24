@@ -1,5 +1,5 @@
 // js/views/main_view_compose.js
-import { PROMPTS, POST_LIMIT_MESSAGES } from '../core/constants.js';
+import { PROMPTS, POST_LIMIT_MESSAGES, POST_NO_COOLDOWN_MESSAGES } from '../core/constants.js';
 import { $, esc } from '../core/utils.js';
 import { onCreatePost } from '../features/posts.js';
 import { parseProvider } from '../features/providers.js';
@@ -168,12 +168,36 @@ export function renderComposeBox(right, state, DB, render) {
       window._waitTypewriterTimeouts = [];
     } else {
       if (postBtn) postBtn.disabled = false;
-      if (cooldownDiv && cooldownDiv.textContent !== 'Share a track when you feel like it (1 per day)') cooldownDiv.textContent = 'Share a track when you feel like it (1 per day)';
+      // Cycle fun messages when not in cooldown
+      if (!window._composeNoCooldownMsgTimer) {
+        window._composeNoCooldownMsgIndex = 0;
+        window._composeNoCooldownMsgTimer = setInterval(() => {
+          window._composeNoCooldownMsgIndex = (window._composeNoCooldownMsgIndex + 1) % POST_NO_COOLDOWN_MESSAGES.length;
+          const msg = POST_NO_COOLDOWN_MESSAGES[window._composeNoCooldownMsgIndex];
+          if (cooldownDiv && cooldownDiv.textContent !== msg) {
+            cooldownDiv.style.opacity = '0';
+            setTimeout(() => {
+              cooldownDiv.textContent = msg;
+              cooldownDiv.style.opacity = '1';
+            }, 250);
+          }
+        }, 4000);
+      }
+      // Set initial message if needed
+      const msg = POST_NO_COOLDOWN_MESSAGES[window._composeNoCooldownMsgIndex || 0];
+      if (cooldownDiv && cooldownDiv.textContent !== msg) cooldownDiv.textContent = msg;
+      // Clear cooldown wait message timer if switching from cooldown
       if (window._composeWaitMsgTimer) {
         clearInterval(window._composeWaitMsgTimer);
         window._composeWaitMsgTimer = null;
         window._composeWaitMsgIndex = 0;
       }
+    }
+    // Clear no-cooldown message timer if entering cooldown
+    if (isCooldown && window._composeNoCooldownMsgTimer) {
+      clearInterval(window._composeNoCooldownMsgTimer);
+      window._composeNoCooldownMsgTimer = null;
+      window._composeNoCooldownMsgIndex = 0;
     }
     // Expose cooldown state globally for header
     window.composeCooldown = { isCooldown, countdown };
