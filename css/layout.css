@@ -377,6 +377,14 @@ body.show-header header[role="banner"] {
     width: 100vw;
     max-width: 100vw;
     box-sizing: border-box;
+    position: static !important;
+    top: auto !important;
+    z-index: auto !important;
+  }
+  header[role="banner"] {
+    position: static !important;
+    top: auto !important;
+    z-index: auto !important;
   }
   .toolbar {
     flex-direction: column;
