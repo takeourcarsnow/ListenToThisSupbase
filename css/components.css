@@ -84,10 +84,11 @@
     overflow-wrap: anywhere;
   }
   .post .actions {
-    flex-direction: column;
-    gap: 7px;
-    width: 100%;
-    align-items: stretch;
+  flex-direction: column;
+  gap: 7px;
+  width: 100%;
+  align-items: stretch;
+  overflow-y: hidden;
   }
   .post .actions > * {
     width: auto !important;
@@ -422,15 +423,15 @@
   display: none;
 }
 .post-tags-twolines .tag {
-  background: #23272a;
-  border-radius: 1em;
+  background: var(--bg2, #181a1b);
+  border-radius: 7px;
   padding: 0.13em 0.7em;
   font-family: 'Fira Mono', monospace;
   font-size: 0.97em;
   font-weight: 500;
-  box-shadow: 0 1px 4px 0 rgba(0,0,0,0.08);
+  box-shadow: none;
   color: #bfc7d5;
-  border: 1px solid #23272a;
+  border: 1px solid var(--line, #333);
   transition: background 0.18s, color 0.18s, box-shadow 0.18s;
 }
 .post-tags-twolines .tag:hover {
@@ -982,6 +983,7 @@ input[type=number] {
   gap: 6px;
   margin-bottom: 8px;
   width: 100%;
+  overflow-y: hidden;
 }
 .actions > * {
   flex: 1 1 auto;

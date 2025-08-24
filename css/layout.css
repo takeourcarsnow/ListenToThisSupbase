@@ -239,7 +239,7 @@ body.show-header header[role="banner"] {
     box-shadow: 0 1px 6px 0 rgba(138,180,255,0.13) !important;
     font-weight: 600 !important;
     border-radius: 6px !important;
-    outline: 2px solid var(--acc, #8ab4ff) !important;
+    outline: 0px solid var(--acc, #8ab4ff) !important;
     outline-offset: 0px !important;
     z-index: 2;
   }
