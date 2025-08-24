@@ -326,7 +326,6 @@ export function openEditInline(postId, state, DB, opts = {}) {
       <input class="field" name="title" value="${esc(p.title)}" required maxlength="120" placeholder="Title (song or album)"/>
       <input class="field" name="artist" value="${esc(p.artist || '')}" placeholder="Artist"/>
       <input class="field" name="url" value="${esc(p.url)}" required readonly style="background:#222;opacity:0.7;cursor:not-allowed;" tabindex="-1" aria-readonly="true" placeholder="Link (YouTube / Spotify / Bandcamp, etc)"/>
-      <div class="muted small" style="margin-bottom:8px;">[ link editing is disabled for all posts ]</div>
       <input class="field" name="tags" value="${esc((p.tags || []).join(' '))}" placeholder="#Tags go here"/>
       <textarea class="field" name="body" rows="4" maxlength="500" oninput="this.nextElementSibling.textContent = this.value.length + '/500';" placeholder="Share something about this track, a memory, or the vibe it gives you.">${esc(p.body || '')}</textarea>
       <div class="muted small" style="text-align:right">${(p.body||'').length}/500</div>

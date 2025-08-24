@@ -119,16 +119,18 @@ export function renderComposeBox(right, state, DB, render) {
     const lastPost = db.posts
       .filter(p => p.userId === me.id)
       .sort((a, b) => b.createdAt - a.createdAt)[0];
-    let isCooldown = false;
+  let isCooldown = false;
     let countdown = '';
     if (lastPost && now - lastPost.createdAt < 24 * 60 * 60 * 1000) {
       const timeLeft = 24 * 60 * 60 * 1000 - (now - lastPost.createdAt);
       const hours = Math.floor(timeLeft / (60 * 60 * 1000));
       const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
       const seconds = Math.floor((timeLeft % (60 * 1000)) / 1000);
-      isCooldown = true;
+  isCooldown = true;
       countdown = `${hours}h ${minutes}m ${seconds}s`;
-      if (postBtn) postBtn.disabled = true;
+  if (postBtn) postBtn.disabled = true;
+  // Blur all inputs/textareas in the compose box
+  box.classList.add('rate-limit-blur');
       // Compose wait messages (imported from constants)
       const waitMessages = POST_LIMIT_MESSAGES;
       if (!window._composeWaitMsgIndex) window._composeWaitMsgIndex = 0;
@@ -179,7 +181,9 @@ export function renderComposeBox(right, state, DB, render) {
       if (window._waitTypewriterTimeouts) window._waitTypewriterTimeouts.forEach(clearTimeout);
       window._waitTypewriterTimeouts = [];
     } else {
-      if (postBtn) postBtn.disabled = false;
+  if (postBtn) postBtn.disabled = false;
+  // Remove blur from inputs/textareas
+  box.classList.remove('rate-limit-blur');
       // Cycle fun messages when not in cooldown, with subtle animation
       if (!window._composeNoCooldownMsgTimer) {
         window._composeNoCooldownMsgIndex = 0;
