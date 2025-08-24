@@ -56,8 +56,45 @@ export async function onActionClick(e, state, DB, render) {
     lyricsBox.style.display = 'block';
     lyricsBox.classList.remove('fade-out');
     lyricsBox.classList.add('fade-in');
+    // Always use a wrapper span for lyrics text
+    let lyricsText = lyricsBox.querySelector('.lyrics-text');
+    if (!lyricsText) {
+      lyricsText = document.createElement('span');
+      lyricsText.className = 'lyrics-text';
+      lyricsText.style.whiteSpace = 'pre-line';
+      lyricsBox.appendChild(lyricsText);
+    }
+    // Add copy button if not present
+    let copyBtn = lyricsBox.querySelector('.copy-lyrics-btn');
+    if (!copyBtn) {
+      copyBtn = document.createElement('button');
+      copyBtn.className = 'copy-lyrics-btn';
+      copyBtn.type = 'button';
+      copyBtn.title = 'Copy all lyrics';
+      copyBtn.textContent = '⧉';
+      copyBtn.style.position = 'absolute';
+      copyBtn.style.top = '8px';
+      copyBtn.style.right = '10px';
+      copyBtn.style.fontSize = '1em';
+      copyBtn.style.background = 'rgba(30,40,50,0.18)';
+      copyBtn.style.border = 'none';
+      copyBtn.style.color = '#bfc7d5';
+      copyBtn.style.cursor = 'pointer';
+      copyBtn.style.padding = '2px 7px';
+      copyBtn.style.borderRadius = '6px';
+      copyBtn.style.zIndex = '2';
+      copyBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const text = lyricsText.textContent;
+        if (text) {
+          copyText(text);
+          toast(copyBtn, 'Copied!');
+        }
+      });
+      lyricsBox.appendChild(copyBtn);
+    }
     if (post && post.lyrics && post.lyrics.trim()) {
-      lyricsBox.textContent = post.lyrics;
+      lyricsText.textContent = post.lyrics;
       return;
     }
     if (!artist || !title) {

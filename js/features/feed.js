@@ -120,7 +120,7 @@ export function renderPostHTML(p, state, DB) {
         <button class="btn btn-ghost" data-action="delete">[ delete ]</button>
       ` : ''}
     </div>
-  <div class="lyrics-box small muted" id="lyrics-${p.id}" style="display:none;margin-top:8px;white-space:pre-line;"></div>
+  <div class="lyrics-box small muted" id="lyrics-${p.id}" style="display:none;margin-top:8px;white-space:pre-line;position:relative;"></div>
     <div class="player" id="player-${p.id}" aria-label="player"></div>
     <div class="comment-box" id="cbox-${p.id}">
       <div class="sep"></div>
@@ -140,6 +140,44 @@ export function renderPostHTML(p, state, DB) {
 }
 
 export function renderFeed(el, pager, state, DB, prefs) {
+  // --- Swipe gesture support for feed navigation ---
+  let touchStartX = null;
+  let touchEndX = null;
+  const minSwipeDist = 60;
+  function handleTouchStart(e) {
+    if (e.touches && e.touches.length === 1) {
+      touchStartX = e.touches[0].clientX;
+    }
+  }
+  function handleTouchMove(e) {
+    if (e.touches && e.touches.length === 1) {
+      touchEndX = e.touches[0].clientX;
+    }
+  }
+  function handleTouchEnd() {
+    if (touchStartX !== null && touchEndX !== null) {
+      const dist = touchEndX - touchStartX;
+      if (Math.abs(dist) > minSwipeDist) {
+        if (dist < 0 && state.page * state.pageSize < total) {
+          // Swipe left: next page
+          state.page++;
+          renderFeed(el, pager, state, DB, prefs);
+        } else if (dist > 0 && state.page > 1) {
+          // Swipe right: previous page
+          state.page--;
+          renderFeed(el, pager, state, DB, prefs);
+        }
+      }
+    }
+    touchStartX = null;
+    touchEndX = null;
+  }
+  el.removeEventListener('touchstart', handleTouchStart);
+  el.removeEventListener('touchmove', handleTouchMove);
+  el.removeEventListener('touchend', handleTouchEnd);
+  el.addEventListener('touchstart', handleTouchStart, { passive: true });
+  el.addEventListener('touchmove', handleTouchMove, { passive: true });
+  el.addEventListener('touchend', handleTouchEnd, { passive: true });
   // --- Preserve open comment boxes and their input values ---
   const openComments = Array.from(document.querySelectorAll('.comment-box.active')).map(box => box.id);
   // Map of comment box id -> input value
