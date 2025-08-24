@@ -355,6 +355,33 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
   // Initial feed + tags render
   doRender();
 
+  // Infinite scroll implementation
+  let isLoading = false;
+  const feedEl = feedBox.querySelector('#feed');
+  function handleScroll() {
+    if (isLoading) return;
+    // Check if near bottom (within 200px)
+    const scrollable = document.documentElement;
+    const scrollTop = window.scrollY || scrollable.scrollTop;
+    const windowHeight = window.innerHeight || scrollable.clientHeight;
+    const feedRect = feedEl.getBoundingClientRect();
+    // If feed bottom is within 200px of viewport bottom
+    if (feedRect.bottom - windowHeight < 200) {
+      // Check if more posts are available
+      const prefsNow = loadPrefs();
+      const posts = getFilteredPosts(DB, prefsNow);
+      const total = posts.length;
+      const end = Math.min((state.page + 1) * state.pageSize, total);
+      if (end > state.page * state.pageSize && end <= total) {
+        isLoading = true;
+        state.page++;
+        renderFeed(feedEl, feedBox.querySelector('#pager'), state, DB, prefsNow);
+        setTimeout(() => { isLoading = false; }, 400); // Prevent rapid firing
+      }
+    }
+  }
+  window.addEventListener('scroll', handleScroll);
+
   // Search (now in feedBox)
   const searchInput = feedBox.querySelector('#search');
   if (searchInput) {

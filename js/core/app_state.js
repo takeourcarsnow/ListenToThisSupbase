@@ -6,7 +6,7 @@ export const state = {
   user: null,
   queue: [],
   qIndex: 0,
-  pageSize: 30,
+  pageSize: 5,
   page: 1,
   forceLogin: false
 };
