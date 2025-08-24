@@ -186,7 +186,7 @@ export function renderComposeBox(right, state, DB, render) {
               cooldownDiv.classList.add('cycle-fade-in');
             }, 250);
           }
-        }, 4000);
+        }, 7000);
       }
       // Set initial message if needed
       const msg = POST_NO_COOLDOWN_MESSAGES[window._composeNoCooldownMsgIndex || 0];

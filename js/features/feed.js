@@ -69,8 +69,32 @@ export function renderPostHTML(p, state, DB) {
   // Only show 'by' before artist or username, not both
   const artistHTML = p.artist ? `<span class="post-artist-twolines muted thin">by ${esc(p.artist)}</span>` : '';
   const userBy = p.artist ? '' : 'by ';
+  // Determine thumbnail: use p.thumbnail if present, else try to generate from p.url (YouTube, SoundCloud, Spotify), else fallback
+  let thumbnailUrl = '';
+  if (p.thumbnail) {
+    thumbnailUrl = esc(p.thumbnail);
+  } else if (p.url) {
+    // YouTube
+    const ytMatch = p.url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([\w-]{11})/);
+    if (ytMatch) {
+      thumbnailUrl = `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`;
+    } else if (/soundcloud\.com/.test(p.url)) {
+      // SoundCloud: use logo as placeholder (oEmbed requires async)
+      thumbnailUrl = '/assets/logo.png'; // Replace with SoundCloud logo if available
+    } else if (/spotify\.com/.test(p.url)) {
+      // Spotify: show Spotify logo as thumbnail
+      thumbnailUrl = '/assets/spotify-logo.png';
+    } else {
+      thumbnailUrl = '/assets/logo.png';
+    }
+  } else {
+    thumbnailUrl = '/assets/logo.png';
+  }
   return `
   <article class="post" id="post-${p.id}" data-post="${p.id}" aria-label="${esc(p.title)}">
+    <div class="post-thumbnail-wrap">
+      <img class="post-thumbnail" src="${thumbnailUrl}" alt="post thumbnail" loading="lazy" />
+    </div>
     <div class="post-header-twolines">
       <div class="post-title-twolines">${esc(p.title)}${artistHTML}</div>
       <div class="small meta-twolines">

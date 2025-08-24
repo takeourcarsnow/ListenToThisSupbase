@@ -1337,3 +1337,20 @@ iframe[loading=lazy] { contain: content; }
   }
   .overlay { padding: 0; }
 }
+.post-thumbnail-wrap {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.post-thumbnail {
+  max-width: 120px;
+  max-height: 120px;
+  border-radius: 8px;
+  object-fit: cover;
+  box-shadow: 0 2px 8px #0003;
+  background: #181a20;
+  border: 1.5px solid var(--line, #444);
+  display: block;
+}

@@ -45,7 +45,6 @@ export const POST_NO_COOLDOWN_MESSAGES = [
 	"One post, infinite vibes. Pick your anthem!",
 	"Got a tune that slaps? Let the world hear it!",
 	"Today’s pick could be someone’s new obsession. Post away!",
-	"Spin your favorite track—just one per day, superstar.",
 	"Ready to bless the feed? Your daily drop awaits.",
 	"Share a song, spark a vibe. You’re up!",
 	"One shot, one song, all the feels. Make it count!"
