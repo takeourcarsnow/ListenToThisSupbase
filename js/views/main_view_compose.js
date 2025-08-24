@@ -56,10 +56,10 @@ export function renderComposeBox(right, state, DB, render) {
     <form id="postForm" class="stack" autocomplete="off" enctype="multipart/form-data">
       <input class="field" id="f_url" placeholder="Link (YouTube / Spotify / Bandcamp, etc)" />
       <div class="muted small" id="autofillMsg" style="margin-bottom:2px; display:none;">&#8593; Should autofill artist information if we're lucky.</div>
-      <div class="muted small" style="margin-bottom:4px;">or upload audio file:</div>
+      <div class="muted small" style="margin-bottom:4px;"></div>
       <div class="custom-file-input-wrapper">
         <input class="custom-file-input" type="file" id="f_audio" accept="audio/mp3,audio/mpeg,audio/ogg,audio/wav,audio/x-wav,audio/m4a" />
-        <label for="f_audio" class="custom-file-label">Choose Audio File</label>
+        <label for="f_audio" class="custom-file-label">or upload audio file</label>
         <span class="muted small" id="audioFileName"></span>
       </div>
       <input class="field" id="f_artist" placeholder="Artist" maxlength="120" style="margin-top:8px;" />
