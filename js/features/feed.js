@@ -93,7 +93,7 @@ export function renderPostHTML(p, state, DB) {
   return `
   <article class="post" id="post-${p.id}" data-post="${p.id}" aria-label="${esc(p.title)}">
     <div class="post-thumbnail-wrap">
-      <img class="post-thumbnail" src="${thumbnailUrl}" alt="post thumbnail" loading="lazy" />
+      <img class="post-thumbnail" src="${thumbnailUrl}" alt="post thumbnail" loading="lazy" data-action="toggle-player" data-post="${p.id}" style="cursor:pointer;" />
     </div>
     <div class="post-header-twolines">
       <div class="post-title-twolines">${esc(p.title)}${artistHTML}</div>
@@ -250,6 +250,24 @@ function setFeedGlobals(state, DB) {
   document.querySelectorAll('.tag-cloud.post-tags-twolines').forEach(tc => {
     enableTagCloudDragScroll(tc);
   });
+
+  // Attach event delegation for post thumbnail click to play post
+  if (!window._thumbnailPlayHandlerAttached) {
+    el.addEventListener('click', function(e) {
+      const thumb = e.target.closest('.post-thumbnail[data-action="toggle-player"]');
+      if (thumb) {
+        e.preventDefault();
+        e.stopPropagation();
+        const postId = thumb.getAttribute('data-post');
+        const playBtn = document.querySelector(`#post-${postId} .btn[data-action="toggle-player"]`);
+        if (playBtn) {
+          // Dispatch a real click event to trigger all listeners
+          playBtn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+        }
+      }
+    });
+    window._thumbnailPlayHandlerAttached = true;
+  }
 }
 
 export function renderTags(el, DB, prefs) {
