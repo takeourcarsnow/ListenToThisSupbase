@@ -360,13 +360,16 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
   const feedEl = feedBox.querySelector('#feed');
   function handleScroll() {
     if (isLoading) return;
-    // Check if near bottom (within 200px)
-    const scrollable = document.documentElement;
-    const scrollTop = window.scrollY || scrollable.scrollTop;
-    const windowHeight = window.innerHeight || scrollable.clientHeight;
-    const feedRect = feedEl.getBoundingClientRect();
-    // If feed bottom is within 200px of viewport bottom
-    if (feedRect.bottom - windowHeight < 200) {
+  // Check if near bottom (within 200px desktop, 400px mobile)
+  const scrollable = document.documentElement;
+  const scrollTop = window.scrollY || scrollable.scrollTop;
+  const windowHeight = window.innerHeight || scrollable.clientHeight;
+  const feedRect = feedEl.getBoundingClientRect();
+  // Use a larger threshold on mobile
+  const isMobile = window.matchMedia && window.matchMedia('(max-width: 600px)').matches;
+  const threshold = isMobile ? 400 : 200;
+  // If feed bottom is within threshold of viewport bottom
+  if (feedRect.bottom - windowHeight < threshold) {
       // Check if more posts are available
       const prefsNow = loadPrefs();
       const posts = getFilteredPosts(DB, prefsNow);
@@ -381,6 +384,15 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
     }
   }
   window.addEventListener('scroll', handleScroll);
+  window.addEventListener('resize', handleScroll);
+
+  // Fallback: after each feed render, check if more posts should be loaded (in case feed is too short)
+  function checkFeedFill() {
+    setTimeout(() => {
+      handleScroll();
+    }, 100); // Wait for DOM update
+  }
+  checkFeedFill();
 
   // Search (now in feedBox)
   const searchInput = feedBox.querySelector('#search');
@@ -389,6 +401,10 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
       savePrefs({ search: e.target.value });
       state.page = 1;
       renderFeed($('#feed'), $('#pager'), state, DB, loadPrefs());
+  checkFeedFill();
+  checkFeedFill();
+  checkFeedFill();
+  checkFeedFill();
     }, 120));
   }
 

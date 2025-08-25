@@ -1,3 +1,12 @@
+@media (max-width: 600px) {
+  header[role="banner"], .topbar, .header, .header-modern {
+    position: static !important;
+    top: auto !important;
+    z-index: auto !important;
+    background: inherit !important;
+    box-shadow: none !important;
+  }
+}
 .nowplaying-marquee-wrap {
   width: 100%;
   overflow: hidden;
@@ -16,6 +25,11 @@
   animation: marquee-scroll 36s linear infinite;
 }
 @media (max-width: 600px) {
+  html, body {
+    overflow: visible !important;
+    height: auto !important;
+    max-height: none !important;
+  }
   .mobile-slide-wrapper {
     overflow: visible !important;
     height: auto !important;
