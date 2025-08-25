@@ -346,6 +346,30 @@ export async function renderMain(root, state, DB, render) {
     moveIndicator('feed');
     // Ensure first tab is focusable
     tabBtns[0].tabIndex = 0;
+
+    // Keep mobile tab bar visible when scrolling up.
+    // Some browsers or other handlers may hide/show UI on scroll; this listener
+    // ensures the tab bar is forced visible when the user scrolls upward.
+    if (!window._tunedinMobileTabScrollHandler) {
+      window._tunedinMobileTabScrollHandler = true;
+      let _lastScrollY = typeof window !== 'undefined' ? window.scrollY || 0 : 0;
+      window.addEventListener('scroll', () => {
+        try {
+          const tab = document.querySelector('.mobile-tab-bar');
+          if (!tab) return;
+          const y = window.scrollY || window.pageYOffset || 0;
+          // If scrolling up (new y is less than previous), make sure tab is visible
+          if (y < _lastScrollY) {
+            tab.style.transform = 'translateY(0)';
+            tab.style.opacity = '1';
+            // remove any helper class that might hide it
+            tab.classList.remove('hidden');
+            tab.classList.remove('hide');
+          }
+          _lastScrollY = y;
+        } catch (err) { /* ignore */ }
+      }, { passive: true });
+    }
   }
 
   // Initialize dock UI
