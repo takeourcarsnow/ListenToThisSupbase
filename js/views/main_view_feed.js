@@ -389,8 +389,13 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
     return true;
   };
 
-  // IntersectionObserver for modern browsers
+  // IntersectionObserver for modern browsers. When the app is in mobile
+  // sliding-pane mode the feed sits inside a scrollable pane instead of the
+  // document, so use the feedBox (its parent) as the root for the observer.
   try {
+    const isMobile = (window.matchMedia && window.matchMedia('(max-width: 600px)').matches);
+    // When mobile panes are used the 'left' arg is the scrollable pane
+    const observerRoot = isMobile ? left : null;
     if ('IntersectionObserver' in window) {
       window._feedObserver = new IntersectionObserver((entries) => {
         for (const ent of entries) {
@@ -398,17 +403,28 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
             window._loadMoreInFeed();
           }
         }
-      }, { root: null, rootMargin: '200px', threshold: 0.1 });
+      }, { root: observerRoot, rootMargin: '200px', threshold: 0.1 });
       window._feedObserver.observe(sentinel);
     } else {
-      // Fallback: on scroll, check if near bottom
+      // Fallback: on scroll, check if sentinel is near the bottom of the
+      // scrolling root (feedBox on mobile, window otherwise).
       const onScroll = debounce(() => {
         const rect = sentinel.getBoundingClientRect();
-        if (rect.top < (window.innerHeight || document.documentElement.clientHeight) + 200) {
-          window._loadMoreInFeed();
+        if (isMobile) {
+          // visible height of the scrollable pane
+          const visible = left.getBoundingClientRect().height;
+          if (rect.top < visible + 200) {
+            window._loadMoreInFeed();
+          }
+        } else {
+          if (rect.top < (window.innerHeight || document.documentElement.clientHeight) + 200) {
+            window._loadMoreInFeed();
+          }
         }
       }, 150);
-      window.addEventListener('scroll', onScroll, { passive: true });
+      // Attach to the appropriate scroll container
+      if (isMobile) left.addEventListener('scroll', onScroll, { passive: true });
+      else window.addEventListener('scroll', onScroll, { passive: true });
     }
   } catch (e) {
     // ignore observer setup failures

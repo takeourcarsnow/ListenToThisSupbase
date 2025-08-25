@@ -44,6 +44,11 @@ export async function renderMain(root, state, DB, render) {
   const prefs = loadPrefs();
 
   // Restore scrollbars and show header/banner
+  // Restore scrollbars and show header/banner
+  // Don't force-hide document scroll here. Instead, when in mobile pane
+  // mode we move the header into the feed pane so it scrolls with the
+  // pane (prevents header from appearing stuck when body overflow is
+  // modified by other code or browsers).
   document.body.style.overflow = '';
   document.documentElement.style.overflow = '';
   const banner = document.getElementById('ascii-banner');
@@ -71,6 +76,16 @@ export async function renderMain(root, state, DB, render) {
     slideWrapper.appendChild(composePane);
     slideWrapper.appendChild(profilePane);
     root.appendChild(slideWrapper);
+    // If a header exists, move it into the feed pane on mobile so it scrolls
+    // with the pane instead of being visually stuck at the top when users
+    // scroll the pane. On desktop the header remains in .wrap (handled by
+    // header.renderHeader()).
+    try {
+      const header = document.querySelector('header[role="banner"]');
+      if (header && feedPane && feedPane.appendChild) {
+        feedPane.insertBefore(header, feedPane.firstChild);
+      }
+    } catch (e) { /* ignore */ }
     // For compatibility with rest of code
     left = feedPane;
     right = composePane; // will be used for compose/profile
@@ -163,6 +178,12 @@ export async function renderMain(root, state, DB, render) {
     grid.appendChild(left);
     grid.appendChild(right);
     root.appendChild(grid);
+    try {
+      const header = document.querySelector('header[role="banner"]');
+      if (header && document.querySelector('.wrap')) {
+        document.querySelector('.wrap').prepend(header);
+      }
+    } catch (e) { /* ignore */ }
   }
 
   // Responsive: re-render on device width change
@@ -218,6 +239,11 @@ export async function renderMain(root, state, DB, render) {
       }
       // Reset feed pane scroll reliably
       resetScroll(feedPane);
+      // Move header into feed pane so it is visible when returning to feed
+      try {
+        const header = document.querySelector('header[role="banner"]');
+        if (header && feedPane) feedPane.insertBefore(header, feedPane.firstChild);
+      } catch (e) { /* ignore */ }
       // --- Scroll to currently playing post on mobile ---
       if (window.matchMedia && window.matchMedia('(max-width: 600px)').matches && state.queue && state.queue.length > 0 && typeof state.qIndex === 'number') {
         setTimeout(() => {
@@ -235,11 +261,21 @@ export async function renderMain(root, state, DB, render) {
       renderComposeBox(composePane, state, DB, render);
       // Ensure scroll position is reset for compose tab
       resetScroll(composePane);
+      // Move header into the active pane so header is visible and scrolls
+      try {
+        const header = document.querySelector('header[role="banner"]');
+        if (header && composePane) composePane.insertBefore(header, composePane.firstChild);
+      } catch (e) { /* ignore */ }
     } else if (tab === 'profile') {
       profilePane.innerHTML = '';
       renderProfileBox(profilePane, state, DB, render);
       // Ensure scroll position is reset for profile tab
       resetScroll(profilePane);
+      // Move header into the active pane so header is visible and scrolls
+      try {
+        const header = document.querySelector('header[role="banner"]');
+        if (header && profilePane) profilePane.insertBefore(header, profilePane.firstChild);
+      } catch (e) { /* ignore */ }
     }
 
     // Slide to correct tab
@@ -368,23 +404,44 @@ export async function renderMain(root, state, DB, render) {
     // ensures the tab bar is forced visible when the user scrolls upward.
     if (!window._tunedinMobileTabScrollHandler) {
       window._tunedinMobileTabScrollHandler = true;
-      let _lastScrollY = typeof window !== 'undefined' ? window.scrollY || 0 : 0;
-      window.addEventListener('scroll', () => {
+      // Use window scroll on desktop, but when mobile panes are used the
+      // visible scrolling container is the feed pane. Observe that instead
+      // so the tab bar still responds to user scrolling on mobile.
+      let isPane = false;
+      let scrollEl = window;
+      try {
+        const pane = document.querySelector('.mobile-slide-pane.feed-pane');
+        if (pane) {
+          isPane = true;
+          scrollEl = pane;
+        }
+      } catch (e) { /* ignore */ }
+      let _lastScrollY = 0;
+      try {
+        _lastScrollY = isPane ? (scrollEl.scrollTop || 0) : (window.scrollY || 0);
+      } catch (e) { _lastScrollY = 0; }
+      const handler = () => {
         try {
           const tab = document.querySelector('.mobile-tab-bar');
           if (!tab) return;
-          const y = window.scrollY || window.pageYOffset || 0;
+          const y = isPane ? (scrollEl.scrollTop || 0) : (window.scrollY || window.pageYOffset || 0);
           // If scrolling up (new y is less than previous), make sure tab is visible
           if (y < _lastScrollY) {
             tab.style.transform = 'translateY(0)';
             tab.style.opacity = '1';
-            // remove any helper class that might hide it
             tab.classList.remove('hidden');
             tab.classList.remove('hide');
           }
           _lastScrollY = y;
         } catch (err) { /* ignore */ }
-      }, { passive: true });
+      };
+      try {
+        if (isPane && scrollEl && typeof scrollEl.addEventListener === 'function') scrollEl.addEventListener('scroll', handler, { passive: true });
+        else window.addEventListener('scroll', handler, { passive: true });
+      } catch (e) {
+        // Fallback to window
+        window.addEventListener('scroll', handler, { passive: true });
+      }
     }
   }
 
