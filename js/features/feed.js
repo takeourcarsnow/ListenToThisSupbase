@@ -2,6 +2,7 @@ import { esc, fmtTime, $, formatPostBody } from '../core/utils.js';
 import { fetchOEmbed } from './oembed.js';
 import { openEditInline } from './posts.js';
 import { enableTagCloudDragScroll } from './tagcloud_scroll.js';
+import Ticker from '../core/ticker.js';
 
 function userName(id, state, DB) {
   const db = DB.getAll();
@@ -70,31 +71,24 @@ export function renderPostHTML(p, state, DB) {
   // Only show 'by' before artist or username, not both
   const artistHTML = p.artist ? `<span class="post-artist-twolines muted thin">by ${esc(p.artist)}</span>` : '';
   const userBy = p.artist ? '' : 'by ';
-  // Determine thumbnail: use p.thumbnail if present, else try to generate from p.url (YouTube, SoundCloud, Spotify), else fallback
-  let thumbnailUrl = '';
+  // Determine thumbnail: keep lightweight defaults and add width/height to avoid CLS
+  let thumbnailUrl = '/assets/logo.png';
   if (p.thumbnail) {
     thumbnailUrl = esc(p.thumbnail);
   } else if (p.url) {
-    // YouTube
     const ytMatch = p.url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?|shorts)\/|.*[?&]v=)|youtu\.be\/)([\w-]{11})/);
     if (ytMatch) {
       thumbnailUrl = `https://img.youtube.com/vi/${ytMatch[1]}/hqdefault.jpg`;
     } else if (/soundcloud\.com/.test(p.url)) {
-      // SoundCloud: use logo as placeholder (oEmbed requires async)
-      thumbnailUrl = '/assets/logo.png'; // Replace with SoundCloud logo if available
-    } else if (/spotify\.com/.test(p.url)) {
-      // Spotify: show Spotify logo as thumbnail
-      thumbnailUrl = '/assets/spotify-logo.png';
-    } else {
       thumbnailUrl = '/assets/logo.png';
+    } else if (/spotify\.com/.test(p.url)) {
+      thumbnailUrl = '/assets/spotify-logo.png';
     }
-  } else {
-    thumbnailUrl = '/assets/logo.png';
   }
   return `
   <article class="post" id="post-${p.id}" data-post="${p.id}" aria-label="${esc(p.title)}">
     <div class="post-thumbnail-wrap">
-      <img class="post-thumbnail" src="${thumbnailUrl}" alt="post thumbnail" loading="lazy" data-action="toggle-player" data-post="${p.id}" style="cursor:pointer;" />
+      <img class="post-thumbnail" src="${thumbnailUrl}" srcset="${thumbnailUrl} 1x" width="320" height="180" alt="post thumbnail" loading="lazy" data-action="toggle-player" data-post="${p.id}" style="cursor:pointer;" />
     </div>
     <div class="post-header-twolines">
   <div class="post-title-twolines">${esc(p.title)} ${artistHTML}</div>
@@ -200,6 +194,8 @@ export function renderFeed(el, pager, state, DB, prefs) {
 
   // Attach prefs to state for tag highlighting
   state = { ...state, prefs };
+  // Read DB once for this render to avoid repeated getAll calls
+  const dbSnapshot = DB.getAll();
   let posts = getFilteredPosts(DB, prefs);
   // User filter support (from prefs or global)
   const userId = prefs._userFilterId || window.filterPostsByUserId;
@@ -226,38 +222,75 @@ export function renderFeed(el, pager, state, DB, prefs) {
   // If this is the first page (or feed empty) do a full replace to preserve
   // comment box state and other UI. On subsequent pages, append only new posts.
   const existingIds = Array.from(el.querySelectorAll('.post')).map(x => x.getAttribute('data-post'));
+  // Batch DOM writes: build fragment then replace/append
+  const frag = document.createDocumentFragment();
+  const container = document.createElement('div');
+  container.innerHTML = postsToShow.map(p => renderPostHTML(p, state, DB)).join('');
+  // Move children into fragment
+  while (container.firstChild) frag.appendChild(container.firstChild);
   if (state.page === 1 || existingIds.length === 0) {
-    el.innerHTML = postsToShow.map(p => renderPostHTML(p, state, DB)).join('');
+    el.innerHTML = '';
+    el.appendChild(frag);
   } else {
-    const newPosts = postsToShow.filter(p => !existingIds.includes(String(p.id)));
-    if (newPosts.length > 0) {
-      const html = newPosts.map(p => renderPostHTML(p, state, DB)).join('');
-      el.insertAdjacentHTML('beforeend', html);
-    }
+    // Only append posts that are not already present
+    const existingSet = new Set(existingIds);
+    const nodesToAppend = Array.from(frag.childNodes).filter(n => !existingSet.has(n.getAttribute && n.getAttribute('data-post')));
+    nodesToAppend.forEach(n => el.appendChild(n));
   }
 
   // Background: replace Spotify logo placeholders with actual thumbnails via Spotify oEmbed
   function scheduleReplaceSpotifyThumbnails() {
     const task = async () => {
       try {
-        const spotifyPosts = postsToShow.filter(p => p.url && /spotify\.com/.test(p.url) && !p.thumbnail);
-        if (!spotifyPosts.length) return;
+        const spotifyPosts = postsToShow.filter(p => p.url && /spotify\.com/.test(p.url));
+        if (!spotifyPosts.length) {
+          console.log('[SpotifyThumbs] No Spotify posts to update.');
+          return;
+        }
         for (const p of spotifyPosts) {
           try {
-            const md = await fetchOEmbed(p.url);
-            if (md && md.thumbnail_url) {
-              try { p.thumbnail = md.thumbnail_url; } catch {}
-              const img = document.querySelector(`#post-${p.id} .post-thumbnail`);
-              if (img && img.getAttribute('src') && img.getAttribute('src').includes('spotify-logo')) {
-                img.src = md.thumbnail_url;
+            if (!p.thumbnail || (p.thumbnail && p.thumbnail.includes('spotify-logo'))) {
+              console.log(`[SpotifyThumbs] Fetching oEmbed for post ${p.id}: ${p.url}`);
+              const md = await fetchOEmbed(p.url);
+              console.log(`[SpotifyThumbs] oEmbed result for post ${p.id}:`, md);
+              if (md && md.thumbnail_url) {
+                try { p.thumbnail = md.thumbnail_url; } catch {}
+                // Update main DB post as well
+                if (window.DB && typeof window.DB.updatePost === 'function') {
+                  try { await window.DB.updatePost(p.id, { thumbnail: md.thumbnail_url }); } catch (e) { console.error('[SpotifyThumbs] DB updatePost error:', e); }
+                }
+                const img = document.querySelector(`#post-${p.id} .post-thumbnail`);
+                if (img) {
+                  console.log(`[SpotifyThumbs] Updating img src for post ${p.id} to`, md.thumbnail_url);
+                  // Ensure srcset is updated/removed so the browser doesn't keep using the placeholder
+                  try {
+                    img.removeAttribute('srcset');
+                  } catch (e) {}
+                  img.src = md.thumbnail_url;
+                  // Also set srcset to the same URL for browsers that prefer srcset
+                  try { img.srcset = md.thumbnail_url + ' 1x'; } catch (e) {}
+                  img.dataset.spotifyThumb = '1';
+                  // Force a reload in case the browser cached the image element state
+                  try { img.complete = false; } catch (e) {}
+                  // Add error handler for debugging
+                  img.onerror = function() {
+                    console.error(`[SpotifyThumbs] Failed to load thumbnail for post ${p.id}:`, img.src);
+                  };
+                } else {
+                  console.log(`[SpotifyThumbs] No img found for post ${p.id}`);
+                }
+              } else {
+                console.log(`[SpotifyThumbs] No thumbnail_url in oEmbed for post ${p.id}`);
               }
+            } else {
+              console.log(`[SpotifyThumbs] Post ${p.id} already has thumbnail:`, p.thumbnail);
             }
           } catch (e) {
-            // per-post failure is non-fatal
+            console.error(`[SpotifyThumbs] Error updating post ${p.id}:`, e);
           }
         }
       } catch (e) {
-        // overall failure ignored
+        console.error('[SpotifyThumbs] Overall error:', e);
       }
     };
     if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
@@ -280,6 +313,27 @@ export function renderFeed(el, pager, state, DB, prefs) {
 
   // Save for edit restore
   setFeedGlobals(state, DB);
+
+  // Lazy-init players when post is visible using IntersectionObserver
+  try {
+    if (typeof IntersectionObserver !== 'undefined') {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (!entry.isIntersecting) return;
+          const postEl = entry.target;
+          const postId = postEl.getAttribute('data-post');
+          // Initialize player only when needed (placeholder behavior)
+          const player = postEl.querySelector('.player');
+          if (player && !player.dataset.inited) {
+            // Mark as inited; actual heavy init happens on play
+            player.dataset.inited = '1';
+          }
+          io.unobserve(postEl);
+        });
+      }, { root: null, rootMargin: '200px', threshold: 0.01 });
+      document.querySelectorAll('.post').forEach(p => io.observe(p));
+    }
+  } catch (e) { /* ignore */ }
 
   // Restore edit panel if editingPostId is set
   if (window.editingPostId) {

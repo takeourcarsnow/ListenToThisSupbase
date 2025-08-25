@@ -10,6 +10,7 @@ import { onKey } from '../auth/keyboard.js';
 import { seedDemo } from '../features/seed.js';
 import { state } from './app_state.js';
 import { runIdle } from './idle.js';
+import Ticker from './ticker.js';
 
 async function renderApp() {
   if (DB.refresh) await DB.refresh();
@@ -40,7 +41,15 @@ async function renderApp() {
       try { document.dispatchEvent(new CustomEvent('composeCooldownUpdated', { detail: window.composeCooldown })); } catch (e) {}
     } catch (e) { /* ignore */ }
   }
+  // Use central ticker to update countdown once per second while page visible
   computeAndPublishCooldown();
+  const unsub = Ticker.subscribe(() => {
+    // bail if hidden
+    if (document.hidden) return;
+    computeAndPublishCooldown();
+  });
+  // Unsubscribe on beforeunload to avoid leaks
+  window.addEventListener('beforeunload', () => { try { unsub(); } catch (e) {} });
   // Ensure window.state is always set for header logic
   window.state = state;
   const prefs = loadPrefs();
