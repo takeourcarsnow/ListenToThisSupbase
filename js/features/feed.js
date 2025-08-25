@@ -97,7 +97,7 @@ export function renderPostHTML(p, state, DB) {
       <img class="post-thumbnail" src="${thumbnailUrl}" alt="post thumbnail" loading="lazy" data-action="toggle-player" data-post="${p.id}" style="cursor:pointer;" />
     </div>
     <div class="post-header-twolines">
-      <div class="post-title-twolines">${esc(p.title)}${artistHTML}</div>
+  <div class="post-title-twolines">${esc(p.title)} ${artistHTML}</div>
       <div class="small meta-twolines">
         <a href="#" data-action="view-user" data-uid="${user ? esc(user.id) : ''}">
           <img class="avatar avatar-sm" src="${authorAvatar}" alt="avatar" />
