@@ -1,6 +1,5 @@
 // Header module: injects the header HTML into the page
-import { POST_LIMIT_MESSAGES, POST_READY_MESSAGES, GUEST_HEADER_MESSAGES } from './constants.js';
-import { UPDATE_HEADER_MESSAGE } from './constants.js';
+import { POST_LIMIT_MESSAGES, POST_READY_MESSAGES, GUEST_HEADER_MESSAGES, POST_NO_COOLDOWN_MESSAGES, UPDATE_HEADER_MESSAGE } from './constants.js';
 export async function renderHeader() {
   // Ensure DB is initialized before rendering header
   if (window.DB && typeof window.DB.init === 'function') {
@@ -32,6 +31,8 @@ export async function renderHeader() {
   // Post limit message variations (imported from constants)
   const postLimitMessages = POST_LIMIT_MESSAGES;
   let postLimitMsgIndex = 0;
+  const noCooldownMessages = POST_NO_COOLDOWN_MESSAGES;
+  let noCooldownMsgIndex = 0;
   // Helper to pad the update message for the ASCII frame
   // Helper to pad the update message to the right of the frame
   function padAsciiUpdateCenter(str) {
@@ -52,7 +53,7 @@ export async function renderHeader() {
     <pre id="ascii-banner" class="head ascii-banner" aria-hidden="false" style="font-family:'Fira Mono','Consolas','Menlo','Monaco','Liberation Mono',monospace !important;font-size:1em;line-height:1.1;letter-spacing:0;white-space:pre;overflow-x:auto;margin:0 auto 8px auto;max-width:100vw;">
 <!--ascii-start-->
 ●--------------------------- TunedIn.space --●
-| <span id="ascii-post-limit">${padLine(postLimitMessages[0])}</span> |
+| <span id="ascii-post-limit">${padLine(POST_NO_COOLDOWN_MESSAGES[0])}</span> |
 ●--------------------------------------------●
 ${updateAsciiMsg}
 <!--ascii-end-->
@@ -213,45 +214,45 @@ ${updateAsciiMsg}
           type = 'countdown';
         } else {
           // Not hovering: cycle waiting messages
-          if (!readyMsgAnimTimer && lastType !== 'ready') {
-            newText = padLine(postLimitMessages[postLimitMsgIndex]);
-            type = 'ready';
-            readyMsgAnimTimer = setTimeout(() => {
-              postLimitMsgIndex = (postLimitMsgIndex + 1) % postLimitMessages.length;
-              updatePostLimitInfo();
-              // Start the normal animation loop
-              const scheduleNext = () => {
-                const nextDelay = 4500 + Math.random() * 3500;
-                readyMsgAnimTimer = setTimeout(() => {
-                  if (!readyMsgFading) {
-                    postLimitMsgIndex = (postLimitMsgIndex + 1) % postLimitMessages.length;
-                    updatePostLimitInfo();
-                    scheduleNext();
-                  } else {
-                    readyMsgAnimTimer = setTimeout(scheduleNext, 500);
-                  }
-                }, nextDelay);
-              };
-              scheduleNext();
-            }, 4500 + Math.random() * 3500);
-          } else if (readyMsgAnimTimer) {
-            newText = padLine(postLimitMessages[postLimitMsgIndex]);
-            type = 'ready';
-          }
+            if (!readyMsgAnimTimer && lastType !== 'ready') {
+              newText = padLine(postLimitMessages[postLimitMsgIndex]);
+              type = 'ready';
+              readyMsgAnimTimer = setTimeout(() => {
+                postLimitMsgIndex = (postLimitMsgIndex + 1) % postLimitMessages.length;
+                updatePostLimitInfo();
+                // Start the normal animation loop
+                const scheduleNext = () => {
+                  const nextDelay = 4500 + Math.random() * 3500;
+                  readyMsgAnimTimer = setTimeout(() => {
+                    if (!readyMsgFading) {
+                      postLimitMsgIndex = (postLimitMsgIndex + 1) % postLimitMessages.length;
+                      updatePostLimitInfo();
+                      scheduleNext();
+                    } else {
+                      readyMsgAnimTimer = setTimeout(scheduleNext, 500);
+                    }
+                  }, nextDelay);
+                };
+                scheduleNext();
+              }, 4500 + Math.random() * 3500);
+            } else if (readyMsgAnimTimer) {
+              newText = padLine(postLimitMessages[postLimitMsgIndex]);
+              type = 'ready';
+            }
         }
       } else {
         // Not on cooldown: show nothing or a default message (optional)
         if (!readyMsgAnimTimer && lastType !== 'ready') {
-          newText = padLine(postLimitMessages[postLimitMsgIndex]);
+          newText = padLine(noCooldownMessages[noCooldownMsgIndex]);
           type = 'ready';
           readyMsgAnimTimer = setTimeout(() => {
-            postLimitMsgIndex = (postLimitMsgIndex + 1) % postLimitMessages.length;
+            noCooldownMsgIndex = (noCooldownMsgIndex + 1) % noCooldownMessages.length;
             updatePostLimitInfo();
             const scheduleNext = () => {
               const nextDelay = 4500 + Math.random() * 3500;
               readyMsgAnimTimer = setTimeout(() => {
                 if (!readyMsgFading) {
-                  postLimitMsgIndex = (postLimitMsgIndex + 1) % postLimitMessages.length;
+                  noCooldownMsgIndex = (noCooldownMsgIndex + 1) % noCooldownMessages.length;
                   updatePostLimitInfo();
                   scheduleNext();
                 } else {
@@ -262,7 +263,7 @@ ${updateAsciiMsg}
             scheduleNext();
           }, 4500 + Math.random() * 3500);
         } else if (readyMsgAnimTimer) {
-          newText = padLine(postLimitMessages[postLimitMsgIndex]);
+          newText = padLine(noCooldownMessages[noCooldownMsgIndex]);
           type = 'ready';
         }
       }
