@@ -1,0 +1,9 @@
+/* Only for the profile tab: ensure the pane fills the viewport and is touchable even if empty */
+@media (max-width: 600px) {
+  .mobile-slide-pane.profile-pane {
+    min-height: 100vh !important;
+    height: 100vh !important;
+    /* Ensure touch events pass through even if empty */
+    pointer-events: auto !important;
+  }
+}
