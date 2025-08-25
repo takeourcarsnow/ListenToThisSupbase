@@ -124,7 +124,7 @@ a.tag-sort-link:active::after {
 .custom-file-input:focus + .custom-file-label {
   outline: none;
 }
-}
+/* Hide any pseudo-element arrows on tag sort links (fix for unwanted up/down arrows) */
 /* Hide any pseudo-element arrows on tag sort links (fix for unwanted up/down arrows) */
 .tag-sort-link::before,
 .tag-sort-link::after {
@@ -1005,7 +1005,7 @@ input[type=number] {
 .box:last-child {
   margin-bottom: 0;
 }
-}
+
 
 /* Liquid glass look for overlays (profile/about, modals, etc.) */
 .overlay .box, #profile .box {
@@ -1335,9 +1335,44 @@ input[type=number] {
 iframe { border: 0; }
 iframe[loading=lazy] { contain: content; }
 .yt { width: 100%; aspect-ratio: 16/9; }
-.sp { width: 100%; height: 152px; }
+.sp { width: 100%; height: 152px; display: block; min-height: 120px; }
+.player .sp { display: block !important; height: 152px !important; min-height: 120px !important; }
 .bc iframe { width: 100% !important; }
 .audio { width: 100%; }
+
+/* Spotify note styling used by providers.js markup */
+.spotify-note {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.spotify-note-logo {
+  width: 22px;
+  height: 22px;
+  flex: 0 0 22px;
+  margin-top: 4px;
+}
+.spotify-note-body {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.spotify-note-text {
+  overflow-wrap: anywhere;
+}
+.spotify-note-actions .spotify-open {
+  display: inline-block;
+}
+@media (max-width: 600px) {
+  .spotify-note {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+  .spotify-note-actions .spotify-open {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+}
 
 @media (max-width: 600px) {
   .player {

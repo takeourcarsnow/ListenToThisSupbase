@@ -221,7 +221,10 @@ export async function onActionClick(e, state, DB, render) {
         const isMobile = (typeof window !== 'undefined') && window.matchMedia && window.matchMedia('(max-width: 600px)').matches;
         if (isMobile) {
           const iframe = pl.querySelector('iframe');
-          if (iframe && !pl._portal) {
+          // Only create a top-level player portal for YouTube iframes.
+          // Moving other providers' iframes (eg. Spotify) can cause them to
+          // be positioned or clipped unexpectedly on some mobile browsers.
+          if (iframe && !pl._portal && iframe.classList.contains('yt')) {
             const r = pl.getBoundingClientRect();
             const wrapper = document.createElement('div');
             wrapper.className = 'player-portal';

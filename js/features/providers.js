@@ -161,39 +161,28 @@ export function buildEmbed(post, container, opts = {}) {
   if (p.provider === 'spotify') {
     const src = `https://open.spotify.com/embed/${p.kind}/${p.id}`;
     const webUrl = `https://open.spotify.com/${p.kind}/${p.id}`;
-    // On many mobile browsers, playback inside third-party iframes is blocked
-    // or requires a user gesture that doesn't propagate when we dynamically
-    // create the iframe. Provide a clear fallback on mobile that opens the
-    // Spotify web player (or the Spotify app) in a new tab, while keeping the
-    // embedded player for desktop where it behaves reliably.
-    const isMobile = (typeof window !== 'undefined') && ((window.matchMedia && window.matchMedia('(max-width: 600px)').matches) || ('ontouchstart' in window && !window.matchMedia));
-    if (isMobile) {
-      // Use the same UI/message as desktop so mobile and desktop show consistent guidance
-      const src = `https://open.spotify.com/embed/${p.kind}/${p.id}`;
+    // Render the Spotify embed and a message. Use a shorter message on mobile
+    // to avoid taking too much vertical space; desktop keeps the full text.
+    const isMobile = (typeof navigator !== 'undefined' && /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent))
+      || (typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(max-width:600px)').matches);
+
+    const desktopMsg = 'Spotify only allows short previews. <b></b>';
+    const mobileMsg = 'Preview may be limited.';
+
       wrap.innerHTML = `
         <iframe class="sp" src="${src}" frameborder="0"
           allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
           loading="lazy" referrerpolicy="strict-origin-when-cross-origin"
           style="width:100%;min-height:80px;"></iframe>
-        <div class="muted small" style="margin-top:10px;display:flex;align-items:center;gap:10px;">
-          <img src="/assets/spotify-logo.png" alt="Spotify" style="width:22px;height:22px;vertical-align:middle;">
-          <span>Spotify only allows a short preview here. <b>Tap below to play the full track in Spotify.</b></span>
-          <a class="btn btn-primary" href="${webUrl}" target="_blank" rel="noopener noreferrer" style="margin-left:auto;min-width:120px;">Play Full Track</a>
+        <div class="muted small spotify-note" style="margin-top:10px;">
+          <img src="/assets/spotify-logo.png" alt="Spotify" class="spotify-note-logo">
+          <div class="spotify-note-body">
+            <div class="spotify-note-text">${isMobile ? mobileMsg : desktopMsg}</div>
+            <div class="spotify-note-actions">
+              <a class="btn btn-primary spotify-open" href="${webUrl}" target="_blank" rel="noopener noreferrer">Open in Spotify</a>
+            </div>
+          </div>
         </div>
-      `;
-      return;
-    }
-
-    wrap.innerHTML = `
-      <iframe class="sp" src="${src}" frameborder="0"
-        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-        loading="lazy" referrerpolicy="strict-origin-when-cross-origin"
-        style="width:100%;min-height:80px;"></iframe>
-      <div class="muted small" style="margin-top:10px;display:flex;align-items:center;gap:10px;">
-        <img src="/assets/spotify-logo.png" alt="Spotify" style="width:22px;height:22px;vertical-align:middle;">
-        <span>Spotify only allows a short preview here. <b>Tap below to play the full track in Spotify.</b></span>
-        <a class="btn btn-primary" href="${webUrl}" target="_blank" rel="noopener noreferrer" style="margin-left:auto;min-width:120px;">Play Full Track</a>
-      </div>
     `;
     return;
   }
