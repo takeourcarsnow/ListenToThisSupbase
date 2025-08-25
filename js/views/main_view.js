@@ -77,9 +77,36 @@ export async function renderMain(root, state, DB, render) {
 
     // --- Swipe gesture support for mobile tabs ---
     let touchStartX = null, touchStartY = null, touchEndX = null, touchEndY = null;
+    // If a touch starts inside the tag cloud, ignore the global tab-swipe handler
+    let ignoreSwipeFromTagCloud = false;
     const tabOrder = ['feed', 'compose', 'profile'];
+    // Capture-phase listeners to detect touches that start inside interactive
+    // child widgets (like the tag cloud) before the slideWrapper's bubble
+    // handlers run. This prevents accidental tab swipes when interacting
+    // with those widgets.
+    function _captureTouchStart(e) {
+      try {
+        if (e.touches && e.touches.length >= 1) {
+          // If the touch started inside any element with class 'tag-cloud'
+          if (e.target && e.target.closest && e.target.closest('.tag-cloud')) {
+            ignoreSwipeFromTagCloud = true;
+          }
+        }
+      } catch (err) { /* ignore */ }
+    }
+    function _captureTouchEnd() {
+      ignoreSwipeFromTagCloud = false;
+    }
+    document.addEventListener('touchstart', _captureTouchStart, { capture: true, passive: true });
+    document.addEventListener('touchend', _captureTouchEnd, { capture: true, passive: true });
+
     slideWrapper.addEventListener('touchstart', function(e) {
       if (e.touches.length === 1) {
+        // If capture-phase already detected a touch inside tag cloud, keep flag
+        // otherwise evaluate here as a fallback.
+        if (!ignoreSwipeFromTagCloud) {
+          ignoreSwipeFromTagCloud = !!(e.target && e.target.closest && e.target.closest('.tag-cloud'));
+        }
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
         touchEndX = null;
@@ -87,12 +114,19 @@ export async function renderMain(root, state, DB, render) {
       }
     });
     slideWrapper.addEventListener('touchmove', function(e) {
+      if (ignoreSwipeFromTagCloud) return; // don't track tab-swipe when interacting with tag cloud
       if (e.touches.length === 1) {
         touchEndX = e.touches[0].clientX;
         touchEndY = e.touches[0].clientY;
       }
     });
     slideWrapper.addEventListener('touchend', function(e) {
+      if (ignoreSwipeFromTagCloud) {
+        // Reset and ignore this swipe
+        touchStartX = touchStartY = touchEndX = touchEndY = null;
+        ignoreSwipeFromTagCloud = false;
+        return;
+      }
       if (touchStartX !== null && touchEndX !== null) {
         const dx = touchEndX - touchStartX;
         const dy = (touchEndY || 0) - (touchStartY || 0);

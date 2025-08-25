@@ -46,7 +46,17 @@ if (typeof window !== 'undefined') {
     } else {
       downTag = null;
     }
+    // Prevent the event from bubbling to parent handlers (like tab swipe)
+    e.stopPropagation && e.stopPropagation();
     e.preventDefault && e.preventDefault();
+
+    // For pointer events, capture the pointer so moves outside the element
+    // still target us and won't trigger parent gestures.
+    try {
+      if (e.pointerId && tagCloud.setPointerCapture) tagCloud.setPointerCapture(e.pointerId);
+    } catch (err) {
+      // ignore setPointerCapture errors on some browsers
+    }
   }
 
   function pointerMove(e) {
@@ -67,7 +77,8 @@ if (typeof window !== 'undefined') {
     if (!tagCloudRect) tagCloudRect = tagCloud.getBoundingClientRect();
     const x = clientX - tagCloudRect.left;
     tagCloud.scrollLeft = scrollLeft - (x - (startX - tagCloudRect.left));
-    e.preventDefault && e.preventDefault();
+  e.stopPropagation && e.stopPropagation();
+  e.preventDefault && e.preventDefault();
   }
 
   function pointerUp(e) {
@@ -115,12 +126,20 @@ if (typeof window !== 'undefined') {
           }
       }
     }
+    // Release pointer capture if we captured it
+    try {
+      if (pointerId && tagCloud.releasePointerCapture) tagCloud.releasePointerCapture(pointerId);
+    } catch (err) {
+      // ignore
+    }
+
     isDown = false;
     downTag = null;
     drag = false;
     pointerId = null;
     tagCloud.classList.remove('dragging');
     tagCloudRect = null;
+    e.stopPropagation && e.stopPropagation();
     e.preventDefault && e.preventDefault();
   }
 

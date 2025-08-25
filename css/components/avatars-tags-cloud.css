@@ -32,7 +32,9 @@
 
 /* Tag Cloud (one-line, scrollable) */
 .tag-cloud {
-  touch-action: pan-x;
+  /* Allow vertical native panning only so horizontal drags are handled by our JS
+    and won't trigger parent/tab swipe on mobile browsers */
+  touch-action: pan-y;
   display: flex;
   flex-wrap: nowrap;
   overflow-x: auto;
