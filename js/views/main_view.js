@@ -12,9 +12,8 @@ import { setupAutoRefresh, setupVisibilityRefresh } from './main_view_refresh.js
 export async function renderMain(root, state, DB, render) {
   // Helper to attach scroll listener to feedPane for mobile infinite scroll
   function attachFeedPaneScrollListener() {
-    if (window.matchMedia('(max-width: 600px)').matches && typeof feedPane !== 'undefined' && feedPane) {
-      feedPane.addEventListener('scroll', autoClickLoadMore);
-    }
+  // Autoloading removed: no automatic scroll-to-load behavior. Kept as no-op
+  return;
   }
 
   // Robust scroll reset helper: tries immediate, rAF and timeout resets to cover
@@ -34,69 +33,7 @@ export async function renderMain(root, state, DB, render) {
       }, 30);
     });
   }
-  // --- Auto-click 'load more' button when it appears ---
-  // --- IntersectionObserver for 'load more' button ---
-  let loadMoreObserver = null;
-  function observeLoadMoreButton() {
-    // Disconnect previous observer if any
-    if (loadMoreObserver) loadMoreObserver.disconnect();
-
-    // Target the load-more button directly, prefer the pager inside feedPane when present
-    const container = (typeof feedPane !== 'undefined' && feedPane) ? feedPane : document;
-    const btn = container.querySelector('[data-action="load-more"]') || document.querySelector('[data-action="load-more"]');
-
-    // Fallback: manual scroll event to check and click the button if visible
-    function fallbackAutoClickLoadMore() {
-      const c = (typeof feedPane !== 'undefined' && feedPane) ? feedPane : window;
-      const containerRect = c === window ? { top: 0, bottom: (window.innerHeight || document.documentElement.clientHeight) } : c.getBoundingClientRect();
-      const b = btn || (c === window ? document.querySelector('[data-action="load-more"]') : c.querySelector('[data-action="load-more"]'));
-      if (!b) return;
-      const rect = b.getBoundingClientRect();
-      if (rect.bottom > containerRect.top && rect.top < containerRect.bottom) {
-        if (!b._autoClicked) {
-          b._autoClicked = true;
-          b.click();
-        }
-      }
-    }
-
-    // Attach fallback scroll listener to the actual scrolling container (feedPane on mobile)
-    const _scrollContainer = (typeof feedPane !== 'undefined' && feedPane) ? feedPane : window;
-    if (!_scrollContainer._autoLoadMoreHandlerAttached) {
-      _scrollContainer.addEventListener('scroll', fallbackAutoClickLoadMore, { passive: true });
-      _scrollContainer._autoLoadMoreHandlerAttached = true;
-    }
-
-    // If we have a button, use IntersectionObserver with feedPane as root on mobile
-    if (btn) {
-      if (!btn._autoObserved) {
-        btn._autoObserved = true;
-        const ioRoot = (typeof feedPane !== 'undefined' && feedPane) ? feedPane : null;
-        loadMoreObserver = new IntersectionObserver((entries) => {
-          entries.forEach(entry => {
-            if (entry.isIntersecting && !btn._autoClicked) {
-              btn._autoClicked = true;
-              btn.click();
-              // Remove observer after click to prevent rapid repeat
-              if (loadMoreObserver) loadMoreObserver.disconnect();
-              // Re-observe after a short delay in case a new button appears
-              setTimeout(observeLoadMoreButton, 1500);
-            }
-          });
-        }, { threshold: 0.1, root: ioRoot, rootMargin: '100px 0px' });
-        loadMoreObserver.observe(btn);
-      }
-      // Also run fallback once in case it's already visible
-      fallbackAutoClickLoadMore();
-    }
-  }
-  // Observe DOM changes to re-attach observer if button is replaced
-  const observer = new MutationObserver(() => {
-    observeLoadMoreButton();
-  });
-  observer.observe(document.body, { childList: true, subtree: true });
-  // Also try once on initial render
-  setTimeout(observeLoadMoreButton, 100);
+  // Autoloading removed: no observers or auto-click behavior for load-more.
   // Mobile tab bar logic
   let isMobile = window.matchMedia('(max-width: 600px)').matches;
   // Remove mobile tab bar if entering login/auth screen
@@ -239,12 +176,11 @@ export async function renderMain(root, state, DB, render) {
 
     // Render content into correct pane, preserve per-tab state
   if (feedPane && composePane && profilePane) {
-    if (tab === 'feed') {
+      if (tab === 'feed') {
       if (!feedPane.innerHTML.trim()) {
         setupFeedPane({ root, left: feedPane, state, DB, prefs, render });
         feedTabState.rendered = true;
-  // Ensure load-more observer attaches now that feedPane and pager exist
-  try { observeLoadMoreButton(); setTimeout(observeLoadMoreButton, 150); } catch (e) {}
+        // Autoloading removed: no observer to attach here.
       }
       // Reset feed pane scroll reliably
       resetScroll(feedPane);
@@ -308,14 +244,12 @@ export async function renderMain(root, state, DB, render) {
     if (!feedTabState.rendered) {
       setupFeedPane({ root, left: feedPane, state, DB, prefs, render });
       feedTabState.rendered = true;
-      // Attach load-more observer after initial feed render
-      try { observeLoadMoreButton(); setTimeout(observeLoadMoreButton, 150); } catch (e) {}
+      // Autoloading removed: no observer to attach after render
     }
     // Compose/profile panes will be rendered on tab switch
   } else {
     setupFeedPane({ root, left, state, DB, prefs, render });
-    // Attach load-more observer for desktop feed as well
-    try { observeLoadMoreButton(); setTimeout(observeLoadMoreButton, 150); } catch (e) {}
+  // Autoloading removed: no observer to attach for desktop feed
     // Right side: profile + compose (or guest prompt)
     if (state.user) {
       renderProfileBox(right, state, DB, render);

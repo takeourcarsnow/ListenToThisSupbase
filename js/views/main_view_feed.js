@@ -7,11 +7,10 @@ import notifications from '../core/notifications.js';
 
 export function setupFeedPane({ root, left, state, DB, prefs, render }) {
   // Always reset page to 1 on feed pane setup (tab switch or reload)
+  // Use incremental loading: default pageSize = 5. state.page/state.pageSize
+  // control how many items are rendered; scrolling will load more.
   state.page = 1;
-  // Ensure pageSize is set to a reasonable default for both mobile and desktop
-  if (!state.pageSize || typeof state.pageSize !== 'number' || state.pageSize < 1) {
-    state.pageSize = 20;
-  }
+  if (!state.pageSize || typeof state.pageSize !== 'number' || state.pageSize < 1) state.pageSize = 5;
   // Show welcome/info popup for new users (like notifications)
   const BANNER_KEY = 'tunedin.hideWelcomeBanner';
   if (!localStorage.getItem(BANNER_KEY)) {
@@ -364,102 +363,56 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
   // Initial feed + tags render
   doRender();
 
-  // Infinite scroll implementation
+  // Incremental loading (infinite scroll)
   let isLoading = false;
   const feedEl = feedBox.querySelector('#feed');
-  // Track how many automatic (non-user-initiated) loads we've done so we don't
-  // auto-load the entire dataset on small screens. Users can always click
-  // the load-more button or scroll to trigger more loads manually.
-  feedBox._autoLoadCount = feedBox._autoLoadCount || 0;
-  const MAX_AUTO_LOADS = 2; // reasonable default: allow up to 2 auto pages
-  function handleScroll() {
-    if (isLoading) return;
-    const isMobile = window.matchMedia && window.matchMedia('(max-width: 600px)').matches;
-    let scrollable, scrollTop, windowHeight;
-    if (isMobile) {
-      // On mobile, use the feed pane as the scrollable container
-      scrollable = left;
-      scrollTop = scrollable.scrollTop;
-      windowHeight = scrollable.clientHeight;
-    } else {
-      scrollable = document.documentElement;
-      scrollTop = window.scrollY || scrollable.scrollTop;
-      windowHeight = window.innerHeight || scrollable.clientHeight;
-    }
-    const feedRect = feedEl.getBoundingClientRect();
-    const threshold = isMobile ? 400 : 200;
-    // If feed bottom is within threshold of viewport bottom (for mobile, relative to scrollable)
-    let nearBottom;
-    if (isMobile) {
-      nearBottom = (scrollable.scrollHeight - scrollTop - windowHeight) < threshold;
-    } else {
-      nearBottom = (feedRect.bottom - windowHeight) < threshold;
-    }
-    if (nearBottom) {
-      // Check if more posts are available
-      const prefsNow = loadPrefs();
-      const posts = getFilteredPosts(DB, prefsNow);
-      const total = posts.length;
-      const end = Math.min((state.page + 1) * state.pageSize, total);
-      if (end > state.page * state.pageSize && end <= total) {
-        isLoading = true;
-        state.page++;
-        renderFeed(feedEl, feedBox.querySelector('#pager'), state, DB, prefsNow);
-        setTimeout(() => { isLoading = false; }, 400); // Prevent rapid firing
-      }
-    }
-  }
-  // Attach scroll event to correct container
-  const isMobile = window.matchMedia && window.matchMedia('(max-width: 600px)').matches;
-  if (isMobile) {
-    left.addEventListener('scroll', handleScroll);
-  } else {
-    window.addEventListener('scroll', handleScroll);
-    window.addEventListener('resize', handleScroll);
-  }
+  // Sentinel element to observe when to load next page
+  const sentinel = document.createElement('div');
+  sentinel.className = 'feed-sentinel';
+  sentinel.style.minHeight = '8px';
+  sentinel.style.display = 'block';
+  feedBox.appendChild(sentinel);
 
-  // Fallback: after each feed render, check if more posts should be loaded (in case feed is too short)
-  function checkFeedFill() {
-    setTimeout(() => {
-      handleScroll();
-    }, 100); // Wait for DOM update
-  }
-  // Call checkFeedFill after initial render
-  checkFeedFill();
-
-  // Patch: call checkFeedFill after every renderFeed
-  const origRenderFeed = renderFeed;
-  function renderFeedWithFill(...args) {
-    origRenderFeed(...args);
-    checkFeedFill();
-  }
-  // Use our patched version for this pane only
-  left.renderFeedWithFill = renderFeedWithFill;
-  // Expose a safe load-more helper that other modules (actions) can call.
-  // This increments state.page and uses the pane-local renderFeedWithFill so
-  // paging behavior is consistent and checkFeedFill runs after render.
-  window._loadMoreInFeed = function loadMoreInFeed(opts = { userInitiated: false }) {
-    try {
-      const userInitiated = !!opts.userInitiated;
-      // If this is an automatic trigger (not user-initiated), cap how many
-      // times we will auto-load to avoid loading the entire feed at once.
-      if (!userInitiated) {
-        if (feedBox._autoLoadCount >= MAX_AUTO_LOADS) return false;
-      }
-      const prefsNow = loadPrefs();
-      const posts = getFilteredPosts(DB, prefsNow);
-      const total = posts.length;
-      const end = Math.min((state.page + 1) * state.pageSize, total);
-      if (end > state.page * state.pageSize && end <= total) {
-        state.page++;
-        // If this was an automatic load, increment the counter
-        if (!userInitiated) feedBox._autoLoadCount = (feedBox._autoLoadCount || 0) + 1;
-        renderFeedWithFill(feedEl, feedBox.querySelector('#pager'), state, DB, prefsNow);
-        return true;
-      }
-      return false;
-    } catch (err) { return false; }
+  // loadMore helper: increments state.page and re-renders (returns true if more to load)
+  window._loadMoreInFeed = function loadMoreInFeed() {
+    if (isLoading) return false;
+    const prefsNow = loadPrefs();
+    const totalPosts = getFilteredPosts(DB, prefsNow).length;
+    const currently = Math.min(totalPosts, state.page * state.pageSize);
+    if (currently >= totalPosts) return false;
+    isLoading = true;
+    state.page++;
+    // Render only appends new posts in features/renderFeed when page > 1
+    renderFeed($('#feed'), $('#pager'), state, DB, prefsNow);
+    // Small timeout to avoid rapid-fire triggers
+    setTimeout(() => { isLoading = false; }, 200);
+    return true;
   };
+
+  // IntersectionObserver for modern browsers
+  try {
+    if ('IntersectionObserver' in window) {
+      window._feedObserver = new IntersectionObserver((entries) => {
+        for (const ent of entries) {
+          if (ent.isIntersecting) {
+            window._loadMoreInFeed();
+          }
+        }
+      }, { root: null, rootMargin: '200px', threshold: 0.1 });
+      window._feedObserver.observe(sentinel);
+    } else {
+      // Fallback: on scroll, check if near bottom
+      const onScroll = debounce(() => {
+        const rect = sentinel.getBoundingClientRect();
+        if (rect.top < (window.innerHeight || document.documentElement.clientHeight) + 200) {
+          window._loadMoreInFeed();
+        }
+      }, 150);
+      window.addEventListener('scroll', onScroll, { passive: true });
+    }
+  } catch (e) {
+    // ignore observer setup failures
+  }
 
   // Search (now in feedBox)
   const searchInput = feedBox.querySelector('#search');
@@ -468,10 +421,6 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
       savePrefs({ search: e.target.value });
       state.page = 1;
       renderFeed($('#feed'), $('#pager'), state, DB, loadPrefs());
-  checkFeedFill();
-  checkFeedFill();
-  checkFeedFill();
-  checkFeedFill();
     }, 120));
   }
 

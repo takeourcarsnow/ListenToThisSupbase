@@ -200,21 +200,37 @@ export function renderFeed(el, pager, state, DB, prefs) {
     posts = posts.filter(p => p.userId === userId);
   }
   const total = posts.length;
-  const start = 0;
-  const end = Math.min(state.page * state.pageSize, total);
-  const chunk = posts.slice(start, end);
+
+  // Ensure sane paging defaults
+  if (!state.pageSize || typeof state.pageSize !== 'number' || state.pageSize < 1) state.pageSize = 5;
+  if (!state.page || typeof state.page !== 'number' || state.page < 1) state.page = 1;
+
+  const limit = Math.min(total, state.page * state.pageSize);
+  const postsToShow = posts.slice(0, limit);
 
   if (total === 0) {
     el.innerHTML = `<div class="notice small">No posts yet. Add one on the right.</div>`;
     pager.innerHTML = '';
     return;
   }
-  el.innerHTML = chunk.map(p => renderPostHTML(p, state, DB)).join('');
+
+  // If this is the first page (or feed empty) do a full replace to preserve
+  // comment box state and other UI. On subsequent pages, append only new posts.
+  const existingIds = Array.from(el.querySelectorAll('.post')).map(x => x.getAttribute('data-post'));
+  if (state.page === 1 || existingIds.length === 0) {
+    el.innerHTML = postsToShow.map(p => renderPostHTML(p, state, DB)).join('');
+  } else {
+    const newPosts = postsToShow.filter(p => !existingIds.includes(String(p.id)));
+    if (newPosts.length > 0) {
+      const html = newPosts.map(p => renderPostHTML(p, state, DB)).join('');
+      el.insertAdjacentHTML('beforeend', html);
+    }
+  }
 
   // Background: replace Spotify logo placeholders with actual thumbnails via Spotify oEmbed
   (async function replaceSpotifyThumbnails() {
     try {
-      const spotifyPosts = chunk.filter(p => p.url && /spotify\.com/.test(p.url) && !p.thumbnail);
+      const spotifyPosts = postsToShow.filter(p => p.url && /spotify\.com/.test(p.url) && !p.thumbnail);
       if (!spotifyPosts.length) return;
       for (const p of spotifyPosts) {
         try {
@@ -327,11 +343,15 @@ function setFeedGlobals(state, DB) {
   window._lastFeedDB = DB;
 }
 
-  if (end < total) {
-    pager.innerHTML = `<button class="btn btn-ghost" data-action="load-more">[ load more (${end}/${total}) ]</button>`;
-  } else {
-    pager.innerHTML = `<div class="small muted">${total} loaded</div>`;
-  }
+  // Pager: show how many are loaded vs total
+  pager.innerHTML = `<div class="small muted">${Math.min(limit, total)}/${total} loaded</div>`;
+
+  // If we've loaded everything, disconnect any global observer used for infinite-scroll
+  try {
+    if (typeof window !== 'undefined' && window._feedObserver && limit >= total) {
+      try { window._feedObserver.disconnect(); } catch (e) {}
+    }
+  } catch (e) {}
 
   const h = (location.hash || '').trim();
   if (h.startsWith('#post-')) {

@@ -636,14 +636,17 @@ export async function onActionClick(e, state, DB, render) {
     const userInitiated = !!(e && e.isTrusted);
     if (typeof window !== 'undefined' && typeof window._loadMoreInFeed === 'function') {
       const ok = window._loadMoreInFeed({ userInitiated });
-      if (!ok) {
-        // Fallback to previous behavior
+      // Only perform the legacy fallback if this was a real user click.
+      if (!ok && userInitiated) {
         state.page++;
         renderFeed($('#feed'), $('#pager'), state, DB, loadPrefs());
       }
     } else {
-      state.page++;
-      renderFeed($('#feed'), $('#pager'), state, DB, loadPrefs());
+      // If the helper is missing, only allow manual user-initiated loads.
+      if (userInitiated) {
+        state.page++;
+        renderFeed($('#feed'), $('#pager'), state, DB, loadPrefs());
+      }
     }
   }
 

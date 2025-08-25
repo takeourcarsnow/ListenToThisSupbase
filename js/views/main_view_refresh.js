@@ -56,8 +56,12 @@ async function smartRefresh(state, DB) {
   }
 
   // Update pager and tags
-  if (posts.length > existingIds.length) {
-    pagerEl.innerHTML = `<button class="btn btn-ghost" data-action="load-more">[ load more (${existingIds.length}/${posts.length}) ]</button>`;
+  const loaded = existingIds.length;
+  if (posts.length > loaded) {
+    pagerEl.innerHTML = `<button class="btn btn-ghost" data-action="load-more">[ load more (${loaded}/${posts.length}) ]</button>`;
+    // Wire the button to call the shared loadMore helper
+    const btn = pagerEl.querySelector('button[data-action="load-more"]');
+    if (btn) btn.addEventListener('click', (e) => { e.preventDefault(); if (window._loadMoreInFeed) window._loadMoreInFeed(); });
   } else {
     pagerEl.innerHTML = `<div class="small muted">${posts.length} loaded</div>`;
   }
