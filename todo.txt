@@ -13,4 +13,7 @@ when playing posts one by one from post play it should not say queue number
 
 lazy loading on phone is buggy
 upload audio player fix big bottom margin
+tags not working 
+on phone right hand side of elements are cut off
+sliding through tabs makes buggy cause i can see elements of tab im sliding off from rearranging, not a seamless experience even though it technically works but those glitches in transitions are distracting 
 
