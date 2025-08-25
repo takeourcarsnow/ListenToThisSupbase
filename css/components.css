@@ -1381,21 +1381,21 @@ iframe[loading=lazy] { contain: content; }
 @media (max-width: 600px) {
   .player {
     padding-bottom: 38px;
-    min-height: 120px;
+  min-height: 160px;
     pointer-events: auto !important;
   }
   .yt {
-    min-height: 120px !important;
-    padding-bottom: 38px !important;
-    aspect-ratio: unset !important;
-    height: 200px !important;
+  min-height: 140px !important;
+  padding-bottom: 0px !important;
+  aspect-ratio: unset !important;
+  height: 0px !important; //i dont know if thats a proper way but it fixed youtube player having scrollbars etc
     box-sizing: border-box;
   }
   .player iframe.yt {
-    min-height: 120px !important;
+    min-height: 180px !important;
+    height: 280px !important;
     padding-bottom: 38px !important;
     aspect-ratio: unset !important;
-    height: 200px !important;
     box-sizing: border-box;
   }
   .sp, .player iframe.sp {
