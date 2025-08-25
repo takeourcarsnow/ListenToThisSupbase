@@ -230,38 +230,50 @@ export async function renderMain(root, state, DB, render) {
     currentTab = tab;
 
     // Render content into correct pane, preserve per-tab state
-    if (feedPane && composePane && profilePane) {
-        if (tab === 'feed') {
-            if (!feedPane.innerHTML.trim()) {
-                setupFeedPane({ root, left: feedPane, state, DB, prefs, render });
-                feedTabState.rendered = true;
+  if (feedPane && composePane && profilePane) {
+    if (tab === 'feed') {
+      if (!feedPane.innerHTML.trim()) {
+        setupFeedPane({ root, left: feedPane, state, DB, prefs, render });
+        feedTabState.rendered = true;
+      }
+      // Reset feed pane scroll reliably
+      resetScroll(feedPane);
+      // --- Scroll to currently playing post on mobile ---
+      if (window.matchMedia && window.matchMedia('(max-width: 600px)').matches && state.queue && state.queue.length > 0 && typeof state.qIndex === 'number') {
+        setTimeout(() => {
+          const postId = state.queue[state.qIndex];
+          if (postId) {
+            const postEl = document.getElementById('post-' + postId);
+            if (postEl && feedPane.contains(postEl)) {
+              postEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
-            // Reset feed pane scroll reliably
-            resetScroll(feedPane);
-        } else if (tab === 'compose') {
-            composePane.innerHTML = '';
-            renderComposeBox(composePane, state, DB, render);
-            // Ensure scroll position is reset for compose tab
-            resetScroll(composePane);
-        } else if (tab === 'profile') {
-            profilePane.innerHTML = '';
-            renderProfileBox(profilePane, state, DB, render);
-            // Ensure scroll position is reset for profile tab
-            resetScroll(profilePane);
-        }
-
-        // Slide to correct tab
-        let slideIndex = 0;
-        if (tab === 'feed') slideIndex = 0;
-        if (tab === 'compose') slideIndex = 1;
-        if (tab === 'profile') slideIndex = 2;
-        slideWrapper.style.transform = `translateX(-${slideIndex * 100}vw)`;
-        slideWrapper.setAttribute('data-tab', tab);
-
-        // Update tab bar active state
-        const tabBtns = document.querySelectorAll('.mobile-tab-bar button');
-        tabBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
+          }
+        }, 150); // Delay to ensure feed is rendered
+      }
+    } else if (tab === 'compose') {
+      composePane.innerHTML = '';
+      renderComposeBox(composePane, state, DB, render);
+      // Ensure scroll position is reset for compose tab
+      resetScroll(composePane);
+    } else if (tab === 'profile') {
+      profilePane.innerHTML = '';
+      renderProfileBox(profilePane, state, DB, render);
+      // Ensure scroll position is reset for profile tab
+      resetScroll(profilePane);
     }
+
+    // Slide to correct tab
+    let slideIndex = 0;
+    if (tab === 'feed') slideIndex = 0;
+    if (tab === 'compose') slideIndex = 1;
+    if (tab === 'profile') slideIndex = 2;
+    slideWrapper.style.transform = `translateX(-${slideIndex * 100}vw)`;
+    slideWrapper.setAttribute('data-tab', tab);
+
+    // Update tab bar active state
+    const tabBtns = document.querySelectorAll('.mobile-tab-bar button');
+    tabBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
+  }
 
     // Save per-tab state to global state for persistence
     state.feedTabState = feedTabState;
