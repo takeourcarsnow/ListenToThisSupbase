@@ -222,12 +222,16 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
 
   // Dock
   const prefsNow = loadPrefs();
-  const dock = document.createElement('div');
-  dock.className = 'dock';
-  dock.id = 'dock';
-  dock.style.display = 'none';
-  dock.style.borderBottom = 'none';
-  dock.innerHTML = `
+  // Reuse existing dock if present (prevents duplicates on re-render)
+  let dock = document.getElementById('dock');
+  const isMobileDock = left && left.classList && left.classList.contains('mobile-slide-pane') || (window.matchMedia && window.matchMedia('(max-width: 600px)').matches);
+  if (!dock) {
+    dock = document.createElement('div');
+    dock.className = 'dock';
+    dock.id = 'dock';
+    dock.style.display = 'none';
+    dock.style.borderBottom = 'none';
+    dock.innerHTML = `
     <div class="hstack" style="justify-content:center; align-items:center; flex-wrap:wrap; gap:18px;">
       <div class="hstack" style="gap:18px;">
   <button class="btn" data-action="q-prev" title="previous in queue (k)">&#9198;</button>
@@ -275,6 +279,10 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
       if (activePlayer) activePlayer.classList.remove('active');
     }
   });
+
+    // Mark that we've attached the click handler so we don't double-bind
+    dock._hasClickHandler = true;
+  }
 
   // Left column: tags and feed
   const playAllLabel = prefs.filterTag ? `play #${esc(prefs.filterTag)}` : 'play all';
@@ -324,7 +332,19 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
 
   left.appendChild(top);
   left.appendChild(tagsBox);
-  left.appendChild(dock);
+  // On mobile the feed is rendered inside a transformed sliding wrapper. When an
+  // ancestor has a CSS transform, position:fixed children will be positioned
+  // relative to that ancestor instead of the viewport. To ensure the dock's
+  // fixed positioning works reliably on mobile, append it to document.body
+  // when in mobile layout. On desktop append it into the left column as
+  // before so DOM ordering remains consistent.
+  try {
+    if (isMobileDock) document.body.appendChild(dock);
+    else left.appendChild(dock);
+  } catch (e) {
+    // Fallback: append to left if body append fails for any reason
+    left.appendChild(dock);
+  }
   left.appendChild(feedBox);
 
   // Always reload prefs and re-render feed/tags for correct tag highlight (mobile/desktop)
