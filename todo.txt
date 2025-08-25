@@ -13,3 +13,4 @@ when playing posts one by one from post play it should not say queue number
 
 lazy loading on phone is buggy
 upload audio player fiz big bottom margin
+
