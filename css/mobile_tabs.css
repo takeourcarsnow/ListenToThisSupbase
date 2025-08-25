@@ -62,6 +62,10 @@
     -webkit-backdrop-filter: blur(16px) saturate(180%) contrast(1.1);
     border-radius: 18px 18px 0 0;
     transition: background 0.3s, box-shadow 0.3s;
+    pointer-events: none !important;
+  }
+  .mobile-tab-bar button {
+    pointer-events: auto !important;
   }
   .mobile-tab-bar button {
     background: none;
