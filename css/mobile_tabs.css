@@ -23,7 +23,8 @@
     background: var(--bg, #181c22);
     box-sizing: border-box;
     position: relative;
-    z-index: 1;
+  /* Ensure mobile panes sit above page content but below dock/tab-bar when needed */
+  z-index: 10002;
     display: block;
   }
   /* Remove grid/flex from inside panes for mobile */
@@ -44,7 +45,8 @@
     bottom: 0;
     left: 0;
     right: 0;
-    z-index: 10001;
+  /* Keep mobile tab bar above most content but below the dock (dock uses very high z-index) */
+  z-index: 20001;
     display: flex;
     justify-content: space-around;
     align-items: center;

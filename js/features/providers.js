@@ -168,13 +168,17 @@ export function buildEmbed(post, container, opts = {}) {
     // embedded player for desktop where it behaves reliably.
     const isMobile = (typeof window !== 'undefined') && ((window.matchMedia && window.matchMedia('(max-width: 600px)').matches) || ('ontouchstart' in window && !window.matchMedia));
     if (isMobile) {
+      // Use the same UI/message as desktop so mobile and desktop show consistent guidance
+      const src = `https://open.spotify.com/embed/${p.kind}/${p.id}`;
       wrap.innerHTML = `
-        <div class="sp-mobile-fallback" style="display:flex;align-items:center;gap:12px;padding:10px;">
-          <img src="/assets/spotify-logo.png" alt="Spotify" style="width:36px;height:36px;flex:0 0 36px;">
-          <div style="flex:1">
-            <div class="muted small" style="margin-bottom:6px;">Spotify embeds are tricky</div>
-            <a class="btn btn-ghost" href="${webUrl}" target="_blank" rel="noopener noreferrer">Open in Spotify to play</a>
-          </div>
+        <iframe class="sp" src="${src}" frameborder="0"
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+          loading="lazy" referrerpolicy="strict-origin-when-cross-origin"
+          style="width:100%;min-height:80px;"></iframe>
+        <div class="muted small" style="margin-top:10px;display:flex;align-items:center;gap:10px;">
+          <img src="/assets/spotify-logo.png" alt="Spotify" style="width:22px;height:22px;vertical-align:middle;">
+          <span>Spotify only allows a short preview here. <b>Tap below to play the full track in Spotify.</b></span>
+          <a class="btn btn-primary" href="${webUrl}" target="_blank" rel="noopener noreferrer" style="margin-left:auto;min-width:120px;">Play Full Track</a>
         </div>
       `;
       return;
