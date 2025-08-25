@@ -39,7 +39,14 @@ export async function fetchOEmbed(url) {
   }
   // Spotify (no oEmbed, fallback to OpenGraph)
   if (/spotify\.com/.test(url)) {
-    return null;
+      try {
+        // Spotify provides an oEmbed endpoint which returns a thumbnail_url for tracks/albums/playlists
+        const res = await fetch(`https://open.spotify.com/oembed?url=${encodeURIComponent(url)}&format=json`);
+        if (!res.ok) return null;
+        return await res.json();
+      } catch {
+        return null;
+      }
   }
   // Fallback: try generic oEmbed providers if needed
   return null;

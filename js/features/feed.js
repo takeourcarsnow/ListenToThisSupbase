@@ -1,4 +1,5 @@
 import { esc, fmtTime, $ } from '../core/utils.js';
+import { fetchOEmbed } from './oembed.js';
 import { openEditInline } from './posts.js';
 import { enableTagCloudDragScroll } from './tagcloud_scroll.js';
 
@@ -209,6 +210,32 @@ export function renderFeed(el, pager, state, DB, prefs) {
     return;
   }
   el.innerHTML = chunk.map(p => renderPostHTML(p, state, DB)).join('');
+
+  // Background: replace Spotify logo placeholders with actual thumbnails via Spotify oEmbed
+  (async function replaceSpotifyThumbnails() {
+    try {
+      const spotifyPosts = chunk.filter(p => p.url && /spotify\.com/.test(p.url) && !p.thumbnail);
+      if (!spotifyPosts.length) return;
+      for (const p of spotifyPosts) {
+        try {
+          const md = await fetchOEmbed(p.url);
+          if (md && md.thumbnail_url) {
+            // Update DB object if possible
+            try { p.thumbnail = md.thumbnail_url; } catch {}
+            // Find image element and swap src if it still points to the spotify logo
+            const img = document.querySelector(`#post-${p.id} .post-thumbnail`);
+            if (img && img.getAttribute('src') && img.getAttribute('src').includes('spotify-logo')) {
+              img.src = md.thumbnail_url;
+            }
+          }
+        } catch (e) {
+          // ignore per-post failures
+        }
+      }
+    } catch (e) {
+      // overall failure is non-fatal
+    }
+  })();
 
   // --- Restore open comment boxes and their input values ---
   openComments.forEach(id => {
