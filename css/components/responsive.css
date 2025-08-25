@@ -1,18 +1,22 @@
 /* Responsive snippets moved here (mobile-specific adjustments) */
 @media (max-width: 600px) {
-  /* Center posts and add horizontal padding for narrow screens */
+  /* Center posts and add horizontal padding for narrow screens.
+     Enforce box-sizing and prevent horizontal overflow by limiting widths
+     and making action buttons stack and stretch. */
+  .box,
   .post {
-    max-width: 475px;
+    max-width: 97vw;
+    width: 100%;
     margin-left: auto;
     margin-right: auto;
-    padding-left: 7px;
-    padding-right: 7px;
-    width: 97vw;
+    padding-left: 8px;
+    padding-right: 8px;
     box-sizing: border-box;
     overflow-wrap: anywhere;
     word-break: break-word;
   }
 
+  /* Make meta and tag lists wrap cleanly */
   .post .meta,
   .post .post-tags {
     flex-wrap: wrap !important;
@@ -20,23 +24,33 @@
     word-break: break-word;
     overflow-wrap: anywhere;
   }
+
+  /* Stack action buttons vertically and ensure they don't force horizontal scroll */
   .post .actions {
-  flex-direction: column;
-  gap: 7px;
-  width: 100%;
-  align-items: stretch;
-  overflow-y: hidden;
+    flex-direction: column;
+    gap: 7px;
+    width: 100%;
+    align-items: stretch;
+    overflow-x: hidden; /* prevent wide children from producing horizontal scroll */
+    overflow-y: visible;
   }
   .post .actions > * {
-    width: auto !important;
-    min-width: 85px !important;
-    max-width: 97vw;
-    margin-bottom: 2px;
+    width: 100% !important;
+    min-width: 0 !important; /* allow buttons to shrink to container width */
+    max-width: 100% !important;
+    margin-bottom: 6px;
     box-sizing: border-box;
+  }
+
+  /* Ensure thumbnails and images inside posts are responsive */
+  .post-thumbnail, .post img, .box img {
+    max-width: 100%;
+    height: auto;
+    display: block;
   }
   #mobile-notification-dot {
     display: inline-block !important;
-  margin: 0px auto 0 auto !important;
+    margin: 0px auto 0 auto !important;
     opacity: 0.35 !important;
     width: 18px !important;
     height: 18px !important;
@@ -47,6 +61,27 @@
     0% { box-shadow: 0 0 0 0 rgba(108, 207, 255, 0.18); transform: scale(1); }
     50% { box-shadow: 0 0 0 6px rgba(108, 207, 255, 0.10); transform: scale(1.08); }
     100% { box-shadow: 0 0 0 0 rgba(108, 207, 255, 0.18); transform: scale(1); }
+  }
+
+  /* Additional safety: prevent horizontal overflow coming from outer containers */
+  .wrap, .feed {
+    overflow-x: hidden;
+    max-width: 100vw;
+    box-sizing: border-box;
+  }
+
+  /* Reduce outer spacing for posts on very small screens */
+  .post {
+    margin: 12px 0 !important;
+    padding: var(--space-2) !important;
+    max-width: 97vw !important;
+  }
+  .box { padding: var(--space-2) !important; }
+
+  /* Make sure small inline elements (buttons, pills) can shrink */
+  .actions .btn, .post .post-tags .tag {
+    min-width: 0 !important;
+    white-space: normal !important;
   }
 }
 
