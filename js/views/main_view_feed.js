@@ -6,6 +6,12 @@ import { enableTagCloudDragScroll } from '../features/tagcloud_scroll.js';
 import notifications from '../core/notifications.js';
 
 export function setupFeedPane({ root, left, state, DB, prefs, render }) {
+  // Always reset page to 1 on feed pane setup (tab switch or reload)
+  state.page = 1;
+  // Ensure pageSize is set to a reasonable default for both mobile and desktop
+  if (!state.pageSize || typeof state.pageSize !== 'number' || state.pageSize < 1) {
+    state.pageSize = 20;
+  }
   // Show welcome/info popup for new users (like notifications)
   const BANNER_KEY = 'tunedin.hideWelcomeBanner';
   if (!localStorage.getItem(BANNER_KEY)) {
@@ -360,16 +366,28 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
   const feedEl = feedBox.querySelector('#feed');
   function handleScroll() {
     if (isLoading) return;
-  // Check if near bottom (within 200px desktop, 400px mobile)
-  const scrollable = document.documentElement;
-  const scrollTop = window.scrollY || scrollable.scrollTop;
-  const windowHeight = window.innerHeight || scrollable.clientHeight;
-  const feedRect = feedEl.getBoundingClientRect();
-  // Use a larger threshold on mobile
-  const isMobile = window.matchMedia && window.matchMedia('(max-width: 600px)').matches;
-  const threshold = isMobile ? 400 : 200;
-  // If feed bottom is within threshold of viewport bottom
-  if (feedRect.bottom - windowHeight < threshold) {
+    const isMobile = window.matchMedia && window.matchMedia('(max-width: 600px)').matches;
+    let scrollable, scrollTop, windowHeight;
+    if (isMobile) {
+      // On mobile, use the feed pane as the scrollable container
+      scrollable = left;
+      scrollTop = scrollable.scrollTop;
+      windowHeight = scrollable.clientHeight;
+    } else {
+      scrollable = document.documentElement;
+      scrollTop = window.scrollY || scrollable.scrollTop;
+      windowHeight = window.innerHeight || scrollable.clientHeight;
+    }
+    const feedRect = feedEl.getBoundingClientRect();
+    const threshold = isMobile ? 400 : 200;
+    // If feed bottom is within threshold of viewport bottom (for mobile, relative to scrollable)
+    let nearBottom;
+    if (isMobile) {
+      nearBottom = (scrollable.scrollHeight - scrollTop - windowHeight) < threshold;
+    } else {
+      nearBottom = (feedRect.bottom - windowHeight) < threshold;
+    }
+    if (nearBottom) {
       // Check if more posts are available
       const prefsNow = loadPrefs();
       const posts = getFilteredPosts(DB, prefsNow);
@@ -383,8 +401,14 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
       }
     }
   }
-  window.addEventListener('scroll', handleScroll);
-  window.addEventListener('resize', handleScroll);
+  // Attach scroll event to correct container
+  const isMobile = window.matchMedia && window.matchMedia('(max-width: 600px)').matches;
+  if (isMobile) {
+    left.addEventListener('scroll', handleScroll);
+  } else {
+    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('resize', handleScroll);
+  }
 
   // Fallback: after each feed render, check if more posts should be loaded (in case feed is too short)
   function checkFeedFill() {
@@ -392,7 +416,17 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
       handleScroll();
     }, 100); // Wait for DOM update
   }
+  // Call checkFeedFill after initial render
   checkFeedFill();
+
+  // Patch: call checkFeedFill after every renderFeed
+  const origRenderFeed = renderFeed;
+  function renderFeedWithFill(...args) {
+    origRenderFeed(...args);
+    checkFeedFill();
+  }
+  // Use our patched version for this pane only
+  left.renderFeedWithFill = renderFeedWithFill;
 
   // Search (now in feedBox)
   const searchInput = feedBox.querySelector('#search');

@@ -10,6 +10,67 @@ import { renderComposeBox } from './main_view_compose.js';
 import { setupAutoRefresh, setupVisibilityRefresh } from './main_view_refresh.js';
 
 export async function renderMain(root, state, DB, render) {
+  // Helper to attach scroll listener to feedPane for mobile infinite scroll
+  function attachFeedPaneScrollListener() {
+    if (window.matchMedia('(max-width: 600px)').matches && typeof feedPane !== 'undefined' && feedPane) {
+      feedPane.addEventListener('scroll', autoClickLoadMore);
+    }
+  }
+  // --- Auto-click 'load more' button when it appears ---
+  // --- IntersectionObserver for 'load more' button ---
+  let loadMoreObserver = null;
+  function observeLoadMoreButton() {
+    // Disconnect previous observer if any
+    if (loadMoreObserver) loadMoreObserver.disconnect();
+  // Find the button by text content (any element)
+  const btns = Array.from(document.querySelectorAll('*'));
+  // Fallback: manual scroll event to check and click the button if visible
+  function fallbackAutoClickLoadMore() {
+    const btns = Array.from(document.querySelectorAll('*'));
+    for (const btn of btns) {
+      if (btn.textContent && btn.textContent.match(/\[\s*load\s+more/i)) {
+        const rect = btn.getBoundingClientRect();
+        if (rect.bottom > 0 && rect.top < (window.innerHeight || document.documentElement.clientHeight)) {
+          if (!btn._autoClicked) {
+            btn._autoClicked = true;
+            btn.click();
+          }
+        }
+        break;
+      }
+    }
+  }
+  window.addEventListener('scroll', fallbackAutoClickLoadMore);
+    for (const btn of btns) {
+      if (btn.textContent && btn.textContent.match(/\[\s*load\s+more/i)) {
+        if (!btn._autoObserved) {
+          btn._autoObserved = true;
+          // Use viewport as root for all devices, and trigger earlier with rootMargin
+          loadMoreObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+              if (entry.isIntersecting && !btn._autoClicked) {
+                btn._autoClicked = true;
+                btn.click();
+                // Remove observer after click to prevent rapid repeat
+                loadMoreObserver.disconnect();
+                // Re-observe after a short delay in case a new button appears
+                setTimeout(observeLoadMoreButton, 1500);
+              }
+            });
+          }, { threshold: 0.1, root: null, rootMargin: '100px 0px' });
+          loadMoreObserver.observe(btn);
+        }
+        break;
+      }
+    }
+  }
+  // Observe DOM changes to re-attach observer if button is replaced
+  const observer = new MutationObserver(() => {
+    observeLoadMoreButton();
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+  // Also try once on initial render
+  setTimeout(observeLoadMoreButton, 100);
   // Mobile tab bar logic
   let isMobile = window.matchMedia('(max-width: 600px)').matches;
   // Remove mobile tab bar if entering login/auth screen
@@ -27,6 +88,11 @@ export async function renderMain(root, state, DB, render) {
   document.body.classList.add('show-header');
 
   // Layout containers with sliding wrapper for mobile
+  // Per-tab state objects for independence
+  let feedTabState = state.feedTabState || {};
+  let composeTabState = state.composeTabState || {};
+  let profileTabState = state.profileTabState || {};
+
   let slideWrapper, feedPane, composePane, profilePane, left, right;
   if (window.matchMedia('(max-width: 600px)').matches) {
     slideWrapper = document.createElement('div');
@@ -139,16 +205,41 @@ export async function renderMain(root, state, DB, render) {
     }
     // Mobile: animate slide
     currentTab = tab;
-    // Render content into correct pane
+    // Render content into correct pane, preserve per-tab state
     if (feedPane && composePane && profilePane) {
       if (tab === 'feed') {
-        // feedPane is already rendered by setupFeedPane
+        // Always re-render feed when switching to feed tab
+        feedPane.innerHTML = '';
+        setupFeedPane({ root, left: feedPane, state, DB, prefs, render });
+        // Hide others
+        composePane.innerHTML = '';
+        profilePane.innerHTML = '';
       } else if (tab === 'compose') {
+        // Always re-render compose when switching to compose tab
         composePane.innerHTML = '';
         renderComposeBox(composePane, state, DB, render);
+        // Hide others
+        feedPane.innerHTML = '';
+        profilePane.innerHTML = '';
+        // Prevent scroll past end for compose tab
+        composePane.onscroll = function() {
+          if (composePane.scrollTop + composePane.clientHeight > composePane.scrollHeight) {
+            composePane.scrollTop = composePane.scrollHeight - composePane.clientHeight;
+          }
+        };
       } else if (tab === 'profile') {
+        // Always re-render profile when switching to profile tab
         profilePane.innerHTML = '';
         renderProfileBox(profilePane, state, DB, render);
+        // Hide others
+        feedPane.innerHTML = '';
+        composePane.innerHTML = '';
+        // Prevent scroll past end for profile tab
+        profilePane.onscroll = function() {
+          if (profilePane.scrollTop + profilePane.clientHeight > profilePane.scrollHeight) {
+            profilePane.scrollTop = profilePane.scrollHeight - profilePane.clientHeight;
+          }
+        };
       }
       // Slide to correct tab
       let slideIndex = 0;
@@ -161,12 +252,19 @@ export async function renderMain(root, state, DB, render) {
       const tabBtns = document.querySelectorAll('.mobile-tab-bar button');
       tabBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
     }
+    // Save per-tab state to global state for persistence
+    state.feedTabState = feedTabState;
+    state.composeTabState = composeTabState;
+    state.profileTabState = profileTabState;
   }
 
   // Left side: topbar + dock + tags + feed
   if (window.matchMedia('(max-width: 600px)').matches) {
     // Only render feedPane initially, others are blank until tab is switched
-    setupFeedPane({ root, left: feedPane, state, DB, prefs, render });
+    if (!feedTabState.rendered) {
+      setupFeedPane({ root, left: feedPane, state, DB, prefs, render });
+      feedTabState.rendered = true;
+    }
     // Compose/profile panes will be rendered on tab switch
   } else {
     setupFeedPane({ root, left, state, DB, prefs, render });
