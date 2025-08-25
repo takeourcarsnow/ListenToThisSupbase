@@ -231,7 +231,7 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
     dock.id = 'dock';
     dock.style.display = 'none';
     dock.style.borderBottom = 'none';
-    dock.innerHTML = `
+  dock.innerHTML = `
     <div class="hstack" style="justify-content:center; align-items:center; flex-wrap:wrap; gap:18px;">
       <div class="hstack" style="gap:18px;">
   <button class="btn" data-action="q-prev" title="previous in queue (k)">&#9198;</button>
@@ -250,33 +250,13 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
       </div>
     </div>
   `;
-  dock.addEventListener('click', (e) => {
-    const stopBtn = e.target.closest('[data-action="q-stop"]');
-    if (stopBtn) {
-      const activePlayer = document.querySelector('.player.active');
-      if (activePlayer) {
-        activePlayer.querySelectorAll('audio,video').forEach(el => {
-          el.pause && el.pause();
-          el.currentTime = 0;
-        });
-        activePlayer.querySelectorAll('iframe').forEach(ifr => (ifr.src = ''));
-        activePlayer.classList.remove('active');
-        const playingPost = document.querySelector('.post.is-playing');
-        if (playingPost) playingPost.classList.remove('is-playing');
-      }
-    }
 
-    // Handle clear queue button: also close the current open post
-    const clearBtn = e.target.closest('[data-action="q-clear"]');
-    if (clearBtn) {
-      // Remove any overlays (if open post is an overlay)
-      document.querySelectorAll('.overlay').forEach(el => el.remove());
-      // Remove is-playing from any post
-      const playingPost = document.querySelector('.post.is-playing');
-      if (playingPost) playingPost.classList.remove('is-playing');
-      // Remove active from any player
-      const activePlayer = document.querySelector('.player.active');
-      if (activePlayer) activePlayer.classList.remove('active');
+  // Attach the global onActionClick handler to the dock if it's appended to document.body (mobile mode)
+  import('../features/actions.js').then(mod => {
+    if (mod && typeof mod.onActionClick === 'function') {
+      dock.addEventListener('click', function(e) {
+        mod.onActionClick(e, state, DB, render);
+      });
     }
   });
 

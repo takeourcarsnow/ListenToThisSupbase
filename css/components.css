@@ -1,3 +1,7 @@
+/* Ensure dock and its buttons are always interactive, even if inside .rate-limit-blur */
+.rate-limit-blur .dock, .rate-limit-blur .dock * {
+  pointer-events: auto !important;
+}
 /* Subtle blur for compose inputs when on rate limit */
 .rate-limit-blur input,
 .rate-limit-blur textarea,

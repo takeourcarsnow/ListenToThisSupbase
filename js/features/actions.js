@@ -16,6 +16,34 @@ export async function onActionClick(e, state, DB, render) {
   const btn = e.target.closest('[data-action]');
   if (!btn) return;
   const action = btn.dataset.action;
+  if (action === 'q-stop') {
+    const activePlayer = document.querySelector('.player.active');
+    if (activePlayer) {
+      // Pause and reset audio/video
+      activePlayer.querySelectorAll('audio,video').forEach(el => {
+        el.pause && el.pause();
+        el.currentTime = 0;
+      });
+      // Stop and clear iframes (YouTube, etc.)
+      activePlayer.querySelectorAll('iframe').forEach(ifr => (ifr.src = ''));
+      // Remove .player-portal wrapper if present (mobile YouTube fix)
+      if (activePlayer._portal && activePlayer._portal.wrapper) {
+        try { activePlayer._portal.wrapper.remove(); } catch {}
+        try { window.removeEventListener('scroll', activePlayer._portal.update); } catch {}
+        try { window.removeEventListener('resize', activePlayer._portal.update); } catch {}
+        activePlayer._portal = null;
+      }
+      // Call any custom cleanup
+      try { activePlayer._cleanup && activePlayer._cleanup(); } catch {}
+      // Clear player content and reset styles
+      activePlayer.innerHTML = '';
+      try { activePlayer.style.zIndex = ''; activePlayer.style.position = ''; } catch {}
+      activePlayer.classList.remove('active');
+      const playingPost = document.querySelector('.post.is-playing');
+      if (playingPost) playingPost.classList.remove('is-playing');
+    }
+    return;
+  }
   const root = $('#app');
   const card = e.target.closest('.post');
   const postId = card ? card.dataset.post : null;
@@ -512,8 +540,22 @@ export async function onActionClick(e, state, DB, render) {
     return;
   }
 
-  if (action === 'q-prev') queuePrev(state, DB);
-  if (action === 'q-next') queueNext(false, state, DB);
+  if (action === 'q-prev' || action === 'q-next') {
+    // Stop and clean up the currently active player before advancing
+    const activePlayer = document.querySelector('.player.active');
+    if (activePlayer) {
+      activePlayer.querySelectorAll('audio,video').forEach(el => {
+        el.pause && el.pause();
+        el.currentTime = 0;
+      });
+      activePlayer.querySelectorAll('iframe').forEach(ifr => (ifr.src = ''));
+      activePlayer.classList.remove('active');
+      const playingPost = document.querySelector('.post.is-playing');
+      if (playingPost) playingPost.classList.remove('is-playing');
+    }
+    if (action === 'q-prev') queuePrev(state, DB);
+    if (action === 'q-next') queueNext(false, state, DB);
+  }
   if (action === 'q-clear') { state.queue = []; state.qIndex = 0; updateDock(false, state, DB); }
   if (action === 'q-shuffle') { savePrefs({ shuffle: !loadPrefs().shuffle }); updateDock(false, state, DB); }
   if (action === 'q-repeat') {
