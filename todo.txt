@@ -1,19 +1,18 @@
 
 # TODO List for TunedIn.space
 
-- [ ] Users with admin powers that can delete all posts
 - [ ] Generate Spotify playlists from posts, tags, or usernames
+
 fix small typewriter breaking to new line mid-word
 make sure about me section slides back nicer, it kind of snaps back instantly now
-? tag cloud by color 
-when the time is done when i hover over it should say something like go post it now
+
 
 
 when playing posts one by one from post play it should not say queue number
 
-lazy loading on phone is buggy
 upload audio player fix big bottom margin
 tags not working 
 on phone right hand side of elements are cut off
 sliding through tabs makes buggy cause i can see elements of tab im sliding off from rearranging, not a seamless experience even though it technically works but those glitches in transitions are distracting 
+
 
