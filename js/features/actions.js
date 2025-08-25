@@ -631,8 +631,20 @@ export async function onActionClick(e, state, DB, render) {
     render();
   }
   if (action === 'load-more') {
-    state.page++;
-    renderFeed($('#feed'), $('#pager'), state, DB, loadPrefs());
+    // Determine if this click was user-initiated. If this is a real user
+    // click (isTrusted), allow bypassing the automatic-load cap.
+    const userInitiated = !!(e && e.isTrusted);
+    if (typeof window !== 'undefined' && typeof window._loadMoreInFeed === 'function') {
+      const ok = window._loadMoreInFeed({ userInitiated });
+      if (!ok) {
+        // Fallback to previous behavior
+        state.page++;
+        renderFeed($('#feed'), $('#pager'), state, DB, loadPrefs());
+      }
+    } else {
+      state.page++;
+      renderFeed($('#feed'), $('#pager'), state, DB, loadPrefs());
+    }
   }
 
   if (action === 'show-help') openHelpOverlay();

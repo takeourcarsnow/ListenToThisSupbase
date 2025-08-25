@@ -40,46 +40,54 @@ export async function renderMain(root, state, DB, render) {
   function observeLoadMoreButton() {
     // Disconnect previous observer if any
     if (loadMoreObserver) loadMoreObserver.disconnect();
-  // Find the button by text content (any element)
-  const btns = Array.from(document.querySelectorAll('*'));
-  // Fallback: manual scroll event to check and click the button if visible
-  function fallbackAutoClickLoadMore() {
-    const btns = Array.from(document.querySelectorAll('*'));
-    for (const btn of btns) {
-      if (btn.textContent && btn.textContent.match(/\[\s*load\s+more/i)) {
-        const rect = btn.getBoundingClientRect();
-        if (rect.bottom > 0 && rect.top < (window.innerHeight || document.documentElement.clientHeight)) {
-          if (!btn._autoClicked) {
-            btn._autoClicked = true;
-            btn.click();
-          }
+
+    // Target the load-more button directly, prefer the pager inside feedPane when present
+    const container = (typeof feedPane !== 'undefined' && feedPane) ? feedPane : document;
+    const btn = container.querySelector('[data-action="load-more"]') || document.querySelector('[data-action="load-more"]');
+
+    // Fallback: manual scroll event to check and click the button if visible
+    function fallbackAutoClickLoadMore() {
+      const c = (typeof feedPane !== 'undefined' && feedPane) ? feedPane : window;
+      const containerRect = c === window ? { top: 0, bottom: (window.innerHeight || document.documentElement.clientHeight) } : c.getBoundingClientRect();
+      const b = btn || (c === window ? document.querySelector('[data-action="load-more"]') : c.querySelector('[data-action="load-more"]'));
+      if (!b) return;
+      const rect = b.getBoundingClientRect();
+      if (rect.bottom > containerRect.top && rect.top < containerRect.bottom) {
+        if (!b._autoClicked) {
+          b._autoClicked = true;
+          b.click();
         }
-        break;
       }
     }
-  }
-  window.addEventListener('scroll', fallbackAutoClickLoadMore);
-    for (const btn of btns) {
-      if (btn.textContent && btn.textContent.match(/\[\s*load\s+more/i)) {
-        if (!btn._autoObserved) {
-          btn._autoObserved = true;
-          // Use viewport as root for all devices, and trigger earlier with rootMargin
-          loadMoreObserver = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-              if (entry.isIntersecting && !btn._autoClicked) {
-                btn._autoClicked = true;
-                btn.click();
-                // Remove observer after click to prevent rapid repeat
-                loadMoreObserver.disconnect();
-                // Re-observe after a short delay in case a new button appears
-                setTimeout(observeLoadMoreButton, 1500);
-              }
-            });
-          }, { threshold: 0.1, root: null, rootMargin: '100px 0px' });
-          loadMoreObserver.observe(btn);
-        }
-        break;
+
+    // Attach fallback scroll listener to the actual scrolling container (feedPane on mobile)
+    const _scrollContainer = (typeof feedPane !== 'undefined' && feedPane) ? feedPane : window;
+    if (!_scrollContainer._autoLoadMoreHandlerAttached) {
+      _scrollContainer.addEventListener('scroll', fallbackAutoClickLoadMore, { passive: true });
+      _scrollContainer._autoLoadMoreHandlerAttached = true;
+    }
+
+    // If we have a button, use IntersectionObserver with feedPane as root on mobile
+    if (btn) {
+      if (!btn._autoObserved) {
+        btn._autoObserved = true;
+        const ioRoot = (typeof feedPane !== 'undefined' && feedPane) ? feedPane : null;
+        loadMoreObserver = new IntersectionObserver((entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting && !btn._autoClicked) {
+              btn._autoClicked = true;
+              btn.click();
+              // Remove observer after click to prevent rapid repeat
+              if (loadMoreObserver) loadMoreObserver.disconnect();
+              // Re-observe after a short delay in case a new button appears
+              setTimeout(observeLoadMoreButton, 1500);
+            }
+          });
+        }, { threshold: 0.1, root: ioRoot, rootMargin: '100px 0px' });
+        loadMoreObserver.observe(btn);
       }
+      // Also run fallback once in case it's already visible
+      fallbackAutoClickLoadMore();
     }
   }
   // Observe DOM changes to re-attach observer if button is replaced
@@ -235,6 +243,8 @@ export async function renderMain(root, state, DB, render) {
       if (!feedPane.innerHTML.trim()) {
         setupFeedPane({ root, left: feedPane, state, DB, prefs, render });
         feedTabState.rendered = true;
+  // Ensure load-more observer attaches now that feedPane and pager exist
+  try { observeLoadMoreButton(); setTimeout(observeLoadMoreButton, 150); } catch (e) {}
       }
       // Reset feed pane scroll reliably
       resetScroll(feedPane);
@@ -298,10 +308,14 @@ export async function renderMain(root, state, DB, render) {
     if (!feedTabState.rendered) {
       setupFeedPane({ root, left: feedPane, state, DB, prefs, render });
       feedTabState.rendered = true;
+      // Attach load-more observer after initial feed render
+      try { observeLoadMoreButton(); setTimeout(observeLoadMoreButton, 150); } catch (e) {}
     }
     // Compose/profile panes will be rendered on tab switch
   } else {
     setupFeedPane({ root, left, state, DB, prefs, render });
+    // Attach load-more observer for desktop feed as well
+    try { observeLoadMoreButton(); setTimeout(observeLoadMoreButton, 150); } catch (e) {}
     // Right side: profile + compose (or guest prompt)
     if (state.user) {
       renderProfileBox(right, state, DB, render);

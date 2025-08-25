@@ -367,6 +367,11 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
   // Infinite scroll implementation
   let isLoading = false;
   const feedEl = feedBox.querySelector('#feed');
+  // Track how many automatic (non-user-initiated) loads we've done so we don't
+  // auto-load the entire dataset on small screens. Users can always click
+  // the load-more button or scroll to trigger more loads manually.
+  feedBox._autoLoadCount = feedBox._autoLoadCount || 0;
+  const MAX_AUTO_LOADS = 2; // reasonable default: allow up to 2 auto pages
   function handleScroll() {
     if (isLoading) return;
     const isMobile = window.matchMedia && window.matchMedia('(max-width: 600px)').matches;
@@ -430,6 +435,31 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
   }
   // Use our patched version for this pane only
   left.renderFeedWithFill = renderFeedWithFill;
+  // Expose a safe load-more helper that other modules (actions) can call.
+  // This increments state.page and uses the pane-local renderFeedWithFill so
+  // paging behavior is consistent and checkFeedFill runs after render.
+  window._loadMoreInFeed = function loadMoreInFeed(opts = { userInitiated: false }) {
+    try {
+      const userInitiated = !!opts.userInitiated;
+      // If this is an automatic trigger (not user-initiated), cap how many
+      // times we will auto-load to avoid loading the entire feed at once.
+      if (!userInitiated) {
+        if (feedBox._autoLoadCount >= MAX_AUTO_LOADS) return false;
+      }
+      const prefsNow = loadPrefs();
+      const posts = getFilteredPosts(DB, prefsNow);
+      const total = posts.length;
+      const end = Math.min((state.page + 1) * state.pageSize, total);
+      if (end > state.page * state.pageSize && end <= total) {
+        state.page++;
+        // If this was an automatic load, increment the counter
+        if (!userInitiated) feedBox._autoLoadCount = (feedBox._autoLoadCount || 0) + 1;
+        renderFeedWithFill(feedEl, feedBox.querySelector('#pager'), state, DB, prefsNow);
+        return true;
+      }
+      return false;
+    } catch (err) { return false; }
+  };
 
   // Search (now in feedBox)
   const searchInput = feedBox.querySelector('#search');
