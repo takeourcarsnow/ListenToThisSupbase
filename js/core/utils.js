@@ -1,3 +1,17 @@
+// Allow safe formatting in post descriptions (line breaks, links, bold, italics)
+export function formatPostBody(s) {
+  if (!s) return '';
+  let out = esc(s);
+  // Links: [text](url) or plain URLs
+  out = out.replace(/\bhttps?:\/\/[^\s<]+/g, url => `<a href="${url}" target="_blank" rel="noopener">${url}</a>`);
+  // Bold: **text**
+  out = out.replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>');
+  // Italic: *text*
+  out = out.replace(/\*([^*]+)\*/g, '<i>$1</i>');
+  // Line breaks
+  out = out.replace(/\n/g, '<br>');
+  return out;
+}
 // Simple email format validation
 export function isValidEmailFormat(email) {
   // Basic regex for demonstration; adjust as needed for stricter validation

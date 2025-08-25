@@ -1,4 +1,4 @@
-import { esc, fmtTime, $ } from '../core/utils.js';
+import { esc, fmtTime, $, formatPostBody } from '../core/utils.js';
 import { fetchOEmbed } from './oembed.js';
 import { openEditInline } from './posts.js';
 import { enableTagCloudDragScroll } from './tagcloud_scroll.js';
@@ -108,7 +108,7 @@ export function renderPostHTML(p, state, DB) {
   ${tgs ? `<span class="muted sep-slash">/</span> <div class="tag-cloud post-tags-twolines">${tgs}</div>` : ''}
       </div>
     </div>
-  ${p.body ? `<div class="sep"></div><div>${esc(p.body)}</div>` : ''}
+  ${p.body ? `<div class="sep"></div><div class="post-body">${formatPostBody(p.body)}</div>` : ''}
   <div class="actions hstack" style="margin-top:8px">
   <button class="btn" data-action="toggle-player">[ play ]</button>
   <button class="btn ${liked ? 'like-on' : ''}" data-action="like" aria-pressed="${liked}" title="like">[ ♥ ${likeCount} ]</button>
