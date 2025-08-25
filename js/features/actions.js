@@ -25,22 +25,35 @@ export async function onActionClick(e, state, DB, render) {
         el.currentTime = 0;
       });
       // Stop and clear iframes (YouTube, etc.)
-      activePlayer.querySelectorAll('iframe').forEach(ifr => (ifr.src = ''));
-      // Remove .player-portal wrapper if present (mobile YouTube fix)
-      if (activePlayer._portal && activePlayer._portal.wrapper) {
-        try { activePlayer._portal.wrapper.remove(); } catch {}
-        try { window.removeEventListener('scroll', activePlayer._portal.update); } catch {}
-        try { window.removeEventListener('resize', activePlayer._portal.update); } catch {}
-        activePlayer._portal = null;
-      }
-      // Call any custom cleanup
-      try { activePlayer._cleanup && activePlayer._cleanup(); } catch {}
-      // Clear player content and reset styles
-      activePlayer.innerHTML = '';
-      try { activePlayer.style.zIndex = ''; activePlayer.style.position = ''; } catch {}
-      activePlayer.classList.remove('active');
-      const playingPost = document.querySelector('.post.is-playing');
-      if (playingPost) playingPost.classList.remove('is-playing');
+      const iframes = Array.from(activePlayer.querySelectorAll('iframe'));
+      iframes.forEach(ifr => {
+        // Try to use YouTube IFrame API if available
+        try {
+          if (ifr.contentWindow && ifr.src && ifr.src.includes('youtube')) {
+            ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'stopVideo', args: '' }), '*');
+          }
+        } catch (err) {}
+        // Set src to about:blank to force stop
+        try { ifr.src = 'about:blank'; } catch {}
+      });
+      // Wait 100ms before removing iframe and cleaning up
+      setTimeout(() => {
+        // Remove .player-portal wrapper if present (mobile YouTube fix)
+        if (activePlayer._portal && activePlayer._portal.wrapper) {
+          try { activePlayer._portal.wrapper.remove(); } catch {}
+          try { window.removeEventListener('scroll', activePlayer._portal.update); } catch {}
+          try { window.removeEventListener('resize', activePlayer._portal.update); } catch {}
+          activePlayer._portal = null;
+        }
+        // Call any custom cleanup
+        try { activePlayer._cleanup && activePlayer._cleanup(); } catch {}
+        // Clear player content and reset styles
+        activePlayer.innerHTML = '';
+        try { activePlayer.style.zIndex = ''; activePlayer.style.position = ''; } catch {}
+        activePlayer.classList.remove('active');
+        const playingPost = document.querySelector('.post.is-playing');
+        if (playingPost) playingPost.classList.remove('is-playing');
+      }, 100);
     }
     return;
   }
