@@ -17,6 +17,31 @@ async function renderApp() {
   // Keep state.user in sync
   const { refreshUser } = await import('./app_state.js');
   await refreshUser();
+  // Compute and expose initial cooldown state so header (mobile) can display correct message
+  function computeAndPublishCooldown() {
+    try {
+      if (!state.user || !DB || typeof DB.getAll !== 'function') {
+        window.composeCooldown = { isCooldown: false, countdown: '' };
+        return;
+      }
+      const db = DB.getAll() || { posts: [] };
+      const me = state.user;
+      const now = Date.now();
+      const lastPost = (db.posts || []).filter(p => p.userId === me.id).sort((a, b) => b.createdAt - a.createdAt)[0];
+      if (lastPost && now - lastPost.createdAt < 24 * 60 * 60 * 1000) {
+        const timeLeft = 24 * 60 * 60 * 1000 - (now - lastPost.createdAt);
+        const hours = Math.floor(timeLeft / (60 * 60 * 1000));
+        const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
+        const seconds = Math.floor((timeLeft % (60 * 1000)) / 1000);
+        const countdown = `${hours}h ${minutes}m ${seconds}s`;
+        window.composeCooldown = { isCooldown: true, countdown };
+      } else {
+        window.composeCooldown = { isCooldown: false, countdown: '' };
+      }
+      try { document.dispatchEvent(new CustomEvent('composeCooldownUpdated', { detail: window.composeCooldown })); } catch (e) {}
+    } catch (e) { /* ignore */ }
+  }
+  computeAndPublishCooldown();
   // Ensure window.state is always set for header logic
   window.state = state;
   const prefs = loadPrefs();

@@ -224,7 +224,13 @@ export function renderComposeBox(right, state, DB, render) {
       window._composeNoCooldownMsgIndex = 0;
     }
     // Expose cooldown state globally for header
-    window.composeCooldown = { isCooldown, countdown };
+      window.composeCooldown = { isCooldown, countdown };
+      // Notify other parts of the app (header) that compose cooldown changed so mobile header updates immediately
+      try {
+        document.dispatchEvent(new CustomEvent('composeCooldownUpdated', { detail: window.composeCooldown }));
+      } catch (e) {
+        // fallback noop for older browsers
+      }
   }
   setInterval(updateCooldown, 1000);
   updateCooldown();

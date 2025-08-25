@@ -1,5 +1,6 @@
 // Header module: injects the header HTML into the page
-import { POST_LIMIT_MESSAGES, POST_READY_MESSAGES, GUEST_HEADER_MESSAGES, POST_NO_COOLDOWN_MESSAGES, UPDATE_HEADER_MESSAGE } from './constants.js';
+import { POST_LIMIT_MESSAGES, POST_READY_MESSAGES, GUEST_HEADER_MESSAGES, POST_NO_COOLDOWN_MESSAGES } from './constants.js';
+import { UPDATE_HEADER_MESSAGE } from './constants.js';
 export async function renderHeader() {
   // Ensure DB is initialized before rendering header
   if (window.DB && typeof window.DB.init === 'function') {
@@ -30,8 +31,8 @@ export async function renderHeader() {
   }
   // Post limit message variations (imported from constants)
   const postLimitMessages = POST_LIMIT_MESSAGES;
-  let postLimitMsgIndex = 0;
   const noCooldownMessages = POST_NO_COOLDOWN_MESSAGES;
+  let postLimitMsgIndex = 0;
   let noCooldownMsgIndex = 0;
   // Helper to pad the update message for the ASCII frame
   // Helper to pad the update message to the right of the frame
@@ -53,7 +54,7 @@ export async function renderHeader() {
     <pre id="ascii-banner" class="head ascii-banner" aria-hidden="false" style="font-family:'Fira Mono','Consolas','Menlo','Monaco','Liberation Mono',monospace !important;font-size:1em;line-height:1.1;letter-spacing:0;white-space:pre;overflow-x:auto;margin:0 auto 8px auto;max-width:100vw;">
 <!--ascii-start-->
 ●--------------------------- TunedIn.space --●
-| <span id="ascii-post-limit">${padLine(POST_NO_COOLDOWN_MESSAGES[0])}</span> |
+| <span id="ascii-post-limit">${padLine(noCooldownMessages[0])}</span> |
 ●--------------------------------------------●
 ${updateAsciiMsg}
 <!--ascii-end-->
@@ -117,6 +118,30 @@ ${updateAsciiMsg}
         const { isCooldown, countdown } = window.composeCooldown;
         return { isGuest: false, isCooldown, countdown };
       }
+      // If compose hasn't initialized, compute cooldown from DB posts as a fallback and expose it
+      // This helps mobile where compose may not be rendered yet
+      try {
+        const db = (window.DB && typeof window.DB.getAll === 'function') ? window.DB.getAll() : { posts: [] };
+        const me = window.state && window.state.user;
+        if (!me) return { isGuest: true, isCooldown: false, countdown: '' };
+        const now = Date.now();
+        const lastPost = (db.posts || []).filter(p => p.userId === me.id).sort((a, b) => b.createdAt - a.createdAt)[0];
+        if (lastPost && now - lastPost.createdAt < 24 * 60 * 60 * 1000) {
+          const timeLeft = 24 * 60 * 60 * 1000 - (now - lastPost.createdAt);
+          const hours = Math.floor(timeLeft / (60 * 60 * 1000));
+          const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
+          const seconds = Math.floor((timeLeft % (60 * 1000)) / 1000);
+          const countdown = `${hours}h ${minutes}m ${seconds}s`;
+          // Expose to window so compose/header stay consistent
+          window.composeCooldown = { isCooldown: true, countdown };
+          try { document.dispatchEvent(new CustomEvent('composeCooldownUpdated', { detail: window.composeCooldown })); } catch (e) {}
+          return { isGuest: false, isCooldown: true, countdown };
+        }
+        // Not cooldown
+        window.composeCooldown = { isCooldown: false, countdown: '' };
+      } catch (e) {
+        // ignore
+      }
       // Fallback to legacy logic if composeCooldown is not available
       if (!window.state || !window.state.user) {
         return { isGuest: true, isCooldown: false, countdown: '' };
@@ -167,8 +192,10 @@ ${updateAsciiMsg}
       }
     }
   async function updatePostLimitInfo() {
-  // DEBUG: Log state for troubleshooting (after variables are initialized)
-  // (Move this log after isGuest, isCooldown, and countdown are set)
+  // Ensure DB is fresh before computing cooldown state (important on mobile)
+  if (window && window.DB && typeof window.DB.refresh === 'function') {
+    try { await window.DB.refresh(); } catch (e) { /* ignore refresh errors */ }
+  }
       // Use getCooldownInfo for all cooldown state
       let newText = '', type = '';
       const { isGuest, isCooldown, countdown } = getCooldownInfo();
@@ -214,34 +241,34 @@ ${updateAsciiMsg}
           type = 'countdown';
         } else {
           // Not hovering: cycle waiting messages
-            if (!readyMsgAnimTimer && lastType !== 'ready') {
-              newText = padLine(postLimitMessages[postLimitMsgIndex]);
-              type = 'ready';
-              readyMsgAnimTimer = setTimeout(() => {
-                postLimitMsgIndex = (postLimitMsgIndex + 1) % postLimitMessages.length;
-                updatePostLimitInfo();
-                // Start the normal animation loop
-                const scheduleNext = () => {
-                  const nextDelay = 4500 + Math.random() * 3500;
-                  readyMsgAnimTimer = setTimeout(() => {
-                    if (!readyMsgFading) {
-                      postLimitMsgIndex = (postLimitMsgIndex + 1) % postLimitMessages.length;
-                      updatePostLimitInfo();
-                      scheduleNext();
-                    } else {
-                      readyMsgAnimTimer = setTimeout(scheduleNext, 500);
-                    }
-                  }, nextDelay);
-                };
-                scheduleNext();
-              }, 4500 + Math.random() * 3500);
-            } else if (readyMsgAnimTimer) {
-              newText = padLine(postLimitMessages[postLimitMsgIndex]);
-              type = 'ready';
-            }
+          if (!readyMsgAnimTimer && lastType !== 'ready') {
+            newText = padLine(postLimitMessages[postLimitMsgIndex]);
+            type = 'ready';
+            readyMsgAnimTimer = setTimeout(() => {
+              postLimitMsgIndex = (postLimitMsgIndex + 1) % postLimitMessages.length;
+              updatePostLimitInfo();
+              // Start the normal animation loop
+              const scheduleNext = () => {
+                const nextDelay = 4500 + Math.random() * 3500;
+                readyMsgAnimTimer = setTimeout(() => {
+                  if (!readyMsgFading) {
+                    postLimitMsgIndex = (postLimitMsgIndex + 1) % postLimitMessages.length;
+                    updatePostLimitInfo();
+                    scheduleNext();
+                  } else {
+                    readyMsgAnimTimer = setTimeout(scheduleNext, 500);
+                  }
+                }, nextDelay);
+              };
+              scheduleNext();
+            }, 4500 + Math.random() * 3500);
+          } else if (readyMsgAnimTimer) {
+            newText = padLine(postLimitMessages[postLimitMsgIndex]);
+            type = 'ready';
+          }
         }
       } else {
-        // Not on cooldown: show nothing or a default message (optional)
+        // Not on cooldown: show friendly no-cooldown messages (cycle through prompts)
         if (!readyMsgAnimTimer && lastType !== 'ready') {
           newText = padLine(noCooldownMessages[noCooldownMsgIndex]);
           type = 'ready';
@@ -271,6 +298,10 @@ ${updateAsciiMsg}
       lastType = type;
       setTextWithFade(newText, typeChanged);
     }
+    // If compose updates cooldown state, refresh header immediately (fix mobile timing)
+    document.addEventListener('composeCooldownUpdated', () => {
+      try { updatePostLimitInfo(); } catch (e) { /* ignore */ }
+    });
   info.addEventListener('mouseenter', () => { hover = true; updatePostLimitInfo(); });
   info.addEventListener('mouseleave', () => { hover = false; updatePostLimitInfo(); });
   // Mobile: tap to show countdown, tap again to hide
