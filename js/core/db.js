@@ -34,6 +34,7 @@ function isDisposableEmail(email) {
 // bcrypt is loaded globally from CDN in index.html
 
 import { SUPABASE_URL, SUPABASE_ANON_KEY, USE_SUPABASE } from './config.js';
+import { safeGetUser } from './auth_helpers.js';
 
 const DB_KEY_V2 = 'TunedIn.space/db@v2';
 const DB_KEY_V1 = 'TunedIn.space/v1';
@@ -281,8 +282,8 @@ class SupabaseAdapter {
     // Always use the current authenticated user's UID as id
     let userId = null;
     if (this.supabase && this.supabase.auth && this.supabase.auth.getUser) {
-      const authUser = await this.supabase.auth.getUser();
-      userId = authUser?.data?.user?.id || authUser?.user?.id;
+      const u = await safeGetUser(this.supabase);
+      userId = u?.id || null;
     }
     if (!userId) throw new Error('No authenticated user');
     const existing = this.cache.users.find(u => u.id === userId || u.name.toLowerCase() === name.toLowerCase());
@@ -306,8 +307,8 @@ class SupabaseAdapter {
     // Always use the current authenticated user's UID as userId
     let userId = null;
     if (this.supabase && this.supabase.auth && this.supabase.auth.getUser) {
-      const authUser = await this.supabase.auth.getUser();
-      userId = authUser?.data?.user?.id || authUser?.user?.id;
+      const u = await safeGetUser(this.supabase);
+      userId = u?.id || null;
     }
     if (!userId) throw new Error('No authenticated user');
     const row = { ...this.mapPostToRow(post), user_id: userId };
@@ -368,8 +369,8 @@ class SupabaseAdapter {
     // Always use the current authenticated user's UID for update
     let userId = null;
     if (this.supabase && this.supabase.auth && this.supabase.auth.getUser) {
-      const authUser = await this.supabase.auth.getUser();
-      userId = authUser?.data?.user?.id || authUser?.user?.id;
+      const u = await safeGetUser(this.supabase);
+      userId = u?.id || null;
     }
     if (!userId) throw new Error('No authenticated user');
     const update = {};
