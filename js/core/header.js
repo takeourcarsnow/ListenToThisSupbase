@@ -54,7 +54,7 @@ export async function renderHeader() {
     <pre id="ascii-banner" class="head ascii-banner" aria-hidden="false" style="font-family:'Fira Mono','Consolas','Menlo','Monaco','Liberation Mono',monospace !important;font-size:1em;line-height:1.1;letter-spacing:0;white-space:pre;overflow-x:auto;margin:0 auto 8px auto;max-width:100vw;">
 <!--ascii-start-->
 ●--------------------------- TunedIn.space --●
-| <span id="ascii-post-limit">${padLine(noCooldownMessages[0])}</span> |
+| <span id="ascii-post-limit">${padLine('')}</span> |
 ●--------------------------------------------●
 ${updateAsciiMsg}
 <!--ascii-end-->
