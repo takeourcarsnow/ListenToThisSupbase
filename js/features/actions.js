@@ -137,6 +137,8 @@ export async function onActionClick(e, state, DB, render) {
       pl.classList.remove('active');
       try { pl._cleanup && pl._cleanup(); } catch {}
       pl.innerHTML = '';
+      // Reset any inline styles applied when activated
+      try { pl.style.zIndex = ''; pl.style.position = ''; } catch (e) {}
       card.classList.remove('is-playing');
       // Clear queue and reset dock when closing the player
       state.queue = [];
@@ -149,6 +151,7 @@ export async function onActionClick(e, state, DB, render) {
           otherPl.classList.remove('active');
           try { otherPl._cleanup && otherPl._cleanup(); } catch {}
           otherPl.innerHTML = '';
+          try { otherPl.style.zIndex = ''; otherPl.style.position = ''; } catch (e) {}
           const otherCard = otherPl.closest('.post');
           if (otherCard) otherCard.classList.remove('is-playing');
         }
@@ -160,13 +163,50 @@ export async function onActionClick(e, state, DB, render) {
         toast(card || root, 'Could not load post for playback', true);
         return;
       }
-  // Set queue to all visible posts in the feed and set qIndex to the played post
-  const posts = document.querySelectorAll('#feed .post');
-  state.queue = Array.from(posts).map(n => n.dataset.post);
-  state.qIndex = state.queue.indexOf(postId);
+    // Set queue to all visible posts in the feed and set qIndex to the played post
+    const posts = document.querySelectorAll('#feed .post');
+    state.queue = Array.from(posts).map(n => n.dataset.post);
+    state.qIndex = state.queue.indexOf(postId);
       console.log('Attempting to build embed:', { post: p, playerDiv: pl });
       buildEmbed(p, pl, { autoplay: true, onEnded: () => queueNext(true, state, DB) });
       console.log('Embed built. Player div innerHTML:', pl.innerHTML);
+      // Ensure the active player is positioned above fixed UI (dock/tab bar)
+      // so iframe controls are reachable on mobile devices.
+      try { pl.style.position = 'relative'; pl.style.zIndex = '12000'; } catch (e) {}
+      // Additionally, on mobile move the iframe into a top-level portal so it
+      // is not inside transformed ancestors (the mobile sliding wrapper). This
+      // prevents some mobile browsers from blocking pointer events on iframes.
+      try {
+        const isMobile = (typeof window !== 'undefined') && window.matchMedia && window.matchMedia('(max-width: 600px)').matches;
+        if (isMobile) {
+          const iframe = pl.querySelector('iframe');
+          if (iframe && !pl._portal) {
+            const r = pl.getBoundingClientRect();
+            const wrapper = document.createElement('div');
+            wrapper.className = 'player-portal';
+            wrapper.style.position = 'absolute';
+            wrapper.style.left = (r.left + window.scrollX) + 'px';
+            wrapper.style.top = (r.top + window.scrollY) + 'px';
+            wrapper.style.width = r.width + 'px';
+            wrapper.style.height = r.height + 'px';
+            wrapper.style.zIndex = '13000';
+            wrapper.style.pointerEvents = 'auto';
+            // Move iframe into wrapper
+            wrapper.appendChild(iframe);
+            document.body.appendChild(wrapper);
+            const update = () => {
+              const nr = pl.getBoundingClientRect();
+              wrapper.style.left = (nr.left + window.scrollX) + 'px';
+              wrapper.style.top = (nr.top + window.scrollY) + 'px';
+              wrapper.style.width = nr.width + 'px';
+              wrapper.style.height = nr.height + 'px';
+            };
+            window.addEventListener('scroll', update);
+            window.addEventListener('resize', update);
+            pl._portal = { wrapper, update };
+          }
+        }
+      } catch (err) { console.warn('player portal setup failed', err); }
       markNowPlaying(postId, state, DB);
       if (loadPrefs().autoScroll) card.scrollIntoView({ block: 'center' });
       // Show docked player when a post is played

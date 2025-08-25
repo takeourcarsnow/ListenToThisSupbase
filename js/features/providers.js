@@ -160,6 +160,26 @@ export function buildEmbed(post, container, opts = {}) {
   // Spotify
   if (p.provider === 'spotify') {
     const src = `https://open.spotify.com/embed/${p.kind}/${p.id}`;
+    const webUrl = `https://open.spotify.com/${p.kind}/${p.id}`;
+    // On many mobile browsers, playback inside third-party iframes is blocked
+    // or requires a user gesture that doesn't propagate when we dynamically
+    // create the iframe. Provide a clear fallback on mobile that opens the
+    // Spotify web player (or the Spotify app) in a new tab, while keeping the
+    // embedded player for desktop where it behaves reliably.
+    const isMobile = (typeof window !== 'undefined') && ((window.matchMedia && window.matchMedia('(max-width: 600px)').matches) || ('ontouchstart' in window && !window.matchMedia));
+    if (isMobile) {
+      wrap.innerHTML = `
+        <div class="sp-mobile-fallback" style="display:flex;align-items:center;gap:12px;padding:10px;">
+          <img src="/assets/spotify-logo.png" alt="Spotify" style="width:36px;height:36px;flex:0 0 36px;">
+          <div style="flex:1">
+            <div class="muted small" style="margin-bottom:6px;">Open in Spotify to play</div>
+            <a class="btn btn-ghost" href="${webUrl}" target="_blank" rel="noopener noreferrer">Open in Spotify</a>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
     wrap.innerHTML = `
       <iframe class="sp" src="${src}" frameborder="0"
         allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"

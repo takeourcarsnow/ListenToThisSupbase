@@ -1335,6 +1335,27 @@ iframe[loading=lazy] { contain: content; }
 .bc iframe { width: 100% !important; }
 .audio { width: 100%; }
 
+@media (max-width: 600px) {
+  .player {
+    padding-bottom: 38px;
+    min-height: 120px;
+  }
+  .yt {
+    min-height: 120px !important;
+    padding-bottom: 38px !important;
+    aspect-ratio: unset !important;
+    height: 200px !important;
+    box-sizing: border-box;
+  }
+  .player iframe.yt {
+    min-height: 120px !important;
+    padding-bottom: 38px !important;
+    aspect-ratio: unset !important;
+    height: 200px !important;
+    box-sizing: border-box;
+  }
+}
+
 /* Comments */
 .comment-box {
   display: none;
