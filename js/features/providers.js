@@ -108,6 +108,7 @@ export function buildEmbed(post, container, opts = {}) {
     ifr.referrerPolicy = 'strict-origin-when-cross-origin';
     ifr.style.width = '100%';
     ifr.style.aspectRatio = '16/9';
+    ifr.style.minHeight = '515px'; // Ensure a minimum height for better visibility
 
     wrap.appendChild(ifr);
 

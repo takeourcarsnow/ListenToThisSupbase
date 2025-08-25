@@ -441,3 +441,9 @@ body.show-header header[role="banner"] {
     word-break: break-word;
   }
 }
+@media (max-width: 600px) {
+  .player {
+    min-height: 208px !important; /* Match the taller YouTube player height */
+    overflow: hidden !important; /* Prevent scrollbars */
+  }
+}
