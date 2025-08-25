@@ -15,6 +15,13 @@
 - Removed redundant message at the top of the page.
 - Minor code and UI/UX improvements.
 
+- YouTube & embed fixes: mobile-friendly YouTube/player tweaks to avoid scrollbars and improve tap handling; several embed-related fixes for better playback behavior on mobile.
+- Spotify improvements: fetch and display Spotify thumbnails where available and tweak Spotify mobile embeds.
+- Docked player/mobile: fixes to ensure the docked player shows reliably on mobile, stays on top when docked, and handles stop/close correctly.
+- Scrolling & autoload: autoscroll/autoload and infinite-scroll/pager fixes to improve loading behavior and avoid visual glitches.
+- Mobile navigation & swipe gestures: fixes for mobile tab navigation, swipe-to-change-tabs, and preventing headers from getting stuck while scrolling.
+- Small formatting and content fixes: post formatting improvements and various small fixes surfaced by recent commits.
+
 
 ## [2025-08-24]
 ### UI/UX & Post Composer Improvements

@@ -135,6 +135,8 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
   const postCount = (prefs.filterTag || prefs.search || userFilterId)
     ? filteredPosts.length
     : db.posts.length;
+  // Unique posters across all posts in the DB (ignore current filters/search)
+  const uniquePosterCount = new Set((db.posts || []).map(p => p.userId).filter(Boolean)).size;
 
   const top = document.createElement('div');
   top.className = 'topbar';
@@ -295,6 +297,7 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
             : ''
         }
         ${prefs.filterTag ? `<span class="pill">tag: #${esc(prefs.filterTag)} <a href="#" data-action="clear-tag" title="clear tag">✕</a></span>` : ''}
+  <span title="unique posters">total posters: ${uniquePosterCount}</span>
   <span title="total posts">posts: ${postCount}</span>
       </div>
       <div class="hstack" style="gap:12px; align-items:center;">

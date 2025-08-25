@@ -112,6 +112,35 @@ export function buildEmbed(post, container, opts = {}) {
 
     wrap.appendChild(ifr);
 
+    // Track play state and try to resume playback when page becomes visible
+    // again (helps in desktop DevTools mobile emulation where iframe may
+    // be paused when the tab loses focus). We use postMessage events from
+    // the YouTube player to detect state changes and call playVideo on
+    // visibilitychange if it was playing before.
+    let __yt_wasPlaying = false;
+    const __onYtMessageState = (ev) => {
+      if (ev.source !== ifr.contentWindow) return;
+      let data = ev.data;
+      if (typeof data === 'string') {
+        try { data = JSON.parse(data); } catch { }
+      }
+      if (!data || typeof data !== 'object') return;
+      if (data.event === 'onStateChange') {
+        // 1 = playing, 2 = paused, 0 = ended
+        if (data.info === 1) __yt_wasPlaying = true;
+        if (data.info === 2 || data.info === 0) __yt_wasPlaying = false;
+      }
+    };
+    const __onVisibility = () => {
+      if (document.visibilityState === 'visible' && __yt_wasPlaying) {
+        try {
+          ifr.contentWindow && ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo', args: '' }), '*');
+        } catch (err) { }
+      }
+    };
+    window.addEventListener('message', __onYtMessageState);
+    document.addEventListener('visibilitychange', __onVisibility);
+
     // Support queueNext on end using postMessage events
     if (typeof opts.onEnded === 'function') {
       const onMessage = (ev) => {
@@ -138,7 +167,9 @@ export function buildEmbed(post, container, opts = {}) {
       setTimeout(postListening, 500);
 
       wrap._cleanup = () => {
-        window.removeEventListener('message', onMessage);
+        try { window.removeEventListener('message', onMessage); } catch (e) {}
+        try { window.removeEventListener('message', __onYtMessageState); } catch (e) {}
+        try { document.removeEventListener('visibilitychange', __onVisibility); } catch (e) {}
       };
     }
     return;
@@ -155,6 +186,37 @@ export function buildEmbed(post, container, opts = {}) {
         allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"
         style="width:100%;aspect-ratio:16/9;"></iframe>
     `;
+    // Attach listeners for playlist iframe to attempt resume on visibility
+    setTimeout(() => {
+      try {
+        const iframe = wrap.querySelector('iframe.yt');
+        if (!iframe) return;
+        let wasPlaying = false;
+        const onMsg = (ev) => {
+          if (ev.source !== iframe.contentWindow) return;
+          let data = ev.data;
+          if (typeof data === 'string') {
+            try { data = JSON.parse(data); } catch {}
+          }
+          if (!data || typeof data !== 'object') return;
+          if (data.event === 'onStateChange') {
+            if (data.info === 1) wasPlaying = true;
+            if (data.info === 2 || data.info === 0) wasPlaying = false;
+          }
+        };
+        const onVis = () => {
+          if (document.visibilityState === 'visible' && wasPlaying) {
+            try { iframe.contentWindow && iframe.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'playVideo', args: '' }), '*'); } catch {}
+          }
+        };
+        window.addEventListener('message', onMsg);
+        document.addEventListener('visibilitychange', onVis);
+        wrap._cleanup = () => {
+          try { window.removeEventListener('message', onMsg); } catch {}
+          try { document.removeEventListener('visibilitychange', onVis); } catch {}
+        };
+      } catch (err) { /* ignore */ }
+    }, 200);
     return;
   }
 

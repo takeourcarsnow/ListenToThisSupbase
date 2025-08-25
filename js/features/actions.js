@@ -217,40 +217,62 @@ export async function onActionClick(e, state, DB, render) {
       // Additionally, on mobile move the iframe into a top-level portal so it
       // is not inside transformed ancestors (the mobile sliding wrapper). This
       // prevents some mobile browsers from blocking pointer events on iframes.
-      try {
-        const isMobile = (typeof window !== 'undefined') && window.matchMedia && window.matchMedia('(max-width: 600px)').matches;
-        if (isMobile) {
-          const iframe = pl.querySelector('iframe');
-          // Only create a top-level player portal for YouTube iframes.
-          // Moving other providers' iframes (eg. Spotify) can cause them to
-          // be positioned or clipped unexpectedly on some mobile browsers.
-          if (iframe && !pl._portal && iframe.classList.contains('yt')) {
-            const r = pl.getBoundingClientRect();
-            const wrapper = document.createElement('div');
-            wrapper.className = 'player-portal';
-            wrapper.style.position = 'absolute';
-            wrapper.style.left = (r.left + window.scrollX) + 'px';
-            wrapper.style.top = (r.top + window.scrollY) + 'px';
-            wrapper.style.width = r.width + 'px';
-            wrapper.style.height = r.height + 'px';
-            wrapper.style.zIndex = '13000';
-            wrapper.style.pointerEvents = 'auto';
-            // Move iframe into wrapper
-            wrapper.appendChild(iframe);
-            document.body.appendChild(wrapper);
-            const update = () => {
-              const nr = pl.getBoundingClientRect();
-              wrapper.style.left = (nr.left + window.scrollX) + 'px';
-              wrapper.style.top = (nr.top + window.scrollY) + 'px';
-              wrapper.style.width = nr.width + 'px';
-              wrapper.style.height = nr.height + 'px';
-            };
-            window.addEventListener('scroll', update);
-            window.addEventListener('resize', update);
-            pl._portal = { wrapper, update };
+  // Detect real mobile/touch devices more reliably. Avoid using only
+        // the viewport width because Chrome's device emulation switches
+        // viewport size while still running on desktop which can cause
+        // undesired portal behavior (and playback pauses when alt-tabbing).
+        const isTouch = (typeof navigator !== 'undefined') && (
+          ('maxTouchPoints' in navigator && navigator.maxTouchPoints > 0) ||
+          /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+        );
+        const isSmall = (typeof window !== 'undefined') && window.matchMedia && window.matchMedia('(max-width: 600px)').matches;
+        const isMobile = isTouch && isSmall;
+        try {
+          // Player portal (top-level iframe wrapper) can help on some real
+          // mobile browsers where transformed ancestors stop pointer events
+          // from reaching the iframe. However, moving the iframe out of the
+          // normal flow causes playback to be paused in desktop DevTools
+          // device emulation (alt-tab/background). Disable by default; can
+          // be enabled if truly needed on problematic mobile devices.
+          const ENABLE_PLAYER_PORTAL = false;
+          if (ENABLE_PLAYER_PORTAL) {
+            const isTouch = (typeof navigator !== 'undefined') && (
+              ('maxTouchPoints' in navigator && navigator.maxTouchPoints > 0) ||
+              /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+            );
+            const isSmall = (typeof window !== 'undefined') && window.matchMedia && window.matchMedia('(max-width: 600px)').matches;
+            const isMobile = isTouch && isSmall;
+            if (isMobile) {
+              const iframe = pl.querySelector('iframe');
+              if (iframe && !pl._portal && iframe.classList.contains('yt')) {
+                const r = pl.getBoundingClientRect();
+                const wrapper = document.createElement('div');
+                wrapper.className = 'player-portal';
+                wrapper.style.position = 'absolute';
+                wrapper.style.left = (r.left + window.scrollX) + 'px';
+                wrapper.style.top = (r.top + window.scrollY) + 'px';
+                wrapper.style.width = r.width + 'px';
+                wrapper.style.height = r.height + 'px';
+                wrapper.style.zIndex = '13000';
+                wrapper.style.pointerEvents = 'auto';
+                wrapper.appendChild(iframe);
+                document.body.appendChild(wrapper);
+                const update = () => {
+                  const nr = pl.getBoundingClientRect();
+                  wrapper.style.left = (nr.left + window.scrollX) + 'px';
+                  wrapper.style.top = (nr.top + window.scrollY) + 'px';
+                  wrapper.style.width = nr.width + 'px';
+                  wrapper.style.height = nr.height + 'px';
+                };
+                window.addEventListener('scroll', update);
+                window.addEventListener('resize', update);
+                pl._portal = { wrapper, update };
+              }
+            }
           }
-        }
-      } catch (err) { console.warn('player portal setup failed', err); }
+        } catch (err) { console.warn('player portal setup failed', err); }
+
+      // Mark now playing and show dock, then optionally auto-scroll
       markNowPlaying(postId, state, DB);
       if (loadPrefs().autoScroll) card.scrollIntoView({ block: 'center' });
       // Show docked player when a post is played
@@ -258,8 +280,8 @@ export async function onActionClick(e, state, DB, render) {
     }
     return;
   }
-
   if (action === 'like' && postId) {
+  
     if (!state.user) { toast(card || root, 'login to like', true); return; }
     const updated = await DB.toggleLike(postId, state.user.id);
     if (updated && card) {

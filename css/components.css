@@ -1516,3 +1516,17 @@ iframe[loading=lazy] { contain: content; }
     padding-bottom: unset !important;
   }
 }
+
+/* Desktop: make YouTube player a bit smaller */
+@media (min-width: 601px) {
+  /* Override inline min-height from providers.js and keep responsive aspect ratio */
+  .player iframe.yt,
+  .yt {
+    min-height: 280px !important;
+    max-height: 480px;
+    height: auto !important;
+    aspect-ratio: 16/9;
+  }
+  /* Slightly reduce padding on the player container for a tighter look */
+  .player { padding: 4px; }
+}
