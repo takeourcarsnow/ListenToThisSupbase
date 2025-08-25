@@ -1344,13 +1344,15 @@ iframe[loading=lazy] { contain: content; }
 .spotify-note {
   display: flex;
   gap: 10px;
-  align-items: flex-start;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
 }
 .spotify-note-logo {
   width: 22px;
   height: 22px;
   flex: 0 0 22px;
-  margin-top: 4px;
+  margin-top: 0;
 }
 .spotify-note-body {
   flex: 1 1 auto;
@@ -1364,14 +1366,16 @@ iframe[loading=lazy] { contain: content; }
 }
 @media (max-width: 600px) {
   .spotify-note {
-    flex-direction: row;
-    align-items: flex-start;
+    flex-direction: column;
+    align-items: center;
   }
   .spotify-note-actions .spotify-open {
     display: block;
     width: 100%;
     box-sizing: border-box;
   }
+  .spotify-note-body { width: 100%; }
+  .spotify-note-text { text-align: center; }
 }
 
 @media (max-width: 600px) {
