@@ -1,6 +1,7 @@
 // Header module: injects the header HTML into the page
 import { POST_LIMIT_MESSAGES, POST_READY_MESSAGES, GUEST_HEADER_MESSAGES, POST_NO_COOLDOWN_MESSAGES } from './constants.js';
 import { UPDATE_HEADER_MESSAGE } from './constants.js';
+import { runIdle } from './idle.js';
 export async function renderHeader() {
   // Ensure DB is initialized before rendering header
   if (window.DB && typeof window.DB.init === 'function') {
@@ -85,8 +86,8 @@ ${updateAsciiMsg}
     clearInterval(window._asciiHeaderInterval);
     window._asciiHeaderInterval = null;
   }
-  // Animate and update the ascii-post-limit line
-  setTimeout(() => {
+  // Animate and update the ascii-post-limit line — schedule during idle
+  runIdle(() => {
   const info = document.getElementById('ascii-post-limit');
   if (!info) return;
     // Always use latest DB and state
@@ -314,7 +315,7 @@ ${updateAsciiMsg}
   });
   updatePostLimitInfo();
   window._asciiHeaderInterval = setInterval(updatePostLimitInfo, 1000);
-  }, 0);
+  }, { timeout: 800, fallbackDelay: 10 });
   const header = document.createElement('header');
   header.setAttribute('role', 'banner');
   header.innerHTML = headerHTML;

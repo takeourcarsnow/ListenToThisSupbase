@@ -28,11 +28,20 @@
     <link rel="shortcut icon" href="/favicon.ico">
   <link rel="stylesheet" href="/css/base.css">
   <link rel="stylesheet" href="/css/layout.css">
-  <link rel="stylesheet" href="/css/dock.css">
-  <link rel="stylesheet" href="/css/components.css">
-  <link rel="stylesheet" href="css/profile_tab_fix.css">
-  <link rel="stylesheet" href="/css/mobile_tabs.css">
-  <link rel="stylesheet" href="/css/auth.css"> <!-- You can load this only on auth pages -->
+  <!-- Defer non-critical CSS to speed initial paint on mobile -->
+  <link rel="preload" href="/css/dock.css" as="style" onload="this.rel='stylesheet'">
+  <link rel="preload" href="/css/components.css" as="style" onload="this.rel='stylesheet'">
+  <link rel="preload" href="/css/profile_tab_fix.css" as="style" onload="this.rel='stylesheet'">
+  <link rel="preload" href="/css/mobile_tabs.css" as="style" onload="this.rel='stylesheet'">
+  <link rel="preload" href="/css/auth.css" as="style" onload="this.rel='stylesheet'"> <!-- You can load this only on auth pages -->
+  <!-- Fallback for users with JS disabled -->
+  <noscript>
+    <link rel="stylesheet" href="/css/dock.css">
+    <link rel="stylesheet" href="/css/components.css">
+    <link rel="stylesheet" href="/css/profile_tab_fix.css">
+    <link rel="stylesheet" href="/css/mobile_tabs.css">
+    <link rel="stylesheet" href="/css/auth.css">
+  </noscript>
   </head>
 <body>
   <a class="sr-only" href="#app">Skip to content</a>
@@ -42,9 +51,7 @@
   </noscript>
 
   <!-- bcryptjs for password hashing in browser -->
-  <script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bcryptjs@2.4.3/dist/bcrypt.min.js" defer></script>
   <script type="module" src="./js/core/app.js"></script>
-  <script type="module" src="./js/core/notifications_init.js"></script>
-</body>
 </body>
 </html>

@@ -142,43 +142,50 @@ export function renderPostHTML(p, state, DB) {
 
 export function renderFeed(el, pager, state, DB, prefs) {
   // --- Swipe gesture support for feed navigation ---
-  let touchStartX = null;
-  let touchEndX = null;
-  const minSwipeDist = 60;
-  function handleTouchStart(e) {
-    if (e.touches && e.touches.length === 1) {
-      touchStartX = e.touches[0].clientX;
-    }
-  }
-  function handleTouchMove(e) {
-    if (e.touches && e.touches.length === 1) {
-      touchEndX = e.touches[0].clientX;
-    }
-  }
-  function handleTouchEnd() {
-    if (touchStartX !== null && touchEndX !== null) {
-      const dist = touchEndX - touchStartX;
-      if (Math.abs(dist) > minSwipeDist) {
-        if (dist < 0 && state.page * state.pageSize < total) {
-          // Swipe left: next page
-          state.page++;
-          renderFeed(el, pager, state, DB, prefs);
-        } else if (dist > 0 && state.page > 1) {
-          // Swipe right: previous page
-          state.page--;
-          renderFeed(el, pager, state, DB, prefs);
-        }
+  // Attach touch handlers once per feed element to avoid leaking handlers
+  if (!el._touchHandlersAttached) {
+    let touchStartX = null;
+    let touchEndX = null;
+    const minSwipeDist = 60;
+    function handleTouchStart(e) {
+      if (e.touches && e.touches.length === 1) {
+        touchStartX = e.touches[0].clientX;
       }
     }
-    touchStartX = null;
-    touchEndX = null;
+    function handleTouchMove(e) {
+      if (e.touches && e.touches.length === 1) {
+        touchEndX = e.touches[0].clientX;
+      }
+    }
+    function handleTouchEnd() {
+      try {
+        if (touchStartX !== null && touchEndX !== null) {
+          const dist = touchEndX - touchStartX;
+          if (Math.abs(dist) > minSwipeDist) {
+            // Use current total from dataset (set later) to avoid referencing undefined 'total'
+            const total = Number(el.dataset._total || 0);
+            if (dist < 0 && state.page * state.pageSize < total) {
+              // Swipe left: next page
+              state.page++;
+              renderFeed(el, pager, state, DB, prefs);
+            } else if (dist > 0 && state.page > 1) {
+              // Swipe right: previous page
+              state.page--;
+              renderFeed(el, pager, state, DB, prefs);
+            }
+          }
+        }
+      } catch (e) {
+        // swallow errors from gesture handling
+      }
+      touchStartX = null;
+      touchEndX = null;
+    }
+    el.addEventListener('touchstart', handleTouchStart, { passive: true });
+    el.addEventListener('touchmove', handleTouchMove, { passive: true });
+    el.addEventListener('touchend', handleTouchEnd, { passive: true });
+    el._touchHandlersAttached = true;
   }
-  el.removeEventListener('touchstart', handleTouchStart);
-  el.removeEventListener('touchmove', handleTouchMove);
-  el.removeEventListener('touchend', handleTouchEnd);
-  el.addEventListener('touchstart', handleTouchStart, { passive: true });
-  el.addEventListener('touchmove', handleTouchMove, { passive: true });
-  el.addEventListener('touchend', handleTouchEnd, { passive: true });
   // --- Preserve open comment boxes and their input values ---
   const openComments = Array.from(document.querySelectorAll('.comment-box.active')).map(box => box.id);
   // Map of comment box id -> input value
@@ -200,6 +207,8 @@ export function renderFeed(el, pager, state, DB, prefs) {
     posts = posts.filter(p => p.userId === userId);
   }
   const total = posts.length;
+  // Expose total for touch handlers that run outside render to avoid referencing undefined
+  try { el.dataset._total = String(total); } catch (e) {}
 
   // Ensure sane paging defaults
   if (!state.pageSize || typeof state.pageSize !== 'number' || state.pageSize < 1) state.pageSize = 5;
@@ -228,30 +237,36 @@ export function renderFeed(el, pager, state, DB, prefs) {
   }
 
   // Background: replace Spotify logo placeholders with actual thumbnails via Spotify oEmbed
-  (async function replaceSpotifyThumbnails() {
-    try {
-      const spotifyPosts = postsToShow.filter(p => p.url && /spotify\.com/.test(p.url) && !p.thumbnail);
-      if (!spotifyPosts.length) return;
-      for (const p of spotifyPosts) {
-        try {
-          const md = await fetchOEmbed(p.url);
-          if (md && md.thumbnail_url) {
-            // Update DB object if possible
-            try { p.thumbnail = md.thumbnail_url; } catch {}
-            // Find image element and swap src if it still points to the spotify logo
-            const img = document.querySelector(`#post-${p.id} .post-thumbnail`);
-            if (img && img.getAttribute('src') && img.getAttribute('src').includes('spotify-logo')) {
-              img.src = md.thumbnail_url;
+  function scheduleReplaceSpotifyThumbnails() {
+    const task = async () => {
+      try {
+        const spotifyPosts = postsToShow.filter(p => p.url && /spotify\.com/.test(p.url) && !p.thumbnail);
+        if (!spotifyPosts.length) return;
+        for (const p of spotifyPosts) {
+          try {
+            const md = await fetchOEmbed(p.url);
+            if (md && md.thumbnail_url) {
+              try { p.thumbnail = md.thumbnail_url; } catch {}
+              const img = document.querySelector(`#post-${p.id} .post-thumbnail`);
+              if (img && img.getAttribute('src') && img.getAttribute('src').includes('spotify-logo')) {
+                img.src = md.thumbnail_url;
+              }
             }
+          } catch (e) {
+            // per-post failure is non-fatal
           }
-        } catch (e) {
-          // ignore per-post failures
         }
+      } catch (e) {
+        // overall failure ignored
       }
-    } catch (e) {
-      // overall failure is non-fatal
+    };
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      try { requestIdleCallback(task, { timeout: 2000 }); } catch (e) { setTimeout(task, 1200); }
+    } else {
+      setTimeout(task, 1200);
     }
-  })();
+  }
+  scheduleReplaceSpotifyThumbnails();
 
   // --- Restore open comment boxes and their input values ---
   openComments.forEach(id => {
@@ -425,35 +440,60 @@ export function renderTags(el, DB, prefs) {
     `<span class="tag${selectedTag === t ? ' tag-selected' : ''}" data-action="filter-tag" data-tag="${esc(t)}"${selectedTag === t ? ' style="background:var(--acc,#8ab4ff);color:#111;font-weight:600;border-radius:6px;outline:2px solid var(--acc,#8ab4ff);outline-offset:0;z-index:2;"' : ''}><span class="tag-label">#${esc(t)}</span></span>`
   ).join(' ');
   el.appendChild(tagCloudDiv);
-  // Restore scrollLeft if present, else center selected tag only if user is at start, using rAF for timing
-  if (typeof window !== 'undefined' && typeof window._tagCloudScrollLeft === 'number') {
-    let tries = 0;
-    const maxTries = 8;
-    function rafScrollRestore() {
-      tagCloudDiv.scrollLeft = window._tagCloudScrollLeft;
-      tries++;
-      if (tries < maxTries) {
-        requestAnimationFrame(rafScrollRestore);
-      } else {
-        delete window._tagCloudScrollLeft;
-      }
-    }
-    requestAnimationFrame(rafScrollRestore);
-  } else if (selectedTag) {
-    // Center the selected tag after render if user is at start and no previous scroll position, only once
-    requestAnimationFrame(() => {
-      const tagEl = tagCloudDiv.querySelector('.tag-selected');
-      if (tagEl && tagCloudDiv.scrollLeft < 5) {
-        const tagRect = tagEl.getBoundingClientRect();
-        const cloudRect = tagCloudDiv.getBoundingClientRect();
-        // Only center if tag is not fully visible
-        if (tagRect.left < cloudRect.left || tagRect.right > cloudRect.right) {
-          const offset = tagEl.offsetLeft + tagRect.width / 2 - cloudRect.width / 2;
-          tagCloudDiv.scrollLeft = offset;
+  // Restore scrollLeft if present, else center selected tag only if user is at start.
+  // Schedule these non-urgent layout tasks during idle to avoid jank.
+  function scheduleTagCloudRestoreAndCenter() {
+    const task = () => {
+      try {
+        if (typeof window !== 'undefined' && typeof window._tagCloudScrollLeft === 'number') {
+          let tries = 0;
+          const maxTries = 8;
+          function rafScrollRestore() {
+            try {
+              tagCloudDiv.scrollLeft = window._tagCloudScrollLeft;
+            } catch (e) {}
+            tries++;
+            if (tries < maxTries) {
+              requestAnimationFrame(rafScrollRestore);
+            } else {
+              try { delete window._tagCloudScrollLeft; } catch (e) {}
+            }
+          }
+          requestAnimationFrame(rafScrollRestore);
+          return;
         }
+
+        if (selectedTag) {
+          // Center the selected tag after render if user is at start and no previous scroll position, only once
+          requestAnimationFrame(() => {
+            try {
+              const tagEl = tagCloudDiv.querySelector('.tag-selected');
+              if (tagEl && tagCloudDiv.scrollLeft < 5) {
+                const tagRect = tagEl.getBoundingClientRect();
+                const cloudRect = tagCloudDiv.getBoundingClientRect();
+                // Only center if tag is not fully visible
+                if (tagRect.left < cloudRect.left || tagRect.right > cloudRect.right) {
+                  const offset = tagEl.offsetLeft + tagRect.width / 2 - cloudRect.width / 2;
+                  tagCloudDiv.scrollLeft = offset;
+                }
+              }
+            } catch (e) {
+              // ignore layout failures
+            }
+          });
+        }
+      } catch (e) {
+        // ignore
       }
-    });
+    };
+
+    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+      try { requestIdleCallback(task, { timeout: 1000 }); } catch (e) { setTimeout(task, 300); }
+    } else {
+      setTimeout(task, 300);
+    }
   }
+  scheduleTagCloudRestoreAndCenter();
   // Enable drag-to-scroll for the main tag cloud (desktop)
   if (typeof enableTagCloudDragScroll === 'function') {
     enableTagCloudDragScroll(tagCloudDiv);

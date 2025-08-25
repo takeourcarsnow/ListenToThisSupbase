@@ -4,13 +4,12 @@ import DB from './db.js';
 import { $ } from './utils.js';
 import { loadPrefs, PREF_KEY } from '../auth/prefs.js';
 import { SESSION_KEY, GUEST_KEY, isGuestMode } from '../auth/session.js';
-import { bindHelpOverlay } from '../views/overlays.js';
-import { renderMain } from '../views/main_view.js';
-import { renderLogin } from '../views/login_view.js';
+// defer heavy view modules until needed (dynamic import in renderApp)
 import { onActionClick, onDelegatedSubmit } from '../features/actions.js';
 import { onKey } from '../auth/keyboard.js';
 import { seedDemo } from '../features/seed.js';
 import { state } from './app_state.js';
+import { runIdle } from './idle.js';
 
 async function renderApp() {
   if (DB.refresh) await DB.refresh();
@@ -56,13 +55,21 @@ async function renderApp() {
     state.forceLogin = false;
     if (banner) banner.style.display = 'none';
     body.classList.remove('show-header');
-    renderLogin(root, DB, renderApp);
+    try {
+      const { renderLogin } = await import('../views/login_view.js');
+      renderLogin(root, DB, renderApp);
+    } catch (e) {
+      // fallback: no-op
+    }
     return;
   }
   if (!state.user && !isGuestMode()) {
     if (banner) banner.style.display = 'none';
     body.classList.remove('show-header');
-    renderLogin(root, DB, renderApp);
+    try {
+      const { renderLogin } = await import('../views/login_view.js');
+      renderLogin(root, DB, renderApp);
+    } catch (e) {}
   } else {
     if (!document.querySelector('header[role="banner"]')) {
       const { renderHeader } = await import('./header.js');
@@ -70,10 +77,19 @@ async function renderApp() {
     }
     if (banner) banner.style.display = '';
     body.classList.add('show-header');
-    renderMain(root, state, DB, renderApp);
+    try {
+      const { renderMain } = await import('../views/main_view.js');
+      renderMain(root, state, DB, renderApp);
+    } catch (e) {
+      // renderMain failed, fallback to empty root
+      root.innerHTML = '<div class="notice small">Unable to load app UI.</div>';
+    }
   }
 
-  bindHelpOverlay();
+  try {
+    const { bindHelpOverlay } = await import('../views/overlays.js');
+    bindHelpOverlay();
+  } catch (e) {}
 }
 
 // Global delegated events (bind once)
@@ -86,10 +102,14 @@ function bindGlobalHandlers() {
   if (help) {
     help.addEventListener('click', (e) => onActionClick(e, state, DB, renderApp));
   }
-  document.addEventListener('keydown', (e) => onKey(e, state));
+  // Avoid binding keyboard handlers on touch-first devices to reduce overhead
+  const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+  if (!isTouch) document.addEventListener('keydown', (e) => onKey(e, state));
 
   // Double click to like, prevent text selection
-  document.addEventListener('dblclick', (e) => {
+  // Avoid double-click listener on touch devices (use tap handlers elsewhere)
+  if (!isTouch) {
+    document.addEventListener('dblclick', (e) => {
     const card = e.target.closest('.post');
     if (!card) return;
     // Ignore double-clicks inside comment, edit, or input areas
@@ -110,7 +130,8 @@ function bindGlobalHandlers() {
     }
     const likeBtn = card.querySelector('[data-action="like"]');
     likeBtn?.click();
-  });
+    });
+  }
 
   // Cross-tab sync
   window.addEventListener('storage', async (ev) => {
@@ -132,19 +153,27 @@ async function boot() {
 boot();
 
 // Add header, main containers, and help overlay on DOMContentLoaded
-import { renderHeader, renderMainContainers } from './header.js';
-import { renderHelpOverlay } from './help.js';
 
 // Ensure posts always fit the screen
 
 window.addEventListener('DOMContentLoaded', function() {
   // Only render header if not about to show login/register in mobile tabbed mode
-  renderMainContainers();
-  renderHelpOverlay();
+  (async function deferredDOMHelpers() {
+    try {
+      const [{ renderMainContainers }, { renderHelpOverlay }] = await Promise.all([
+        import('./header.js'),
+        import('./help.js')
+      ]);
+      if (typeof renderMainContainers === 'function') renderMainContainers();
+      if (typeof renderHelpOverlay === 'function') renderHelpOverlay();
+    } catch (e) {
+      // non-fatal if these helpers fail to load
+    }
+  })();
   document.body.classList.add('header-logo-ready');
 
   // Add post limit info below ASCII header after header is rendered
-  setTimeout(() => {
+  runIdle(() => {
     const banner = document.getElementById('ascii-banner');
     if (!banner) return;
     let info = document.getElementById('post-limit-info');
@@ -227,6 +256,33 @@ window.addEventListener('DOMContentLoaded', function() {
     if (!window.state) window.state = state;
     if (!window.DB) window.DB = DB;
     updatePostLimitInfo();
-    setInterval(updatePostLimitInfo, 1000);
-  }, 0);
+  // Reduce frequency on mobile to save battery; desktop can be more frequent
+  const intervalMs = (('ontouchstart' in window || navigator.maxTouchPoints > 0) ? 5000 : 1000);
+  setInterval(updatePostLimitInfo, intervalMs);
+  }, { timeout: 500, fallbackDelay: 10 });
 });
+
+// Load non-critical modules after boot to avoid blocking initial render
+(async function loadDeferredModules() {
+  try {
+    // notifications can be loaded in the background
+    const mod = await import('./notifications_init.js');
+    // If the module exposes an init function, call it
+    if (mod && typeof mod.init === 'function') {
+      try { mod.init(); } catch (e) { /* non-fatal */ }
+    }
+  } catch (e) {
+    // ignore deferred load failures
+  }
+})();
+// Defer help overlay and other non-critical UI until idle to reduce initial JS work on mobile
+try {
+  runIdle(async () => {
+    try {
+      const helpMod = await import('../views/overlays.js');
+      if (helpMod && typeof helpMod.bindHelpOverlay === 'function') helpMod.bindHelpOverlay();
+    } catch (e) {}
+  }, { timeout: 2000, fallbackDelay: 50 });
+} catch (e) {
+  // runIdle may be unavailable during early boot; ignore
+}

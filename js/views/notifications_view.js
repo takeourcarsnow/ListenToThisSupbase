@@ -1,6 +1,7 @@
 // UI component for notifications (simple toast system)
 // Usage: import notificationsView from './notifications_view.js'; notificationsView.init();
 import notifications from '../core/notifications.js';
+import { runIdle } from '../core/idle.js';
 
 
 const containerId = 'notifications-popup-container';
@@ -67,10 +68,11 @@ const notificationsView = {
       el.style.transform = 'translateY(-32px)';
       el.style.transition = 'opacity 0.3s cubic-bezier(.4,0,.2,1), transform 0.3s cubic-bezier(.4,0,.2,1)';
       el.style.textAlign = 'center';
-      setTimeout(() => {
+      // Schedule the fade-in during idle to avoid competing with critical work
+      runIdle(() => {
         el.style.opacity = '1';
         el.style.transform = 'translateY(0)';
-      }, 10);
+      }, { timeout: 500, fallbackDelay: 20 });
       el.onclick = () => notifications.remove(n.id);
       this.container.appendChild(el);
     });
