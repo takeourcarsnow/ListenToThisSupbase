@@ -252,7 +252,7 @@ export async function onCreatePost(e, state, DB, render) {
   if (DB.refresh) await DB.refresh();
   // Debug: log DB cache after refresh
   if (DB && DB.cache) {
-    console.log('[POSTS DEBUG] DB.cache after refresh:', DB.cache);
+    
   }
   // Re-render header to ensure cooldown state is correct (after post is saved and cache is refreshed)
   if (typeof window.renderHeader === 'function') {

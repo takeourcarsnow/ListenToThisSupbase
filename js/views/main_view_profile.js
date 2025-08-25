@@ -60,7 +60,7 @@
               e.stopPropagation();
               e.preventDefault();
             }
-            console.log('[notif-dot] handleDotActivate', e ? e.type : 'no event');
+            
             if (popup) {
               closePopup();
               return;

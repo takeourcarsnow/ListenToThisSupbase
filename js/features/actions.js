@@ -144,17 +144,17 @@ export async function onActionClick(e, state, DB, render) {
     }
     lyricsBox.textContent = 'Fetching lyrics...';
     const apiUrl = `https://api.lyrics.ovh/v1/${encodeURIComponent(artist)}/${encodeURIComponent(title)}`;
-    console.log('[Lyrics Fetch] URL:', apiUrl);
+    
     try {
       const resp = await fetch(apiUrl);
-      console.log('[Lyrics Fetch] Response:', resp);
+      
       if (!resp.ok) {
         const text = await resp.text();
         console.error('[Lyrics Fetch] Error response:', text);
         throw new Error('No lyrics found');
       }
       const data = await resp.json();
-      console.log('[Lyrics Fetch] Data:', data);
+      
       if (data.lyrics) {
         lyricsBox.textContent = data.lyrics;
       } else {
@@ -208,9 +208,7 @@ export async function onActionClick(e, state, DB, render) {
     const posts = document.querySelectorAll('#feed .post');
     state.queue = Array.from(posts).map(n => n.dataset.post);
     state.qIndex = state.queue.indexOf(postId);
-      console.log('Attempting to build embed:', { post: p, playerDiv: pl });
-      buildEmbed(p, pl, { autoplay: true, onEnded: () => queueNext(true, state, DB) });
-      console.log('Embed built. Player div innerHTML:', pl.innerHTML);
+  buildEmbed(p, pl, { autoplay: true, onEnded: () => queueNext(true, state, DB) });
       // Ensure the active player is positioned above fixed UI (dock/tab bar)
       // so iframe controls are reachable on mobile devices.
       try { pl.style.position = 'relative'; pl.style.zIndex = '12000'; } catch (e) {}

@@ -243,54 +243,35 @@ export function renderFeed(el, pager, state, DB, prefs) {
     const task = async () => {
       try {
         const spotifyPosts = postsToShow.filter(p => p.url && /spotify\.com/.test(p.url));
-        if (!spotifyPosts.length) {
-          console.log('[SpotifyThumbs] No Spotify posts to update.');
-          return;
-        }
+        if (!spotifyPosts.length) return;
         for (const p of spotifyPosts) {
           try {
             if (!p.thumbnail || (p.thumbnail && p.thumbnail.includes('spotify-logo'))) {
-              console.log(`[SpotifyThumbs] Fetching oEmbed for post ${p.id}: ${p.url}`);
               const md = await fetchOEmbed(p.url);
-              console.log(`[SpotifyThumbs] oEmbed result for post ${p.id}:`, md);
               if (md && md.thumbnail_url) {
                 try { p.thumbnail = md.thumbnail_url; } catch {}
                 // Update main DB post as well
                 if (window.DB && typeof window.DB.updatePost === 'function') {
-                  try { await window.DB.updatePost(p.id, { thumbnail: md.thumbnail_url }); } catch (e) { console.error('[SpotifyThumbs] DB updatePost error:', e); }
+                  try { await window.DB.updatePost(p.id, { thumbnail: md.thumbnail_url }); } catch (e) { /* ignore DB update errors */ }
                 }
                 const img = document.querySelector(`#post-${p.id} .post-thumbnail`);
                 if (img) {
-                  console.log(`[SpotifyThumbs] Updating img src for post ${p.id} to`, md.thumbnail_url);
                   // Ensure srcset is updated/removed so the browser doesn't keep using the placeholder
-                  try {
-                    img.removeAttribute('srcset');
-                  } catch (e) {}
+                  try { img.removeAttribute('srcset'); } catch (e) {}
                   img.src = md.thumbnail_url;
-                  // Also set srcset to the same URL for browsers that prefer srcset
                   try { img.srcset = md.thumbnail_url + ' 1x'; } catch (e) {}
                   img.dataset.spotifyThumb = '1';
-                  // Force a reload in case the browser cached the image element state
                   try { img.complete = false; } catch (e) {}
-                  // Add error handler for debugging
-                  img.onerror = function() {
-                    console.error(`[SpotifyThumbs] Failed to load thumbnail for post ${p.id}:`, img.src);
-                  };
-                } else {
-                  console.log(`[SpotifyThumbs] No img found for post ${p.id}`);
+                  // do not log to console
                 }
-              } else {
-                console.log(`[SpotifyThumbs] No thumbnail_url in oEmbed for post ${p.id}`);
               }
-            } else {
-              console.log(`[SpotifyThumbs] Post ${p.id} already has thumbnail:`, p.thumbnail);
             }
           } catch (e) {
-            console.error(`[SpotifyThumbs] Error updating post ${p.id}:`, e);
+            // per-post failure ignored
           }
         }
       } catch (e) {
-        console.error('[SpotifyThumbs] Overall error:', e);
+        // overall failure ignored
       }
     };
     if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {

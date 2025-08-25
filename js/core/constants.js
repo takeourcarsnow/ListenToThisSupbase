@@ -1,5 +1,26 @@
+// Console suppression toggle: set to true to allow console output.
+// For local debugging, you can set window.__TUNEDIN_ENABLE_CONSOLE = true before app code runs.
+export const ENABLE_CONSOLE = false;
+if (typeof window !== 'undefined' && !ENABLE_CONSOLE && !window.__TUNEDIN_ENABLE_CONSOLE) {
+	try {
+		const _noop = function() {};
+		// Keep original stored in case extensions rely on them (not exposed here)
+		console.log = _noop;
+		console.info = _noop;
+		console.warn = _noop;
+		console.error = _noop;
+		console.debug = _noop;
+		console.trace = _noop;
+		console.group = _noop;
+		console.groupCollapsed = _noop;
+		console.groupEnd = _noop;
+	} catch (e) {
+		// ignore failures (some hosts may lock console)
+	}
+}
+
 // Header update message (shown below ASCII frame)
-export const UPDATE_HEADER_MESSAGE = '> updates: thumbnails / uploads / lyrics';
+export const UPDATE_HEADER_MESSAGE = '> updates: thumbnails / mobile / lyrics';
 // Guest mode header messages (cycled in header)
 export const GUEST_HEADER_MESSAGES = [
 	'Welcome, anon! Eavesdrop on the feed.',

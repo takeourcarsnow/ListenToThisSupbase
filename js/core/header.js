@@ -11,10 +11,7 @@ export async function renderHeader() {
   if (window.DB && typeof window.DB.refresh === 'function') {
     await window.DB.refresh();
   }
-  // Debug: log DB cache before rendering
-  if (window.DB && window.DB.cache) {
-    console.log('[HEADER DEBUG] DB.cache before rendering header:', window.DB.cache);
-  }
+  // (debug log removed)
   // Use Unicode box-drawing for perfect frame, and wrap with invisible comment markers
   // Frame width: 36 chars (between | and |)
   const frameWidth = 41;

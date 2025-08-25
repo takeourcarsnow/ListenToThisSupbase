@@ -16,8 +16,6 @@ const testCases = [
 ];
 
 testCases.forEach(text => {
-  console.log(`Test: "${text}"`);
-  console.log('containsBannedWords:', containsBannedWords(text));
-  console.log('looksLikeSpam:', looksLikeSpam(text));
-  console.log('---');
+  // test helper - no console output by default
+  const _ = [containsBannedWords(text), looksLikeSpam(text)];
 });
