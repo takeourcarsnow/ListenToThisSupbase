@@ -57,6 +57,18 @@
   display: none !important;
 }
 
+/* Tag sort link colors: default to white, active to accent */
+.tag-sort-ui a.tag-sort-link {
+  color: #fff !important;
+  font-weight: 400 !important;
+  opacity: 0.95;
+}
+.tag-sort-ui a.tag-sort-link.active,
+.tag-sort-ui a.tag-sort-link[aria-pressed="true"] {
+  color: var(--acc, #ff6b6b) !important;
+  font-weight: 600 !important;
+}
+
 /* Custom file input for profile */
 .custom-file-input-wrapper {
   position: relative;

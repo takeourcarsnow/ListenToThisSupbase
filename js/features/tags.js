@@ -30,6 +30,9 @@ export function getPopularTags(DB, limit = 20) {
 // Render a tag cloud into `el`. Mirrors previous behavior but centralized.
 export function renderTagCloud(el, DB, prefs, opts = {}) {
   if (!el) return;
+  // Remove any previous sort UI to avoid duplicates
+  const prevSortUIs = el.querySelectorAll('.tag-sort-ui');
+  prevSortUIs.forEach(ui => ui.remove());
   el.innerHTML = '';
   const db = DB.getAll();
   const m = new Map();
@@ -64,15 +67,31 @@ export function renderTagCloud(el, DB, prefs, opts = {}) {
   sortUI.style.marginTop = '6px';
   sortUI.style.fontSize = '0.93em';
   sortUI.innerHTML = `
-    <a href="#" data-sort="freq" class="tag-sort-link${sortMode==='freq'?' active':''}">frequency</a>
+    <a href="#" data-sort="freq" class="tag-sort-link">frequency</a>
     <span style="color:#444;opacity:0.5;">|</span>
-    <a href="#" data-sort="az" class="tag-sort-link${sortMode==='az'?' active':''}" tabindex="0">a - z</a>
+    <a href="#" data-sort="az" class="tag-sort-link" tabindex="0">a - z</a>
   `;
+  function updateSortActive() {
+    const links = sortUI.querySelectorAll('.tag-sort-link');
+    // Debug: log current sortMode and link states to help diagnose double-highlight
+    try { console.debug('renderTagCloud:updateSortActive', { sortMode, links: Array.from(links).map(l => ({sort: l.getAttribute('data-sort'), cls: l.className})) }); } catch (e) {}
+    links.forEach(link => {
+      const isActive = link.getAttribute('data-sort') === sortMode;
+      // Keep class in sync for semantics
+      if (isActive) link.classList.add('active'); else link.classList.remove('active');
+      // Force visual state with inline styles to avoid CSS conflicts
+      link.style.color = isActive ? 'var(--acc, #8ab4ff)' : '';
+      link.style.fontWeight = isActive ? '600' : '';
+      link.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    });
+  }
+  updateSortActive();
   sortUI.addEventListener('click', e => {
     const link = e.target.closest('a[data-sort]');
     if (link) {
       e.preventDefault();
       setSortMode(link.getAttribute('data-sort'));
+      // updateSortActive will be called by renderTagCloud after rerender
     }
   });
   el.appendChild(sortUI);
