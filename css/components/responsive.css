@@ -114,8 +114,15 @@
 @media (max-width: 600px) {
   .player {
     padding-bottom: 38px;
-  min-height: 160px;
+    min-height: 160px;
     pointer-events: auto !important;
+  }
+  .player.audio-only {
+    padding-bottom: 0 !important;
+    min-height: unset !important;
+    height: auto !important;
+    margin-bottom: 0 !important;
+    overflow: visible !important;
   }
   .yt {
   min-height: 140px !important;

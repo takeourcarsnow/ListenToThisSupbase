@@ -34,6 +34,7 @@
   .about-preview { font-size: 0.98em; word-break: break-word; }
 
   .player { min-height: 208px !important; overflow: hidden !important; }
+  .player.audio-only { min-height: unset !important; height: auto !important; overflow: visible !important; }
 }
 
 @media (max-width: 400px) {

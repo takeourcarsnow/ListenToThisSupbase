@@ -279,6 +279,8 @@ export function buildEmbed(post, container, opts = {}) {
 
   // Direct audio
   if (p.provider === 'audio') {
+    // Add audio-only class for compact styling
+    if (wrap.classList) wrap.classList.add('audio-only');
     const audio = document.createElement('audio');
     audio.controls = true;
     audio.className = 'audio';
