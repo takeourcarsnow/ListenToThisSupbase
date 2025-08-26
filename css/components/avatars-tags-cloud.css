@@ -129,6 +129,14 @@
     text-overflow: ellipsis;
   }
 
+  /* Hide any native scrollbars on the tag buttons themselves on small screens
+     while keeping the visual appearance and sizing unchanged. */
+  .tag-cloud .tag {
+    -ms-overflow-style: none; /* IE/Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+  .tag-cloud .tag::-webkit-scrollbar { display: none; }
+
   /* Slightly denser spacing for post tag blocks */
   .tag-cloud.post-tags-twolines { gap: 0.4rem; }
 
@@ -139,6 +147,16 @@
     color: var(--acc-contrast, #08111a);
     border-color: rgba(138,180,255,0.22);
     font-weight: 600;
+  }
+
+  /* Prevent dragging a tag from causing the carousel/container to scroll.
+     Keep appearance and interactions (click/tap) unchanged. */
+  .tag-cloud .tag {
+    touch-action: none; /* disable default touch panning when interacting with the tag */
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    overscroll-behavior: contain; /* prevent scroll chaining to parent */
   }
 
   /* left/right fade overlays to hint at horizontal content */
