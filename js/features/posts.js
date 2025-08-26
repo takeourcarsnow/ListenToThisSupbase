@@ -323,8 +323,8 @@ export function openEditInline(postId, state, DB, opts = {}) {
     edit.innerHTML = `
       <div class="muted small">edit post</div>
       <form class="stack" data-action="edit-form" data-post="${p.id}">
-      <input class="field" name="title" value="${esc(p.title)}" required maxlength="120" placeholder="Title (song or album)"/>
       <input class="field" name="artist" value="${esc(p.artist || '')}" placeholder="Artist"/>
+      <input class="field" name="title" value="${esc(p.title)}" required maxlength="120" placeholder="Title (song or album)"/>
       <input class="field" name="url" value="${esc(p.url)}" required readonly style="background:#222;opacity:0.7;cursor:not-allowed;" tabindex="-1" aria-readonly="true" placeholder="Link (YouTube / Spotify / Bandcamp, etc)"/>
       <input class="field" name="tags" value="${esc((p.tags || []).join(' '))}" placeholder="#Tags go here"/>
       <textarea class="field" name="body" rows="4" maxlength="500" oninput="this.nextElementSibling.textContent = this.value.length + '/500';" placeholder="Share something about this track, a memory, or the vibe it gives you.">${esc(p.body || '')}</textarea>
