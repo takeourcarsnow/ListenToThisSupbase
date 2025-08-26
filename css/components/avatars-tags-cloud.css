@@ -82,5 +82,43 @@
   user-select: none;
 }
 @media (max-width: 600px) {
-  .tag-cloud .tag { font-size: 0.75rem; padding: 0.14em 0.4em; }
+  /* Horizontal carousel on mobile that shows ~5 tags at a time.
+     Each tag uses a flex-basis calculated to occupy 1/5 of the container
+     minus the gaps. Scroll-snap gives a tactile browsing feel. */
+  .tag-cloud {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+    padding: 0.4rem 0.35rem;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x proximity;
+    align-items: center;
+    box-sizing: border-box;
+    width: 100%;
+  }
+
+  /* Calculate 4 gaps * 0.5rem = 2rem total gap when showing 5 items */
+  .tag-cloud .tag {
+    flex: 0 0 calc((100% - 2rem) / 5);
+    width: calc((100% - 2rem) / 5);
+    min-width: 80px;
+    max-width: 220px;
+    height: 56px; /* vinyl-like taller chips */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    white-space: nowrap;
+    padding: 0 0.6em;
+    font-size: 0.82rem;
+    border-radius: 10px;
+    scroll-snap-align: center;
+  }
+
+  /* Slightly denser spacing for post tag blocks */
+  .tag-cloud.post-tags-twolines { gap: 0.4rem; }
+
+  /* Make selected state remain prominent without overtaking layout */
+  .tag-cloud .tag.tag-selected { border-radius: 10px; }
 }

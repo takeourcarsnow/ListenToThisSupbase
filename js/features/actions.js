@@ -2,7 +2,7 @@ import { $, esc, toast, liveSay, copyText, uid } from '../core/utils.js';
 import { parseProvider, buildEmbed } from './providers.js';
 import { loadPrefs, savePrefs, PREF_KEY, resetPrefsCache } from '../auth/prefs.js';
 import { SESSION_KEY, GUEST_KEY, setGuestMode, clearSession } from '../auth/session.js';
-import { renderFeed, renderPostHTML, renderCommentHTML } from './feed.js';
+import { renderFeed, renderPostHTML, renderCommentHTML, renderTags } from './feed.js';
 import { notifyPostLike, notifyPostComment } from '../core/notify_helpers.js';
 import { containsBannedWords, looksLikeSpam } from './automod.js';
 import { openEditInline } from './posts.js';
@@ -562,7 +562,26 @@ export async function onActionClick(e, state, DB, render) {
     if (e && typeof e.preventDefault === 'function') e.preventDefault();
     savePrefs({ filterTag: t, search: '' });
     state.page = 1;
-    render();
+    // On narrow/mobile layouts the app uses sliding panes. Doing a full
+    // re-render can recreate/move the panes and occasionally leave the
+    // header/tab-bar visible while the feed pane becomes empty. To avoid
+    // that janky behavior, update the feed and tag cloud in-place when on
+    // small screens. On desktop keep the previous behavior.
+    const isMobile = (typeof window !== 'undefined') && window.matchMedia && window.matchMedia('(max-width: 600px)').matches;
+    if (isMobile) {
+      try {
+        const prefsNow = loadPrefs();
+        // Update feed content and pager in-place
+        renderFeed($('#feed'), $('#pager'), state, DB, prefsNow);
+        // Update tag cloud so selected tag highlights correctly
+        renderTags($('#tags'), DB, prefsNow);
+      } catch (err) {
+        // Fallback to full render if something goes wrong
+        render();
+      }
+    } else {
+      render();
+    }
     // Do not scroll the page
     return;
   }

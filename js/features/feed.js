@@ -2,6 +2,7 @@ import { esc, fmtTime, $, formatPostBody } from '../core/utils.js';
 import { fetchOEmbed } from './oembed.js';
 import { openEditInline } from './posts.js';
 import { enableTagCloudDragScroll } from './tagcloud_scroll.js';
+import { renderTagCloud } from './tags.js';
 import Ticker from '../core/ticker.js';
 
 function userName(id, state, DB) {
@@ -442,160 +443,11 @@ function setFeedGlobals(state, DB) {
 }
 
 export function renderTags(el, DB, prefs) {
-  const db = DB.getAll();
-  const m = new Map();
-  db.posts.forEach(p => (p.tags || []).forEach(t => m.set(t, (m.get(t) || 0) + 1)));
-
-  // Sorting UI
-  let sortMode = window.localStorage.getItem('tagSortMode') || 'freq';
-  function setSortMode(mode) {
-    sortMode = mode;
-    window.localStorage.setItem('tagSortMode', mode);
-    renderTags(el, DB, prefs);
+  // Delegate to centralized tag renderer
+  try {
+    renderTagCloud(el, DB, prefs, { limit: 80 });
+  } catch (e) {
+    // Fallback: no-op
+    el.innerHTML = '<span class="muted small">no tags yet</span>';
   }
-  // Remove old sort UI if present
-  const oldSortUI = el.querySelector('.tag-sort-ui');
-  if (oldSortUI) oldSortUI.remove();
-  // Remove old tag cloud if present
-  const oldCloud = el.querySelector('.tag-cloud');
-  if (oldCloud) oldCloud.remove();
-  // Tag cloud
-  let top = Array.from(m.entries());
-  if (sortMode === 'freq') {
-    top = top.sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]));
-  } else {
-    top = top.sort((a, b) => a[0].localeCompare(b[0]) || b[1] - a[1]);
-  }
-  top = top.slice(0, 80);
-  if (top.length === 0) { el.innerHTML = '<span class="muted small">no tags yet</span>'; return; }
-  // Render all tags with the same class, no frequency-based sizing
-  const tagCloudDiv = document.createElement('div');
-  tagCloudDiv.className = 'tag-cloud';
-  // Highlight the selected tag in the tag cloud
-  const selectedTag = prefs && prefs.filterTag;
-  tagCloudDiv.innerHTML = top.map(([t, c]) =>
-    `<span class="tag${selectedTag === t ? ' tag-selected' : ''}" data-action="filter-tag" data-tag="${esc(t)}"${selectedTag === t ? ' style="background:var(--acc,#8ab4ff);color:#111;font-weight:600;border-radius:6px;outline:2px solid var(--acc,#8ab4ff);outline-offset:0;z-index:2;"' : ''}><span class="tag-label">#${esc(t)}</span></span>`
-  ).join(' ');
-  el.appendChild(tagCloudDiv);
-  // Restore scrollLeft if present, else center selected tag only if user is at start.
-  // Schedule these non-urgent layout tasks during idle to avoid jank.
-  function scheduleTagCloudRestoreAndCenter() {
-    const task = () => {
-      try {
-        if (typeof window !== 'undefined' && typeof window._tagCloudScrollLeft === 'number') {
-          let tries = 0;
-          const maxTries = 8;
-          function rafScrollRestore() {
-            try {
-              tagCloudDiv.scrollLeft = window._tagCloudScrollLeft;
-            } catch (e) {}
-            tries++;
-            if (tries < maxTries) {
-              requestAnimationFrame(rafScrollRestore);
-            } else {
-              try { delete window._tagCloudScrollLeft; } catch (e) {}
-            }
-          }
-          requestAnimationFrame(rafScrollRestore);
-          return;
-        }
-
-        if (selectedTag) {
-          // Center the selected tag after render if user is at start and no previous scroll position, only once
-          requestAnimationFrame(() => {
-            try {
-              const tagEl = tagCloudDiv.querySelector('.tag-selected');
-              if (tagEl && tagCloudDiv.scrollLeft < 5) {
-                const tagRect = tagEl.getBoundingClientRect();
-                const cloudRect = tagCloudDiv.getBoundingClientRect();
-                // Only center if tag is not fully visible
-                if (tagRect.left < cloudRect.left || tagRect.right > cloudRect.right) {
-                  const offset = tagEl.offsetLeft + tagRect.width / 2 - cloudRect.width / 2;
-                  tagCloudDiv.scrollLeft = offset;
-                }
-              }
-            } catch (e) {
-              // ignore layout failures
-            }
-          });
-        }
-      } catch (e) {
-        // ignore
-      }
-    };
-
-    if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-      try { requestIdleCallback(task, { timeout: 1000 }); } catch (e) { setTimeout(task, 300); }
-    } else {
-      setTimeout(task, 300);
-    }
-  }
-  scheduleTagCloudRestoreAndCenter();
-  // Enable drag-to-scroll for the main tag cloud (desktop)
-  if (typeof enableTagCloudDragScroll === 'function') {
-    enableTagCloudDragScroll(tagCloudDiv);
-  }
-  // On mobile, add touchend handler directly to each tag to ensure tap works
-  if ('ontouchstart' in window) {
-  // No-op: all tap/drag/click logic is handled in tagcloud_scroll.js
-  }
-  // Minimal sort UI below
-    const sortUI = document.createElement('div');
-    sortUI.className = 'tag-sort-ui';
-    sortUI.style.display = 'inline-flex';
-    sortUI.style.gap = '10px';
-    sortUI.style.marginTop = '6px';
-    sortUI.style.fontSize = '0.93em';
-    sortUI.innerHTML = `
-      <a href="#" data-sort="freq" class="tag-sort-link${sortMode==='freq'?' active':''}">frequency</a>
-      <span style="color:#444;opacity:0.5;">|</span>
-      <a href="#" data-sort="az" class="tag-sort-link${sortMode==='az'?' active':''}" tabindex="0">a - z</a>
-      <style>
-        .tag-sort-link {
-          color: #aaa;
-          text-decoration: none;
-          border: none;
-          background: none;
-          padding: 0 2px;
-          cursor: pointer;
-          transition: color 0.18s;
-          font-weight: 500;
-          appearance: none;
-          -webkit-appearance: none;
-          -moz-appearance: none;
-          outline: none;
-          box-shadow: none;
-          overflow: visible;
-        }
-        .tag-sort-link.active {
-          color: var(--acc, #8ab4ff);
-        }
-        .tag-sort-link::after {
-          content: '';
-          display: block;
-          position: absolute;
-          left: 0; right: 0; bottom: -2px;
-          height: 2px;
-          background: var(--acc, #8ab4ff);
-          opacity: 0;
-          transform: scaleX(0.5);
-          transition: opacity 0.18s, transform 0.18s;
-        }
-        .tag-sort-link:hover::after, .tag-sort-link:focus::after, .tag-sort-link.active::after {
-          opacity: 1;
-          transform: scaleX(1);
-        }
-        .tag-sort-link:hover, .tag-sort-link:focus {
-          color: var(--acc, #8ab4ff);
-        }
-      </style>
-    `;
-  sortUI.addEventListener('click', e => {
-    const link = e.target.closest('a[data-sort]');
-    if (link) {
-      e.preventDefault();
-      setSortMode(link.getAttribute('data-sort'));
-    }
-  });
-  el.appendChild(sortUI);
 }

@@ -311,7 +311,11 @@ export async function renderMain(root, state, DB, render) {
   // Left side: topbar + dock + tags + feed
   if (window.matchMedia('(max-width: 600px)').matches) {
     // Only render feedPane initially, others are blank until tab is switched
-    if (!feedTabState.rendered) {
+    // If the feed pane DOM is new (innerHTML empty) we must call setup even
+    // if the saved state says it was rendered previously. This happens when
+    // the app is re-rendered (for example after changing prefs) and the
+    // per-tab DOM nodes were recreated.
+    if (!feedTabState.rendered || !feedPane.innerHTML.trim()) {
       setupFeedPane({ root, left: feedPane, state, DB, prefs, render });
       feedTabState.rendered = true;
       // Autoloading removed: no observer to attach after render
