@@ -144,73 +144,20 @@ export async function renderMain(root, state, DB, render) {
   let profileTabState = state.profileTabState || {};
 
   let slideWrapper, feedPane, composePane, profilePane, left, right;
-  // Aggressive duplicate guard: remove any extra slide/grid elements left in the DOM
-  try {
-    const slides = Array.from(document.querySelectorAll('.mobile-slide-wrapper'));
-    if (slides.length > 1) {
-      // Keep the first instance and remove the rest
-      for (let i = 1; i < slides.length; i++) {
-        try { slides[i].parentNode && slides[i].parentNode.removeChild(slides[i]); } catch (e) {}
-      }
-      console.warn('Removed extra .mobile-slide-wrapper elements to prevent duplicate sliders.');
-    }
-    const grids = Array.from(document.querySelectorAll('.grid'));
-    if (grids.length > 1) {
-      for (let i = 1; i < grids.length; i++) {
-        try { grids[i].parentNode && grids[i].parentNode.removeChild(grids[i]); } catch (e) {}
-      }
-      console.warn('Removed extra .grid elements to prevent duplicate layout.');
-    }
-  } catch (e) { /* ignore */ }
-
-  // Try to reuse any existing layout containers to avoid duplicates on re-render
-  try {
-    const existingSlide = root.querySelector('.mobile-slide-wrapper') || document.querySelector('.mobile-slide-wrapper');
-    if (existingSlide) {
-      slideWrapper = existingSlide;
-      feedPane = slideWrapper.querySelector('.mobile-slide-pane.feed-pane') || slideWrapper.querySelector('.feed-pane');
-      composePane = slideWrapper.querySelector('.mobile-slide-pane.compose-pane') || slideWrapper.querySelector('.compose-pane');
-      profilePane = slideWrapper.querySelector('.mobile-slide-pane.profile-pane') || slideWrapper.querySelector('.profile-pane');
-      // Ensure panes exist before reusing; if not, fallthrough to creation below
-      if (feedPane && composePane && profilePane) {
-        left = feedPane;
-        right = composePane;
-      } else {
-        // If panes are missing, remove corrupted slideWrapper so we recreate cleanly
-        if (existingSlide.parentNode) existingSlide.parentNode.removeChild(existingSlide);
-        slideWrapper = null;
-      }
-    }
-    // If no slideWrapper reused, try to reuse desktop grid
-    if (!slideWrapper) {
-      const existingGrid = root.querySelector('.grid') || document.querySelector('.grid');
-      if (existingGrid) {
-        slideWrapper = null;
-        const children = Array.from(existingGrid.children);
-        left = children[0] || null;
-        right = children[1] || null;
-        // If left/right found, make sure grid is a child of root
-        if (left && right && existingGrid.parentNode !== root) root.appendChild(existingGrid);
-      }
-    }
-  } catch (e) { /* ignore reuse failures */ }
-
   if (window.matchMedia('(max-width: 600px)').matches) {
     // On mobile, header will be moved dynamically depending on tab
-    if (!slideWrapper) {
-      slideWrapper = document.createElement('div');
-      slideWrapper.className = 'mobile-slide-wrapper';
-      // Each pane is 100vw wide
-      feedPane = document.createElement('div');
-      feedPane.className = 'mobile-slide-pane feed-pane';
-      composePane = document.createElement('div');
-      composePane.className = 'mobile-slide-pane compose-pane';
-      profilePane = document.createElement('div');
-      profilePane.className = 'mobile-slide-pane profile-pane';
-      slideWrapper.appendChild(feedPane);
-      slideWrapper.appendChild(composePane);
-      slideWrapper.appendChild(profilePane);
-    }
+    slideWrapper = document.createElement('div');
+    slideWrapper.className = 'mobile-slide-wrapper';
+    // Each pane is 100vw wide
+    feedPane = document.createElement('div');
+    feedPane.className = 'mobile-slide-pane feed-pane';
+    composePane = document.createElement('div');
+    composePane.className = 'mobile-slide-pane compose-pane';
+    profilePane = document.createElement('div');
+    profilePane.className = 'mobile-slide-pane profile-pane';
+    slideWrapper.appendChild(feedPane);
+    slideWrapper.appendChild(composePane);
+    slideWrapper.appendChild(profilePane);
     // Ensure panes have a bounded scroll area equal to viewport minus header
     // This prevents restoring a saved scroll that exceeds the current content
     // height and produces large blank space.
@@ -240,10 +187,10 @@ export async function renderMain(root, state, DB, render) {
         document.documentElement.style.setProperty('--mobile-header-height', h + 'px');
       }
     } catch (err) { /* ignore */ }
-  if (!slideWrapper.parentNode) root.appendChild(slideWrapper);
-  // For compatibility with rest of code
-  left = feedPane;
-  right = composePane; // will be used for compose/profile
+    root.appendChild(slideWrapper);
+    // For compatibility with rest of code
+    left = feedPane;
+    right = composePane; // will be used for compose/profile
 
   // --- Swipe gesture support for mobile tabs ---
   // Implement drag-follow during touchmove for a smooth, non-jumpy UX.
@@ -375,23 +322,14 @@ export async function renderMain(root, state, DB, render) {
     });
   } else {
     // Desktop: use grid as before
-    if (!left || !right) {
-      // create new grid if we couldn't reuse existing
-      slideWrapper = null;
-      const grid = document.createElement('div');
-      grid.className = 'grid';
-      left = document.createElement('div');
-      right = document.createElement('div');
-      grid.appendChild(left);
-      grid.appendChild(right);
-      root.appendChild(grid);
-    } else {
-      // ensure grid parent exists
-      const existingGrid = left.parentNode;
-      if (existingGrid && existingGrid.classList && existingGrid.classList.contains('grid') && existingGrid.parentNode !== root) {
-        root.appendChild(existingGrid);
-      }
-    }
+    slideWrapper = null;
+    const grid = document.createElement('div');
+    grid.className = 'grid';
+    left = document.createElement('div');
+    right = document.createElement('div');
+    grid.appendChild(left);
+    grid.appendChild(right);
+    root.appendChild(grid);
     try {
       const header = document.querySelector('header[role="banner"]');
       if (header && document.querySelector('.wrap')) {
@@ -423,17 +361,17 @@ export async function renderMain(root, state, DB, render) {
         currentTab = tab;
         left.style.display = '';
         right.style.display = '';
-    if (tab === 'profile') {
-      right.innerHTML = '';
-      renderProfileBox(right, state, DB, render);
-      // Reset scroll position for profile tab
-      resetScroll(right);
-    } else if (tab === 'compose') {
-      right.innerHTML = '';
-      renderComposeBox(right, state, DB, render);
-      // Reset scroll position for compose tab
-      resetScroll(right);
-    }
+        if (tab === 'profile') {
+            right.innerHTML = '';
+            renderProfileBox(right, state, DB, render);
+            // Reset scroll position for profile tab
++            resetScroll(right);
+        } else if (tab === 'compose') {
+            right.innerHTML = '';
+            renderComposeBox(right, state, DB, render);
+            // Reset scroll position for compose tab
++            resetScroll(right);
+        }
         // Update tab bar active state
         const tabBtns = document.querySelectorAll('.mobile-tab-bar button');
         tabBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));

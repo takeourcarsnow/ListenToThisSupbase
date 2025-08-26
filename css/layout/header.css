@@ -2,6 +2,27 @@
   header[role="banner"].extra-gap {
     margin-top: 2.15em !important;
   }
+  /* Disable scrolling for header and logo container on mobile */
+  header[role="banner"],
+  .wrap > header[role="banner"] {
+    overflow: hidden !important;
+    overscroll-behavior: contain !important;
+    touch-action: none !important;
+  }
+  /* If .wrap itself is scrollable, disable it too */
+  .wrap {
+    overflow: hidden !important;
+    overscroll-behavior: contain !important;
+  }
+  /* Also prevent scrolling on html and body for mobile */
+  html, body {
+    overflow: hidden !important;
+    overscroll-behavior: contain !important;
+    height: 100vh !important;
+    position: fixed !important;
+    width: 100vw !important;
+    touch-action: none !important;
+  }
 }
 /* Header and modern header visuals */
 @media (max-width: 600px) {
