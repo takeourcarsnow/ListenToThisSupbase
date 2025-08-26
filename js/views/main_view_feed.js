@@ -141,8 +141,7 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
   top.className = 'topbar';
   top.innerHTML = `
     <div class="toolbar topbar-toolbar">
-      <div class="user-actions-container">
-        ${me ? '<span class="notification-dot" id="mobile-notification-dot" style="position: static; cursor: pointer; display: inline-block; margin-left: 0px; margin-right: 0px; opacity: 0.35;" title="No notifications"></span>' : ''}
+  <div class="user-actions-container">
         <div class="user-pill" tabindex="0" role="button" aria-haspopup="true" aria-expanded="false">
           <span class="pill" title="current user">> user: ${me ? esc(me.name) : 'guest'}</span>
         </div>

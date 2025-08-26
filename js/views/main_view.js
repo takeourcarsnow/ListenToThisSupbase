@@ -53,6 +53,11 @@ export async function renderMain(root, state, DB, render) {
   document.documentElement.style.overflow = '';
   const banner = document.getElementById('ascii-banner');
   if (banner) banner.style.display = '';
+  // Ensure header visibility is reset in case a previous drag left it hidden
+  try {
+    const hdr = document.querySelector('header[role="banner"]');
+    if (hdr) hdr.style.visibility = '';
+  } catch (e) { /* ignore */ }
   document.body.classList.add('show-header');
 
   // Layout containers with sliding wrapper for mobile
@@ -81,16 +86,32 @@ export async function renderMain(root, state, DB, render) {
     if (header && header.parentNode !== root) {
       root.appendChild(header);
     }
+    // Set a larger gap above the logo specifically for mobile, then
+    // recompute the header height so panes use the updated measurement.
+    try {
+      document.documentElement.style.setProperty('--mobile-logo-gap', '32px');
+      const hdr = document.querySelector('header[role="banner"]');
+      if (hdr) {
+        // Reflow to allow CSS variable to apply before measurement
+        // (reading offsetHeight forces reflow)
+        void hdr.offsetHeight;
+        const h = hdr.getBoundingClientRect().height || 64;
+        document.documentElement.style.setProperty('--mobile-header-height', h + 'px');
+      }
+    } catch (err) { /* ignore */ }
     root.appendChild(slideWrapper);
     // For compatibility with rest of code
     left = feedPane;
     right = composePane; // will be used for compose/profile
 
-    // --- Swipe gesture support for mobile tabs ---
-    let touchStartX = null, touchStartY = null, touchEndX = null, touchEndY = null;
+  // --- Swipe gesture support for mobile tabs ---
+  // Implement drag-follow during touchmove for a smooth, non-jumpy UX.
+  let touchStartX = null, touchStartY = null, touchCurrentX = null, touchCurrentY = null;
+  let isDragging = false;
     // If a touch starts inside the tag cloud, ignore the global tab-swipe handler
     let ignoreSwipeFromTagCloud = false;
     const tabOrder = ['feed', 'compose', 'profile'];
+
     // Capture-phase listeners to detect touches that start inside interactive
     // child widgets (like the tag cloud) before the slideWrapper's bubble
     // handlers run. This prevents accidental tab swipes when interacting
@@ -98,7 +119,6 @@ export async function renderMain(root, state, DB, render) {
     function _captureTouchStart(e) {
       try {
         if (e.touches && e.touches.length >= 1) {
-          // If the touch started inside any element with class 'tag-cloud'
           if (e.target && e.target.closest && e.target.closest('.tag-cloud')) {
             ignoreSwipeFromTagCloud = true;
           }
@@ -111,7 +131,12 @@ export async function renderMain(root, state, DB, render) {
     document.addEventListener('touchstart', _captureTouchStart, { capture: true, passive: true });
     document.addEventListener('touchend', _captureTouchEnd, { capture: true, passive: true });
 
-    slideWrapper.addEventListener('touchstart', function(e) {
+  // Helpers for live dragging
+  function getWidthPx() {
+      return window.innerWidth || document.documentElement.clientWidth || 360;
+    }
+
+  slideWrapper.addEventListener('touchstart', function(e) {
       if (e.touches.length === 1) {
         // If capture-phase already detected a touch inside tag cloud, keep flag
         // otherwise evaluate here as a fallback.
@@ -120,49 +145,92 @@ export async function renderMain(root, state, DB, render) {
         }
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
-        touchEndX = null;
-        touchEndY = null;
+        touchCurrentX = touchStartX;
+        touchCurrentY = touchStartY;
+        isDragging = true;
+  // no-op: we no longer clone or move the header during drag. Header
+  // remains above the slideWrapper so it's visible for all tabs.
+        // Disable CSS transition while dragging so movement tracks finger exactly
+        try { slideWrapper.style.transition = 'none'; } catch (err) {}
       }
-    });
+    }, { passive: false });
+
     slideWrapper.addEventListener('touchmove', function(e) {
-      if (ignoreSwipeFromTagCloud) return; // don't track tab-swipe when interacting with tag cloud
-      if (e.touches.length === 1) {
-        touchEndX = e.touches[0].clientX;
-        touchEndY = e.touches[0].clientY;
+      if (ignoreSwipeFromTagCloud || !isDragging) return;
+      if (e.touches.length !== 1) return;
+      touchCurrentX = e.touches[0].clientX;
+      touchCurrentY = e.touches[0].clientY;
+      const dx = touchCurrentX - touchStartX;
+      const dy = touchCurrentY - touchStartY;
+      // If mostly horizontal, prevent vertical scroll and update transform
+      if (Math.abs(dx) > Math.abs(dy)) {
+        e.preventDefault();
+        const width = getWidthPx();
+        const currentTab = slideWrapper.getAttribute('data-tab') || 'feed';
+        const baseIndex = Math.max(0, tabOrder.indexOf(currentTab));
+        const baseOffset = -baseIndex * width;
+        let offset = baseOffset + dx;
+        // Add gentle resistance at edges
+        const maxOffset = 0;
+        const minOffset = -((tabOrder.length - 1) * width);
+        if (offset > maxOffset) offset = maxOffset + (offset - maxOffset) / 3;
+        if (offset < minOffset) offset = minOffset + (offset - minOffset) / 3;
+        slideWrapper.style.transform = `translateX(${offset}px)`;
       }
-    });
-    slideWrapper.addEventListener('touchend', function(e) {
+    }, { passive: false });
+
+  slideWrapper.addEventListener('touchend', function(e) {
       if (ignoreSwipeFromTagCloud) {
         // Reset and ignore this swipe
-        touchStartX = touchStartY = touchEndX = touchEndY = null;
+        touchStartX = touchStartY = touchCurrentX = touchCurrentY = null;
         ignoreSwipeFromTagCloud = false;
+        isDragging = false;
+        try { slideWrapper.style.transition = ''; } catch (err) {}
         return;
       }
-      if (touchStartX !== null && touchEndX !== null) {
-        const dx = touchEndX - touchStartX;
-        const dy = (touchEndY || 0) - (touchStartY || 0);
-        // Only trigger if mostly horizontal swipe and at least 40px
-        if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+      if (!isDragging) return;
+      isDragging = false;
+      // Restore transition so snap/animate will use CSS timing
+      try { slideWrapper.style.transition = ''; } catch (err) {}
+
+      // Use changedTouches if available to get final Y as well
+      let endX = touchCurrentX;
+      let endY = touchCurrentY;
+      if (e.changedTouches && e.changedTouches.length) {
+        endX = e.changedTouches[0].clientX;
+        endY = e.changedTouches[0].clientY;
+      }
+      if (touchStartX !== null && endX !== null) {
+        const dx = endX - touchStartX;
+        const dy = (endY || 0) - (touchStartY || 0);
+        const width = getWidthPx();
+        const minSwipeDist = Math.max(40, Math.round(width * 0.12));
+        if (Math.abs(dx) > minSwipeDist && Math.abs(dx) > Math.abs(dy)) {
           let currentTab = slideWrapper.getAttribute('data-tab') || 'feed';
           let idx = tabOrder.indexOf(currentTab);
           if (dx < 0 && idx < tabOrder.length - 1) {
-            // Swipe left: next tab
-            const nextTab = tabOrder[idx + 1];
-            if (nextTab) {
-              const btn = document.querySelector('.mobile-tab-bar button[data-tab="' + nextTab + '"]');
-              if (btn) btn.click();
-            }
+            idx = idx + 1;
           } else if (dx > 0 && idx > 0) {
-            // Swipe right: previous tab
-            const prevTab = tabOrder[idx - 1];
-            if (prevTab) {
-              const btn = document.querySelector('.mobile-tab-bar button[data-tab="' + prevTab + '"]');
-              if (btn) btn.click();
-            }
+            idx = idx - 1;
           }
+          const nextTab = tabOrder[idx] || currentTab;
+          // Trigger tab click so normal flow (rendering/aria/etc) runs
+          const btn = document.querySelector('.mobile-tab-bar button[data-tab="' + nextTab + '"]');
+          if (btn) btn.click();
+          else {
+            // Fallback: animate to index directly
+            slideWrapper.style.transform = `translateX(-${idx * width}px)`;
+            slideWrapper.setAttribute('data-tab', nextTab);
+          }
+        } else {
+          // Snap back to current tab
+          const currentTab = slideWrapper.getAttribute('data-tab') || 'feed';
+          const idx = tabOrder.indexOf(currentTab);
+          slideWrapper.style.transform = `translateX(-${idx * width}px)`;
         }
       }
-      touchStartX = touchStartY = touchEndX = touchEndY = null;
+      touchStartX = touchStartY = touchCurrentX = touchCurrentY = null;
+  // no-op: no clone cleanup required since header isn't cloned or hidden
     });
   } else {
     // Desktop: use grid as before
@@ -227,15 +295,9 @@ export async function renderMain(root, state, DB, render) {
 
     // Render content into correct pane, preserve per-tab state
     if (feedPane && composePane && profilePane) {
-      const header = document.querySelector('header[role="banner"]');
-      // Remove header from any parent before moving
-      if (header && header.parentNode) header.parentNode.removeChild(header);
-
       if (tab === 'feed') {
-        // Move header into feedPane so it scrolls with feed
-        if (header && feedPane) feedPane.insertBefore(header, feedPane.firstChild);
-        // Remove extra-gap class if present
-        if (header) header.classList.remove('extra-gap');
+  // header remains fixed above slides; feed pane content will sit
+  // below it using padding-top from CSS variable.
         if (!feedPane.innerHTML.trim() || !feedTabState.rendered) {
           setupFeedPane({ root, left: feedPane, state, DB, prefs, render });
           feedTabState.rendered = true;
@@ -257,22 +319,12 @@ export async function renderMain(root, state, DB, render) {
         composePane.innerHTML = '';
         renderComposeBox(composePane, state, DB, render);
         resetScroll(composePane);
-        // Move header above slideWrapper for sticky effect
-        if (header && slideWrapper && slideWrapper.parentNode) {
-          slideWrapper.parentNode.insertBefore(header, slideWrapper);
-        }
-        // Add extra-gap class for more top margin
-        if (header) header.classList.add('extra-gap');
+        // header stays fixed above slideWrapper; pane already has padding
       } else if (tab === 'profile') {
         profilePane.innerHTML = '';
         renderProfileBox(profilePane, state, DB, render);
         resetScroll(profilePane);
-        // Move header above slideWrapper for sticky effect
-        if (header && slideWrapper && slideWrapper.parentNode) {
-          slideWrapper.parentNode.insertBefore(header, slideWrapper);
-        }
-        // Add extra-gap class for more top margin
-        if (header) header.classList.add('extra-gap');
+        // header stays fixed above slideWrapper; pane already has padding
       }
 
       // Slide to correct tab
