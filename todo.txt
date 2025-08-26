@@ -13,10 +13,9 @@ when playing posts one by one from post play it should not say queue number
 uploaded audio player fix big bottom margin
 tags not working 
 
-on phone right hand side of elements are cut off in all tabs
 
 sliding through tabs makes buggy cause i can see elements of tab im sliding off from rearranging, not a seamless experience even though it technically works but those glitches in transitions are distracting . it's because header disappears when sliding to new tab while still visible 
-
+content goes away when selecting tag until refresh
 
 
 

@@ -1,4 +1,6 @@
 // Enable mouse drag-to-scroll for .tag-cloud on desktop
+import { loadPrefs, savePrefs } from '../auth/prefs.js';
+
 export function enableTagCloudDragScroll(tagCloud) {
   if (!tagCloud) tagCloud = document.querySelector('.tag-cloud');
   if (!tagCloud) return;
@@ -103,28 +105,33 @@ if (typeof window !== 'undefined') {
         tagEl = el.closest('.tag');
       }
         if (tagEl === downTag) {
-          // Toggle tag selection: if already selected, unselect
-          if (window && window.prefs && typeof window.prefs.filterTag !== 'undefined') {
+          // Use the prefs API to persist the filter and trigger a render.
+          // This avoids fragile direct mutations of window globals and
+          // ensures behavior is identical to the central action handler.
+          try {
             const tag = tagEl.getAttribute('data-tag');
-            if (window.prefs.filterTag === tag) {
-              window.prefs.filterTag = '';
-              if (typeof window.renderApp === 'function') window.renderApp();
-              return;
+            const prefsNow = loadPrefs();
+            if (prefsNow && prefsNow.filterTag === tag) {
+              savePrefs({ filterTag: null });
             } else {
-              window.prefs.filterTag = tag;
+              savePrefs({ filterTag: tag, search: '' });
             }
+            if (typeof window.renderApp === 'function') {
+              window.renderApp();
+            } else {
+              // Fallback: dispatch click so delegated handlers can run if renderApp unavailable
+              try {
+                const ev = new MouseEvent('click', { bubbles: true, cancelable: true, view: window });
+                tagEl.dispatchEvent(ev);
+              } catch (err) {
+                try { tagEl.click(); } catch (e) {}
+              }
+            }
+          } catch (err) {
+            // Best-effort: fallback to clicking the element
+            try { tagEl.click(); } catch (e) {}
           }
-          if (typeof window.onActionClick === 'function') {
-            const evt = new Event('click', { bubbles: true, cancelable: true });
-            Object.defineProperty(evt, 'target', { value: tagEl, enumerable: true });
-            window.onActionClick(evt, window.state, window.DB, window.renderApp);
-          } else {
-            tagEl.click();
-          }
-          if (typeof window.renderApp === 'function') {
-            window.renderApp();
-          }
-      }
+        }
     }
     // Release pointer capture if we captured it
     try {
