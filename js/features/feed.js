@@ -87,48 +87,50 @@ export function renderPostHTML(p, state, DB) {
   }
   return `
   <article class="post" id="post-${p.id}" data-post="${p.id}" aria-label="${esc(p.title)}">
-    <div class="post-thumbnail-wrap">
-      <img class="post-thumbnail" src="${thumbnailUrl}" srcset="${thumbnailUrl} 1x" width="320" height="180" alt="post thumbnail" loading="lazy" data-action="toggle-player" data-post="${p.id}" style="cursor:pointer;" />
-    </div>
-    <div class="post-header-twolines">
-  <div class="post-title-twolines">${esc(p.title)} ${artistHTML}</div>
-      <div class="small meta-twolines">
-        <a href="#" data-action="view-user" data-uid="${user ? esc(user.id) : ''}">
-          <img class="avatar avatar-sm" src="${authorAvatar}" alt="avatar" />
-        </a>
-        <span class="muted">${userBy}${user ? `<a href=\"#\" data-action=\"view-user\" data-uid=\"${esc(user.id)}\">${esc(user.name)}</a>` : 'anon'}</span>
-    <span class="muted sep-slash">/</span>
-  <span class="muted" title="${(() => { const d = new Date(p.createdAt); let m = d.getMinutes(); m = m < 15 ? 0 : m < 45 ? 30 : 0; if (m === 0 && d.getMinutes() >= 45) d.setHours(d.getHours() + 1); d.setMinutes(m, 0, 0); return d.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); })()}">${fmtTime(p.createdAt)}</span>
-  ${tgs ? `<span class="muted sep-slash">/</span> <div class="tag-cloud post-tags-twolines">${tgs}</div>` : ''}
+    <div class="post-inner">
+      <div class="post-thumbnail-wrap">
+        <img class="post-thumbnail" src="${thumbnailUrl}" srcset="${thumbnailUrl} 1x" width="320" height="180" alt="post thumbnail" loading="lazy" data-action="toggle-player" data-post="${p.id}" style="cursor:pointer;" />
       </div>
-    </div>
-  ${p.body ? `<div class="sep"></div><div class="post-body">${formatPostBody(p.body)}</div>` : ''}
-  <div class="actions hstack" style="margin-top:8px">
-  <button class="btn" data-action="toggle-player">[ play ]</button>
-  <button class="btn ${liked ? 'like-on' : ''}" data-action="like" aria-pressed="${liked}" title="like">[ ♥ ${likeCount} ]</button>
-  <button class="btn" data-action="comment" title="comments">[ comments ${commentsCount} ]</button>
-  <button class="btn btn-ghost" data-action="show-lyrics" data-artist="${esc(p.artist || '')}" data-title="${esc(p.title || '')}" data-post="${p.id}">[ lyrics ]</button>
-  <button class="btn btn-ghost" data-action="queue" title="add to queue">[ add to queue ]</button>
-  <button class="btn btn-ghost" data-action="share" data-perma="${esc(perma)}" title="share/copy link">[ share ]</button>
-      ${canEdit ? `
-        <button class="btn btn-ghost" data-action="edit" data-post="${p.id}">[ edit ]</button>
-        <button class="btn btn-ghost" data-action="delete">[ delete ]</button>
-      ` : ''}
-    </div>
-  <div class="lyrics-box small muted" id="lyrics-${p.id}" style="display:none;margin-top:8px;white-space:pre-line;position:relative;"></div>
-    <div class="player" id="player-${p.id}" aria-label="player"></div>
-    <div class="comment-box" id="cbox-${p.id}">
-      <div class="sep"></div>
-      <div id="comments-${p.id}">
-        ${commentsHTML}
+      <div class="post-header-twolines">
+        <div class="post-title-twolines">${esc(p.title)} ${artistHTML}</div>
+        <div class="small meta-twolines">
+          <a href="#" data-action="view-user" data-uid="${user ? esc(user.id) : ''}">
+            <img class="avatar avatar-sm" src="${authorAvatar}" alt="avatar" />
+          </a>
+          <span class="muted">${userBy}${user ? `<a href=\"#\" data-action=\"view-user\" data-uid=\"${esc(user.id)}\">${esc(user.name)}</a>` : 'anon'}</span>
+          <span class="muted sep-slash">/</span>
+          <span class="muted" title="${(() => { const d = new Date(p.createdAt); let m = d.getMinutes(); m = m < 15 ? 0 : m < 45 ? 30 : 0; if (m === 0 && d.getMinutes() >= 45) d.setHours(d.getHours() + 1); d.setMinutes(m, 0, 0); return d.toLocaleString(undefined, { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }); })()}">${fmtTime(p.createdAt)}</span>
+          ${tgs ? `<span class="muted sep-slash">/</span> <div class="tag-cloud post-tags-twolines">${tgs}</div>` : ''}
+        </div>
       </div>
-      ${state.user ? `
-        <form class="hstack" data-action="comment-form" data-post="${p.id}">
-          <label class="sr-only" for="c-${p.id}">Write a comment</label>
-          <input class="field" id="c-${p.id}" placeholder="write a comment…" maxlength="500" aria-label="Write a comment" />
-          <button class="btn">[ send ]</button>
-        </form>
-      ` : `<div class="muted small">login to comment</div>`}
+      ${p.body ? `<div class="sep"></div><div class="post-body">${formatPostBody(p.body)}</div>` : ''}
+      <div class="actions hstack" style="margin-top:8px">
+        <button class="btn" data-action="toggle-player">[ play ]</button>
+        <button class="btn ${liked ? 'like-on' : ''}" data-action="like" aria-pressed="${liked}" title="like">[ ♥ ${likeCount} ]</button>
+        <button class="btn" data-action="comment" title="comments">[ comments ${commentsCount} ]</button>
+        <button class="btn btn-ghost" data-action="show-lyrics" data-artist="${esc(p.artist || '')}" data-title="${esc(p.title || '')}" data-post="${p.id}">[ lyrics ]</button>
+        <button class="btn btn-ghost" data-action="queue" title="add to queue">[ add to queue ]</button>
+        <button class="btn btn-ghost" data-action="share" data-perma="${esc(perma)}" title="share/copy link">[ share ]</button>
+        ${canEdit ? `
+          <button class="btn btn-ghost" data-action="edit" data-post="${p.id}">[ edit ]</button>
+          <button class="btn btn-ghost" data-action="delete">[ delete ]</button>
+        ` : ''}
+      </div>
+      <div class="lyrics-box small muted" id="lyrics-${p.id}" style="display:none;margin-top:8px;white-space:pre-line;position:relative;"></div>
+      <div class="player" id="player-${p.id}" aria-label="player"></div>
+      <div class="comment-box" id="cbox-${p.id}">
+        <div class="sep"></div>
+        <div id="comments-${p.id}">
+          ${commentsHTML}
+        </div>
+        ${state.user ? `
+          <form class="hstack" data-action="comment-form" data-post="${p.id}">
+            <label class="sr-only" for="c-${p.id}">Write a comment</label>
+            <input class="field" id="c-${p.id}" placeholder="write a comment…" maxlength="500" aria-label="Write a comment" />
+            <button class="btn">[ send ]</button>
+          </form>
+        ` : `<div class="muted small">login to comment</div>`}
+      </div>
     </div>
   </article>
   `;
