@@ -14,3 +14,5 @@ content goes away when selecting tag until refresh
 freq and abc both highlighted no matter which one's selected 
 
 remove black bar from top of mobile version that appears because of added gap from top of screen to logo, keep the gap but make sure the black bar doesn't stick to top of screen when scrolling down
+
+make artist go before title when inputting post details
