@@ -75,7 +75,7 @@
   white-space: nowrap;
   box-shadow: none;
   cursor: pointer;
-  transition: background 120ms linear, color 120ms linear, transform 80ms linear;
+  transition: background 120ms linear, color 120ms linear; /* avoid transform transitions that reflow */
   line-height: 1;
   max-height: 40px;
 }
@@ -83,7 +83,8 @@
 .tag-cloud .tag:hover {
   background: rgba(255,255,255,0.03);
   color: #fff;
-  transform: translateY(-1px);
+  /* use box-shadow on hover instead of transform to avoid layout shifts */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
 }
 /* Show grabbing cursor when dragging tag cloud */
 .tag-cloud.dragging {
