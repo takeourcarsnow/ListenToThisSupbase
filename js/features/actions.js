@@ -13,6 +13,41 @@ import { updateDock, queuePrev, queueNext, markNowPlaying, getActiveQueueId } fr
 import { openHelpOverlay } from '../views/overlays.js';
 
 export async function onActionClick(e, state, DB, render) {
+
+// Helper: update the small header pill that shows the currently selected tag
+// so the clear control (✕) appears immediately on mobile in-place updates.
+function updateFeedHeaderTagPill(prefs) {
+  try {
+    const feedHeader = document.querySelector('.feed-header-bar .hstack');
+    if (!feedHeader) return;
+    // Find the container that currently holds pills (left side hstack)
+    const leftHstack = feedHeader.closest('.feed-header-bar')?.querySelector('.hstack');
+    // The markup in main_view_feed constructs the pill into the header via template
+    // Recreate only the tag pill region to be safe.
+    const pillContainer = feedHeader.querySelector('.pill');
+    if (prefs && prefs.filterTag) {
+      const html = `tag: #${prefs.filterTag} <a href="#" data-action="clear-tag" title="clear tag">✕</a>`;
+      if (pillContainer) {
+        pillContainer.innerHTML = html;
+      } else {
+        // Insert a new pill span into the left hstack
+        const left = feedHeader.querySelector('div') || feedHeader;
+        const span = document.createElement('span');
+        span.className = 'pill';
+        span.innerHTML = html;
+        left.insertBefore(span, left.firstChild);
+      }
+    } else {
+      // Remove any existing tag pill
+      document.querySelectorAll('.feed-header-bar .pill').forEach(el => {
+        // Only remove pills that contain 'tag:' text to avoid removing user filter
+        if (el.textContent && el.textContent.trim().startsWith('tag:')) el.remove();
+      });
+    }
+  } catch (err) {
+    // silent fail
+  }
+}
   const btn = e.target.closest('[data-action]');
   if (!btn) return;
   const action = btn.dataset.action;
@@ -575,6 +610,8 @@ export async function onActionClick(e, state, DB, render) {
         renderFeed($('#feed'), $('#pager'), state, DB, prefsNow);
         // Update tag cloud so selected tag highlights correctly
         renderTags($('#tags'), DB, prefsNow);
+  // Also update feed header pill so the clear control appears immediately
+  updateFeedHeaderTagPill(prefsNow);
       } catch (err) {
         // Fallback to full render if something goes wrong
         render();
@@ -590,7 +627,23 @@ export async function onActionClick(e, state, DB, render) {
     if (e && typeof e.preventDefault === 'function') e.preventDefault();
     savePrefs({ filterTag: null });
     state.page = 1;
-    render();
+    // Mirror filter-tag behavior: on small screens do an in-place update of
+    // feed + tag cloud to avoid sliding-pane / transform reflow issues.
+    const isMobile = (typeof window !== 'undefined') && window.matchMedia && window.matchMedia('(max-width: 600px)').matches;
+    if (isMobile) {
+      try {
+        const prefsNow = loadPrefs();
+        renderFeed($('#feed'), $('#pager'), state, DB, prefsNow);
+        renderTags($('#tags'), DB, prefsNow);
+        // Ensure the header pill for the selected tag is updated immediately
+        updateFeedHeaderTagPill(prefsNow);
+      } catch (err) {
+        // Fallback to full render if anything goes wrong
+        render();
+      }
+    } else {
+      render();
+    }
     // Do not scroll the page
     return;
   }
