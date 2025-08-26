@@ -127,6 +127,27 @@ export function setupFeedPane({ root, left, state, DB, prefs, render }) {
   const db = DB.getAll();
   const me = state.user;
 
+  // Defensive cleanup: remove leftover feed-related nodes from previous renders
+  try {
+    // Remove duplicates while keeping the first instance if present
+    const tops = Array.from(document.querySelectorAll('.topbar'));
+    if (tops.length > 1) {
+      for (let i = 1; i < tops.length; i++) try { tops[i].parentNode && tops[i].parentNode.removeChild(tops[i]); } catch (e) {}
+    }
+    const tagsBoxes = Array.from(document.querySelectorAll('#tagsBoxMain'));
+    if (tagsBoxes.length > 1) {
+      for (let i = 1; i < tagsBoxes.length; i++) try { tagsBoxes[i].parentNode && tagsBoxes[i].parentNode.removeChild(tagsBoxes[i]); } catch (e) {}
+    }
+    const feeds = Array.from(document.querySelectorAll('#feed'));
+    if (feeds.length > 1) {
+      for (let i = 1; i < feeds.length; i++) try { feeds[i].parentNode && feeds[i].parentNode.removeChild(feeds[i]); } catch (e) {}
+    }
+    const pagers = Array.from(document.querySelectorAll('#pager'));
+    if (pagers.length > 1) {
+      for (let i = 1; i < pagers.length; i++) try { pagers[i].parentNode && pagers[i].parentNode.removeChild(pagers[i]); } catch (e) {}
+    }
+  } catch (e) { /* ignore cleanup failures */ }
+
   // Topbar
   let userFilterId = window.filterPostsByUserId || null;
   let filteredPosts = getFilteredPosts(DB, prefs);

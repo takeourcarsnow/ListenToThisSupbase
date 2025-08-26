@@ -5,6 +5,6 @@ make sure about me section slides back nicer, it kind of snaps back instantly no
 
 when playing posts one by one from post play it should not say queue number
 
-uploaded audio player fix big bottom margin
+add small like 10px padding so content borders dont touch display sides on phone
 
 
