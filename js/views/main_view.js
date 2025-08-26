@@ -63,6 +63,7 @@ export async function renderMain(root, state, DB, render) {
 
   let slideWrapper, feedPane, composePane, profilePane, left, right;
   if (window.matchMedia('(max-width: 600px)').matches) {
+    // On mobile, header will be moved dynamically depending on tab
     slideWrapper = document.createElement('div');
     slideWrapper.className = 'mobile-slide-wrapper';
     // Each pane is 100vw wide
@@ -75,17 +76,12 @@ export async function renderMain(root, state, DB, render) {
     slideWrapper.appendChild(feedPane);
     slideWrapper.appendChild(composePane);
     slideWrapper.appendChild(profilePane);
+    // Insert header above slideWrapper by default
+    const header = document.querySelector('header[role="banner"]');
+    if (header && header.parentNode !== root) {
+      root.appendChild(header);
+    }
     root.appendChild(slideWrapper);
-    // If a header exists, move it into the feed pane on mobile so it scrolls
-    // with the pane instead of being visually stuck at the top when users
-    // scroll the pane. On desktop the header remains in .wrap (handled by
-    // header.renderHeader()).
-    try {
-      const header = document.querySelector('header[role="banner"]');
-      if (header && feedPane && feedPane.appendChild) {
-        feedPane.insertBefore(header, feedPane.firstChild);
-      }
-    } catch (e) { /* ignore */ }
     // For compatibility with rest of code
     left = feedPane;
     right = composePane; // will be used for compose/profile
@@ -230,66 +226,67 @@ export async function renderMain(root, state, DB, render) {
     currentTab = tab;
 
     // Render content into correct pane, preserve per-tab state
-  if (feedPane && composePane && profilePane) {
+    if (feedPane && composePane && profilePane) {
+      const header = document.querySelector('header[role="banner"]');
+      // Remove header from any parent before moving
+      if (header && header.parentNode) header.parentNode.removeChild(header);
+
       if (tab === 'feed') {
-      if (!feedPane.innerHTML.trim()) {
-        setupFeedPane({ root, left: feedPane, state, DB, prefs, render });
-        feedTabState.rendered = true;
-        // Autoloading removed: no observer to attach here.
-      }
-      // Reset feed pane scroll reliably
-      resetScroll(feedPane);
-      // Move header into feed pane so it is visible when returning to feed
-      try {
-        const header = document.querySelector('header[role="banner"]');
+        // Move header into feedPane so it scrolls with feed
         if (header && feedPane) feedPane.insertBefore(header, feedPane.firstChild);
-      } catch (e) { /* ignore */ }
-      // --- Scroll to currently playing post on mobile ---
-      if (window.matchMedia && window.matchMedia('(max-width: 600px)').matches && state.queue && state.queue.length > 0 && typeof state.qIndex === 'number') {
-        setTimeout(() => {
-          const postId = state.queue[state.qIndex];
-          if (postId) {
-            const postEl = document.getElementById('post-' + postId);
-            if (postEl && feedPane.contains(postEl)) {
-              postEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Remove extra-gap class if present
+        if (header) header.classList.remove('extra-gap');
+        if (!feedPane.innerHTML.trim() || !feedTabState.rendered) {
+          setupFeedPane({ root, left: feedPane, state, DB, prefs, render });
+          feedTabState.rendered = true;
+        }
+        resetScroll(feedPane);
+        // --- Scroll to currently playing post on mobile ---
+        if (window.matchMedia && window.matchMedia('(max-width: 600px)').matches && state.queue && state.queue.length > 0 && typeof state.qIndex === 'number') {
+          setTimeout(() => {
+            const postId = state.queue[state.qIndex];
+            if (postId) {
+              const postEl = document.getElementById('post-' + postId);
+              if (postEl && feedPane.contains(postEl)) {
+                postEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+              }
             }
-          }
-        }, 150); // Delay to ensure feed is rendered
+          }, 150);
+        }
+      } else if (tab === 'compose') {
+        composePane.innerHTML = '';
+        renderComposeBox(composePane, state, DB, render);
+        resetScroll(composePane);
+        // Move header above slideWrapper for sticky effect
+        if (header && slideWrapper && slideWrapper.parentNode) {
+          slideWrapper.parentNode.insertBefore(header, slideWrapper);
+        }
+        // Add extra-gap class for more top margin
+        if (header) header.classList.add('extra-gap');
+      } else if (tab === 'profile') {
+        profilePane.innerHTML = '';
+        renderProfileBox(profilePane, state, DB, render);
+        resetScroll(profilePane);
+        // Move header above slideWrapper for sticky effect
+        if (header && slideWrapper && slideWrapper.parentNode) {
+          slideWrapper.parentNode.insertBefore(header, slideWrapper);
+        }
+        // Add extra-gap class for more top margin
+        if (header) header.classList.add('extra-gap');
       }
-    } else if (tab === 'compose') {
-      composePane.innerHTML = '';
-      renderComposeBox(composePane, state, DB, render);
-      // Ensure scroll position is reset for compose tab
-      resetScroll(composePane);
-      // Move header into the active pane so header is visible and scrolls
-      try {
-        const header = document.querySelector('header[role="banner"]');
-        if (header && composePane) composePane.insertBefore(header, composePane.firstChild);
-      } catch (e) { /* ignore */ }
-    } else if (tab === 'profile') {
-      profilePane.innerHTML = '';
-      renderProfileBox(profilePane, state, DB, render);
-      // Ensure scroll position is reset for profile tab
-      resetScroll(profilePane);
-      // Move header into the active pane so header is visible and scrolls
-      try {
-        const header = document.querySelector('header[role="banner"]');
-        if (header && profilePane) profilePane.insertBefore(header, profilePane.firstChild);
-      } catch (e) { /* ignore */ }
+
+      // Slide to correct tab
+      let slideIndex = 0;
+      if (tab === 'feed') slideIndex = 0;
+      if (tab === 'compose') slideIndex = 1;
+      if (tab === 'profile') slideIndex = 2;
+      slideWrapper.style.transform = `translateX(-${slideIndex * 100}vw)`;
+      slideWrapper.setAttribute('data-tab', tab);
+
+      // Update tab bar active state
+      const tabBtns = document.querySelectorAll('.mobile-tab-bar button');
+      tabBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
     }
-
-    // Slide to correct tab
-    let slideIndex = 0;
-    if (tab === 'feed') slideIndex = 0;
-    if (tab === 'compose') slideIndex = 1;
-    if (tab === 'profile') slideIndex = 2;
-    slideWrapper.style.transform = `translateX(-${slideIndex * 100}vw)`;
-    slideWrapper.setAttribute('data-tab', tab);
-
-    // Update tab bar active state
-    const tabBtns = document.querySelectorAll('.mobile-tab-bar button');
-    tabBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.tab === tab));
-  }
 
     // Save per-tab state to global state for persistence
     state.feedTabState = feedTabState;

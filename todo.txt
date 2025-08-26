@@ -6,10 +6,5 @@ make sure about me section slides back nicer, it kind of snaps back instantly no
 when playing posts one by one from post play it should not say queue number
 
 uploaded audio player fix big bottom margin
-tags not working 
-
-! sliding through tabs makes buggy cause i can see elements of tab im sliding off from rearranging, not a seamless experience even though it technically works but those glitches in transitions are distracting . it's because header disappears when sliding to new tab while still visible 
-content goes away when selecting tag until refresh
 
 
-remove black bar from top of mobile version that appears because of added gap from top of screen to logo, keep the gap but make sure the black bar doesn't stick to top of screen when scrolling down

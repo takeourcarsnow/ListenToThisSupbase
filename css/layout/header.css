@@ -1,6 +1,20 @@
+@media (max-width: 600px) {
+  header[role="banner"].extra-gap {
+    margin-top: 2.15em !important;
+  }
+}
 /* Header and modern header visuals */
 @media (max-width: 600px) {
-  header[role="banner"], .topbar, .header, .header-modern {
+  header[role="banner"] {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 100 !important;
+    background: var(--bg, #fff) !important;
+    box-shadow: 0 2px 8px 0 rgba(0,0,0,0.04) !important;
+    width: 100vw;
+    display: flex !important;
+  }
+  .topbar, .header, .header-modern {
     position: static !important;
     top: auto !important;
     z-index: auto !important;
@@ -10,12 +24,14 @@
 }
 
 /* Header show/hide + centering */
-header[role="banner"] { display: none !important; }
-body.show-header header[role="banner"] {
+header[role="banner"] {
   display: flex !important;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+}
+body.show-header header[role="banner"] {
+  display: flex !important;
 }
 
 .head {
