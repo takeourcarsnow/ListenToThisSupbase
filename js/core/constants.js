@@ -62,15 +62,15 @@ export const POST_READY_MESSAGES = [
 
 // Fun messages to show when user is NOT in cooldown (can post)
 export const POST_NO_COOLDOWN_MESSAGES = [
-	"Drop your daily banger—make the feed jealous!",
-	"What’s your soundtrack for today? The stage is yours.",
-	"Share a song that’s been living rent-free in your head.",
-	"One post, infinite vibes. Pick your anthem!",
-	"Got a tune that slaps? Let the world hear it!",
-	"Today’s pick could be someone’s new obsession. Post away!",
-	"Ready to bless the feed? Your daily drop awaits.",
+	"Drop your daily banger—make us jealous!",
+	"What’s your soundtrack for today?",
+	"Song living rent-free in your head?",
+	"One post, infinite vibes. Pick your song!",
+	"Got a tune that slaps? Share it!",
+	"Today’s pick: someone’s new obsession!",
+	"Ready to bless the feed? Drop it now!",
 	"Share a song, spark a vibe. You’re up!",
-	"One shot, one song, all the feels. Make it count!"
+	"One shot, one song. Make it count!"
 ];
 export const PROMPT_STUCK = '> so what song has been stuck in your head lately?';
 export const PROMPT_SHARE = '> share a track that made your day better!';

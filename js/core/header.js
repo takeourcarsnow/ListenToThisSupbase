@@ -30,8 +30,16 @@ export async function renderHeader() {
   // Post limit message variations (imported from constants)
   const postLimitMessages = POST_LIMIT_MESSAGES;
   const noCooldownMessages = POST_NO_COOLDOWN_MESSAGES;
-  let postLimitMsgIndex = 0;
-  let noCooldownMsgIndex = 0;
+  // Pick random starting indices so the header shows a random line on each load
+  function _pickRandomIndex(len, exclude) {
+    if (!len || len <= 1) return 0;
+    let idx;
+    do { idx = Math.floor(Math.random() * len); } while (typeof exclude === 'number' && idx === exclude);
+    return idx;
+  }
+
+  let postLimitMsgIndex = _pickRandomIndex(postLimitMessages && postLimitMessages.length ? postLimitMessages.length : 0);
+  let noCooldownMsgIndex = _pickRandomIndex(noCooldownMessages && noCooldownMessages.length ? noCooldownMessages.length : 0);
   // Helper to pad the update message for the ASCII frame
   // Helper to pad the update message to the right of the frame
   function padAsciiUpdateCenter(str) {
@@ -97,7 +105,8 @@ ${updateAsciiMsg}
     let hover = false;
     let lastType = '';
   const readyMessages = POST_READY_MESSAGES;
-  let readyMsgIndex = 0;
+  // Start ready message at a random index so each load shows a different line
+  let readyMsgIndex = _pickRandomIndex(readyMessages && readyMessages.length ? readyMessages.length : 0);
   let readyMsgAnimTimer = null;
   let readyMsgFading = false;
     // Add fade animation style if not present
@@ -250,7 +259,8 @@ ${updateAsciiMsg}
                 const nextDelay = 4500 + Math.random() * 3500;
                 readyMsgAnimTimer = setTimeout(() => {
                   if (!readyMsgFading) {
-                    postLimitMsgIndex = (postLimitMsgIndex + 1) % postLimitMessages.length;
+                    // Pick a random next index (avoid repeating the same message when possible)
+                    postLimitMsgIndex = _pickRandomIndex(postLimitMessages.length, postLimitMsgIndex);
                     updatePostLimitInfo();
                     scheduleNext();
                   } else {
@@ -271,13 +281,15 @@ ${updateAsciiMsg}
           newText = padLine(noCooldownMessages[noCooldownMsgIndex]);
           type = 'ready';
           readyMsgAnimTimer = setTimeout(() => {
-            noCooldownMsgIndex = (noCooldownMsgIndex + 1) % noCooldownMessages.length;
+    // Pick a random next no-cooldown message
+    noCooldownMsgIndex = _pickRandomIndex(noCooldownMessages.length, noCooldownMsgIndex);
             updatePostLimitInfo();
             const scheduleNext = () => {
               const nextDelay = 4500 + Math.random() * 3500;
               readyMsgAnimTimer = setTimeout(() => {
                 if (!readyMsgFading) {
-                  noCooldownMsgIndex = (noCooldownMsgIndex + 1) % noCooldownMessages.length;
+      // Next index should be random to keep things fresh
+      noCooldownMsgIndex = _pickRandomIndex(noCooldownMessages.length, noCooldownMsgIndex);
                   updatePostLimitInfo();
                   scheduleNext();
                 } else {
