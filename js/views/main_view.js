@@ -193,11 +193,23 @@ export async function renderMain(root, state, DB, render) {
     right = composePane; // will be used for compose/profile
 
   // --- Swipe gesture support for mobile tabs ---
+    // Bulletproof: block tab swipe at the earliest possible phase if touch is on tag cloud
+    function blockTagCloudTouch(e) {
+      if (e.target && e.target.closest && e.target.closest('.tag-cloud')) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+    }
+    document.addEventListener('touchstart', blockTagCloudTouch, { capture: true, passive: false });
+    document.addEventListener('touchmove', blockTagCloudTouch, { capture: true, passive: false });
   // Implement drag-follow during touchmove for a smooth, non-jumpy UX.
   let touchStartX = null, touchStartY = null, touchCurrentX = null, touchCurrentY = null;
   let isDragging = false;
     // If a touch starts inside the tag cloud, ignore the global tab-swipe handler
     let ignoreSwipeFromTagCloud = false;
+    function isTagCloudSwipeBlocked() {
+      return ignoreSwipeFromTagCloud || (typeof window !== 'undefined' && window.ignoreSwipeFromTagCloud);
+    }
     const tabOrder = ['feed', 'compose', 'profile'];
 
     // Capture-phase listeners to detect touches that start inside interactive
@@ -231,6 +243,7 @@ export async function renderMain(root, state, DB, render) {
         if (!ignoreSwipeFromTagCloud) {
           ignoreSwipeFromTagCloud = !!(e.target && e.target.closest && e.target.closest('.tag-cloud'));
         }
+        if (isTagCloudSwipeBlocked()) return;
         touchStartX = e.touches[0].clientX;
         touchStartY = e.touches[0].clientY;
         touchCurrentX = touchStartX;
@@ -244,7 +257,7 @@ export async function renderMain(root, state, DB, render) {
     }, { passive: false });
 
     slideWrapper.addEventListener('touchmove', function(e) {
-      if (ignoreSwipeFromTagCloud || !isDragging) return;
+  if (isTagCloudSwipeBlocked() || !isDragging) return;
       if (e.touches.length !== 1) return;
       touchCurrentX = e.touches[0].clientX;
       touchCurrentY = e.touches[0].clientY;
@@ -268,10 +281,11 @@ export async function renderMain(root, state, DB, render) {
     }, { passive: false });
 
   slideWrapper.addEventListener('touchend', function(e) {
-      if (ignoreSwipeFromTagCloud) {
+  if (isTagCloudSwipeBlocked()) {
         // Reset and ignore this swipe
         touchStartX = touchStartY = touchCurrentX = touchCurrentY = null;
-        ignoreSwipeFromTagCloud = false;
+  ignoreSwipeFromTagCloud = false;
+  if (typeof window !== 'undefined') window.ignoreSwipeFromTagCloud = false;
         isDragging = false;
         try { slideWrapper.style.transition = ''; } catch (err) {}
         return;

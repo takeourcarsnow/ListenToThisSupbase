@@ -4,16 +4,24 @@ import { loadPrefs, savePrefs } from '../auth/prefs.js';
 export function enableTagCloudDragScroll(tagCloud) {
   if (!tagCloud) tagCloud = document.querySelector('.tag-cloud');
   if (!tagCloud) return;
+  // Bulletproof: block tab swipe at the source for all touch events on tag cloud
+  function blockTabSwipeOnTagCloud(e) {
+    e.stopPropagation();
+    e.preventDefault();
+  }
+  tagCloud.addEventListener('touchstart', blockTabSwipeOnTagCloud, { passive: false });
+  tagCloud.addEventListener('touchmove', blockTabSwipeOnTagCloud, { passive: false });
   // Restore scroll position if saved
   if (typeof window !== 'undefined' && typeof window._tagCloudScrollLeft === 'number') {
     tagCloud.scrollLeft = window._tagCloudScrollLeft;
     // Only restore once
     delete window._tagCloudScrollLeft;
   }
-// Attach to window for global use
-if (typeof window !== 'undefined') {
-  window.enableTagCloudDragScroll = enableTagCloudDragScroll;
-}
+  // Attach to window for global use
+  if (typeof window !== 'undefined') {
+    window.enableTagCloudDragScroll = enableTagCloudDragScroll;
+  }
+
   let isDown = false;
   let startX, startY;
   let scrollLeft;
@@ -52,6 +60,11 @@ if (typeof window !== 'undefined') {
     e.stopPropagation && e.stopPropagation();
     e.preventDefault && e.preventDefault();
 
+    // Robustly block tab swipe: set global flag for main_view.js to see
+    if (typeof window !== 'undefined') {
+      window.ignoreSwipeFromTagCloud = true;
+    }
+
     // For pointer events, capture the pointer so moves outside the element
     // still target us and won't trigger parent gestures.
     try {
@@ -79,8 +92,8 @@ if (typeof window !== 'undefined') {
     if (!tagCloudRect) tagCloudRect = tagCloud.getBoundingClientRect();
     const x = clientX - tagCloudRect.left;
     tagCloud.scrollLeft = scrollLeft - (x - (startX - tagCloudRect.left));
-  e.stopPropagation && e.stopPropagation();
-  e.preventDefault && e.preventDefault();
+    e.stopPropagation && e.stopPropagation();
+    e.preventDefault && e.preventDefault();
   }
 
   function pointerUp(e) {
@@ -128,6 +141,10 @@ if (typeof window !== 'undefined') {
               }
             }
           } catch (err) {
+      // Reset the global swipe block flag
+      if (typeof window !== 'undefined') {
+        window.ignoreSwipeFromTagCloud = false;
+      }
             // Best-effort: fallback to clicking the element
             try { tagEl.click(); } catch (e) {}
           }
@@ -149,6 +166,7 @@ if (typeof window !== 'undefined') {
     e.stopPropagation && e.stopPropagation();
     e.preventDefault && e.preventDefault();
   }
+
 
   // Use pointer events if available, else fallback to mouse/touch
   if (window.PointerEvent) {
