@@ -170,23 +170,9 @@
     overflow: visible !important;
   }
 
-  /* left/right fade overlays to hint at horizontal content */
+  /* Remove left/right fade overlays (no edge shadows) */
   .tag-cloud::before,
   .tag-cloud::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 2.2rem;
-    pointer-events: none;
-    z-index: 3;
-  }
-  .tag-cloud::before {
-    left: 0;
-    background: linear-gradient(90deg, rgba(10,12,16,0.95), rgba(10,12,16,0));
-  }
-  .tag-cloud::after {
-    right: 0;
-    background: linear-gradient(270deg, rgba(10,12,16,0.95), rgba(10,12,16,0));
+    display: none !important;
   }
 }
